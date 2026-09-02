@@ -22,11 +22,12 @@ function normalizePlatform(os: string | null, model: string | null): PlatformFam
   return 'unknown';
 }
 
-function normalizeRow(row: Record<string, string>, index: number): Device {
+function normalizeRow(row: Record<string, string>, index: number, sourceFileName: string): Device {
   const sourceOS = value(row, 'OS', 'Operating system');
   const model = value(row, 'Model');
   return {
-    id: value(row, 'Device ID', 'DeviceId') ?? `row-${index}`,
+    id: value(row, 'Device ID', 'DeviceId') ?? `${sourceFileName}:row-${index}`,
+    sourceFileName,
     deviceName: value(row, 'Device name'),
     serialNumber: value(row, 'Serial number'),
     platform: normalizePlatform(sourceOS, model),
@@ -56,8 +57,8 @@ function parseCsv(csv: string, sourceFileName: string, csvFileName: string): Pro
           return;
         }
         const columns = result.meta.fields ?? [];
-        const devices = result.data.map(normalizeRow);
-        resolve({ sourceFileName, csvFileName, devices, columns });
+        const devices = result.data.map((row, index) => normalizeRow(row, index, sourceFileName));
+        resolve({ sourceFileName, sourceFileNames: [sourceFileName], csvFileName, csvFileNames: [csvFileName], devices, columns, duplicateCount: 0 });
       },
       error: (error: Error) => reject(error),
     });
@@ -66,15 +67,51 @@ function parseCsv(csv: string, sourceFileName: string, csvFileName: string): Pro
 
 export async function importInventory(file: File): Promise<ImportResult> {
   const lower = file.name.toLowerCase();
-  if (lower.endsWith('.csv')) {
-    return parseCsv(await file.text(), file.name, file.name);
-  }
-  if (!lower.endsWith('.zip')) throw new Error('Select an Intune inventory export (.zip or .csv).');
+  if (lower.endsWith('.csv')) return parseCsv(await file.text(), file.name, file.name);
+  if (!lower.endsWith('.zip')) throw new Error(`Unsupported file: ${file.name}. Select Intune inventory exports (.zip or .csv).`);
 
   const zip = await JSZip.loadAsync(file);
   const csvFiles = Object.values(zip.files).filter(entry => !entry.dir && entry.name.toLowerCase().endsWith('.csv'));
-  if (!csvFiles.length) throw new Error('No CSV file was found inside this ZIP export.');
-  if (csvFiles.length > 1) throw new Error(`This ZIP contains ${csvFiles.length} CSV files. A single inventory CSV is expected.`);
+  if (!csvFiles.length) throw new Error(`No CSV file was found inside ${file.name}.`);
+  if (csvFiles.length > 1) throw new Error(`${file.name} contains ${csvFiles.length} CSV files. A single inventory CSV per ZIP is expected.`);
   const csvFile = csvFiles[0];
   return parseCsv(await csvFile.async('text'), file.name, csvFile.name);
+}
+
+function newerDevice(a: Device, b: Device): Device {
+  const aTime = a.lastCheckIn ? Date.parse(a.lastCheckIn) : Number.NaN;
+  const bTime = b.lastCheckIn ? Date.parse(b.lastCheckIn) : Number.NaN;
+  if (!Number.isNaN(aTime) && !Number.isNaN(bTime)) return bTime >= aTime ? b : a;
+  return b;
+}
+
+export function mergeImportResults(results: ImportResult[]): ImportResult {
+  const devices = new Map<string, Device>();
+  let duplicateCount = results.reduce((sum, result) => sum + result.duplicateCount, 0);
+  for (const result of results) {
+    for (const device of result.devices) {
+      const existing = devices.get(device.id);
+      if (existing) {
+        duplicateCount += 1;
+        devices.set(device.id, newerDevice(existing, device));
+      } else devices.set(device.id, device);
+    }
+  }
+  const sourceFileNames = [...new Set(results.flatMap(result => result.sourceFileNames))];
+  const csvFileNames = [...new Set(results.flatMap(result => result.csvFileNames))];
+  const columns = [...new Set(results.flatMap(result => result.columns))];
+  return {
+    sourceFileName: sourceFileNames.length === 1 ? sourceFileNames[0] : `${sourceFileNames.length} inventory exports`,
+    sourceFileNames,
+    csvFileName: csvFileNames.length === 1 ? csvFileNames[0] : `${csvFileNames.length} CSV files`,
+    csvFileNames,
+    devices: [...devices.values()],
+    columns,
+    duplicateCount,
+  };
+}
+
+export async function importInventories(files: File[]): Promise<ImportResult> {
+  if (!files.length) throw new Error('Select one or more Intune inventory exports.');
+  return mergeImportResults(await Promise.all(files.map(importInventory)));
 }
