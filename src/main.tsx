@@ -9,6 +9,7 @@ import './header.css';
 import './insights.css';
 import './table.css';
 import './typography.css';
+import './extended-insights.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
