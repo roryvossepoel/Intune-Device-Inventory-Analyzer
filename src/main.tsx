@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './landing.css';
 import './styles.css';
+import './landing.css';
 import './dashboard.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
