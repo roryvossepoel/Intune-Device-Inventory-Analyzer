@@ -2,6 +2,7 @@ export type PlatformFamily = 'windows' | 'android' | 'ios' | 'ipados' | 'macos' 
 
 export interface Device {
   id: string;
+  sourceFileName: string;
   deviceName: string | null;
   serialNumber: string | null;
   platform: PlatformFamily;
@@ -20,7 +21,10 @@ export interface Device {
 
 export interface ImportResult {
   sourceFileName: string;
+  sourceFileNames: string[];
   csvFileName: string;
+  csvFileNames: string[];
   devices: Device[];
   columns: string[];
+  duplicateCount: number;
 }
