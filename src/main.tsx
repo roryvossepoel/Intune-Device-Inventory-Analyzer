@@ -8,6 +8,7 @@ import './workspace.css';
 import './header.css';
 import './insights.css';
 import './table.css';
+import './typography.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
