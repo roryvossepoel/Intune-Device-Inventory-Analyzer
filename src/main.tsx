@@ -12,6 +12,7 @@ import './typography.css';
 import './extended-insights.css';
 import './dashboard-cleanup.css';
 import './update-health.css';
+import './dashboard-design-system.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
