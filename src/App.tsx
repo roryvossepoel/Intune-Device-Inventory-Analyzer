@@ -6,6 +6,7 @@ const platformLabel: Record<string,string> = { windows:'Windows', android:'Andro
 const key = (v:string|null) => v?.trim() || 'Unknown';
 const countBy = (devices:Device[], selector:(d:Device)=>string) => Object.entries(devices.reduce<Record<string,number>>((acc,d)=>{ const k=selector(d); acc[k]=(acc[k]??0)+1; return acc; },{})).sort((a,b)=>b[1]-a[1]);
 const formatNumber = (value:number) => value.toLocaleString();
+const daysSince = (value:string|null) => { if(!value) return null; const time=Date.parse(value); return Number.isFinite(time)?(Date.now()-time)/(24*60*60*1000):null };
 
 type View = 'overview'|'devices'|'users'|'hardware'|'updates'|'reports';
 type Filter = { field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'; label:string; value:string } | null;
@@ -51,11 +52,7 @@ export default function App(){
   const compliant = compliance.find(([v])=>v.toLowerCase()==='compliant')?.[1] ?? 0;
   const noncompliant = compliance.find(([v])=>v.toLowerCase()==='noncompliant')?.[1] ?? 0;
   const grace = compliance.find(([v])=>v.toLowerCase()==='ingraceperiod')?.[1] ?? 0;
-  const stale = useMemo(()=>base.filter(d=>{
-    if(!d.lastCheckIn) return false;
-    const time=Date.parse(d.lastCheckIn);
-    return Number.isFinite(time) && Date.now()-time > 30*24*60*60*1000;
-  }).length,[base]);
+  const stale = useMemo(()=>base.filter(d=>{ const age=daysSince(d.lastCheckIn); return age!==null && age>30 }).length,[base]);
   const unknownModels = useMemo(()=>base.filter(d=>!d.model || d.model.trim()==='' || d.model.toLowerCase()==='unknown').length,[base]);
   const noUser = useMemo(()=>base.filter(d=>!d.userUpn && !d.userDisplayName).length,[base]);
 
@@ -128,6 +125,20 @@ function PlatformSelect({value,platforms,onChange}:{value:string|null;platforms:
 function Overview({devices,allDevices,total,users,models,compliant,noncompliant,grace,stale,unknownModels,noUser,compliance,manufacturers,platforms,platform,onPlatform,drill}:{devices:Device[];allDevices:Device[];total:number;users:number;models:number;compliant:number;noncompliant:number;grace:number;stale:number;unknownModels:number;noUser:number;compliance:[string,number][];manufacturers:[string,number][];platforms:[string,number][];platform:string|null;onPlatform:(p:string|null)=>void;drill:(f:NonNullable<Filter>['field'],l:string,v:string)=>void}){
   const compliancePct=total?compliant/total*100:0;
   const osGroups=Object.entries(devices.reduce<Record<string,Device[]>>((acc,d)=>{(acc[d.platform]??=[]).push(d);return acc},{})).sort((a,b)=>b[1].length-a[1].length);
+  const platformHealth=Object.entries(devices.reduce<Record<string,Device[]>>((acc,d)=>{(acc[d.platform]??=[]).push(d);return acc},{})).map(([p,list])=>({platform:p,devices:list.length,compliant:list.filter(d=>d.compliance?.toLowerCase()==='compliant').length,stale:list.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>30}).length})).sort((a,b)=>b.devices-a.devices);
+  const staleBuckets=[
+    {label:'30–60 days',count:devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>30&&age<=60}).length,tone:'mild'},
+    {label:'60–90 days',count:devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>60&&age<=90}).length,tone:'warn'},
+    {label:'Over 90 days',count:devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>90}).length,tone:'bad'}
+  ];
+  const missingSerial=devices.filter(d=>!d.serialNumber||!d.serialNumber.trim()).length;
+  const missingModel=unknownModels;
+  const completeModel=total-missingModel, completeSerial=total-missingSerial, withUser=total-noUser;
+  const qualityChecks=[
+    {label:'Hardware model',complete:completeModel,total},
+    {label:'Serial number',complete:completeSerial,total},
+    {label:'Primary user',complete:withUser,total}
+  ];
   return <div className="inventoryDashboard">
     <section className="healthKpis">
       <HealthKpi icon="devices" label="Devices" value={formatNumber(total)} note={platform?`${platformLabel[platform]} inventory`:'Managed inventory'} tone="blue"/>
@@ -152,9 +163,24 @@ function Overview({devices,allDevices,total,users,models,compliant,noncompliant,
           <AttentionItem tone="bad" title="Noncompliant devices" value={noncompliant} detail="Compliance policy action required" onClick={()=>noncompliant&&drill('compliance','Compliance','Noncompliant')}/>
           <AttentionItem tone="warn" title="In grace period" value={grace} detail="Approaching compliance deadline" onClick={()=>grace&&drill('compliance','Compliance','InGracePeriod')}/>
           <AttentionItem tone="warn" title="Stale check-in" value={stale} detail="No Intune check-in for over 30 days"/>
-          <AttentionItem tone="neutral" title="Unknown hardware model" value={unknownModels} detail="Reported model is empty or unknown"/>
-          <AttentionItem tone="neutral" title="No primary user" value={noUser} detail="No user reported in this export"/>
         </div>
+      </DashboardCard>
+    </section>
+
+    <section className="fleetInsightGrid">
+      <DashboardCard title="Platform health" subtitle="Compliance and activity by platform" className="platformHealthCard">
+        <div className="platformHealthTable"><div className="healthTableHead"><span>Platform</span><span>Devices</span><span>Compliant</span><span>Stale</span></div>{platformHealth.map(row=><button key={row.platform} onClick={()=>onPlatform(platform===row.platform?null:row.platform)}><strong>{platformLabel[row.platform]||row.platform}</strong><span>{formatNumber(row.devices)}</span><span className={row.devices&&row.compliant/row.devices>=.9?'goodText':row.devices&&row.compliant/row.devices>=.75?'warnText':'badText'}>{row.devices?(row.compliant/row.devices*100).toFixed(1):'0'}%</span><span className={row.stale?'warnText':''}>{formatNumber(row.stale)}</span></button>)}</div>
+      </DashboardCard>
+
+      <DashboardCard title="Check-in age" subtitle="How long stale devices have been inactive" className="checkinCard">
+        <div className="staleBuckets">{staleBuckets.map(item=><div key={item.label} className={`staleBucket ${item.tone}`}><span>{item.label}</span><strong>{formatNumber(item.count)}</strong><small>{total?(item.count/total*100).toFixed(1):'0'}% of inventory</small></div>)}</div>
+        <div className="checkinSummary"><span>Active within 30 days</span><strong>{formatNumber(Math.max(0,total-stale))}</strong><small>{total?((total-stale)/total*100).toFixed(1):'0'}%</small></div>
+      </DashboardCard>
+
+      <DashboardCard title="Inventory quality" subtitle="Completeness of key exported fields" className="qualityCard">
+        <div className="qualityScore"><strong>{total?((completeModel+completeSerial+withUser)/(total*3)*100).toFixed(1):'100'}%</strong><span>field completeness</span></div>
+        <div className="qualityList">{qualityChecks.map(item=>{const pct=item.total?item.complete/item.total*100:100;return <div key={item.label}><div><span>{item.label}</span><strong>{pct.toFixed(1)}%</strong></div><i><b style={{width:`${pct}%`}}/></i><small>{formatNumber(item.total-item.complete)} missing</small></div>})}</div>
+        <p className="qualityNote">Missing primary users can be expected for shared, kiosk or self-deploying devices.</p>
       </DashboardCard>
     </section>
 
