@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { importInventory } from './importer';
 import SmartTable from './SmartTable';
 import ExtendedInsights from './ExtendedInsights';
+import WindowsUpdateHealth from './WindowsUpdateHealth';
 import type { SmartColumn } from './SmartTable';
 import type { Device, ImportResult } from './types';
 
@@ -91,7 +92,7 @@ export default function App(){
 
   const nav:[View,string][]=[['overview','Overview'],['devices','Devices'],['users','Users'],['hardware','Hardware'],['updates','Updates'],['reports','Reports']];
   const pageTitle=view==='overview'?'Inventory dashboard':view==='devices'?'Devices':view==='users'?'Users':view==='hardware'?'Hardware':view==='updates'?'Updates':'Reports';
-  const pageDescription=view==='overview'?'Health, composition and attention points from the current Intune inventory.':view==='devices'?'Search and inspect every device in the imported inventory.':view==='users'?'See which users have managed devices and drill into their inventory.':view==='hardware'?'Explore manufacturers and reported hardware models.':view==='updates'?'Explore the operating system versions reported by Intune.':'Prepare management-ready exports and summaries from the current inventory.';
+  const pageDescription=view==='overview'?'Health, composition and attention points from the current Intune inventory.':view==='devices'?'Search and inspect every device in the imported inventory.':view==='users'?'See which users have managed devices and drill into their inventory.':view==='hardware'?'Explore manufacturers and reported hardware models.':view==='updates'?'Update health and operating system versions enriched with Device Intelligence.':'Prepare management-ready exports and summaries from the current inventory.';
 
   return <div className="app">
     <header className="topbar"><div className="topbarInner">
@@ -113,7 +114,7 @@ export default function App(){
       {view==='devices'&&<DataCard title="Device inventory" subtitle={`${searched.length.toLocaleString()} matching devices`}><SmartTable rows={searched} columns={deviceColumns} rowKey={d=>d.id} exportName="intune-devices" onRowClick={setSelected}/></DataCard>}
       {view==='users'&&<DataCard title="Managed users" subtitle={`${filteredUsers.length.toLocaleString()} matching users`}><SmartTable rows={filteredUsers} columns={userColumns} rowKey={u=>u.upn||u.name} exportName="intune-users" onRowClick={u=>drill('user','User',key(u.upn||u.name))}/></DataCard>}
       {view==='hardware'&&<DataCard title="Hardware inventory" subtitle={`${filteredHardware.length.toLocaleString()} matching manufacturer/model combinations`}><SmartTable rows={filteredHardware} columns={hardwareColumns} rowKey={h=>h.manufacturer+'|'+h.model} exportName="intune-hardware" onRowClick={h=>drill('model','Model',h.model)}/></DataCard>}
-      {view==='updates'&&<><div className="infoBanner"><strong>Raw version inventory</strong><span>Readable release names and update status will be added later through Device Intelligence.</span></div><DataCard title="Operating system versions" subtitle={`${filteredUpdates.length.toLocaleString()} matching platform/version combinations`}><SmartTable rows={filteredUpdates} columns={updateColumns} rowKey={r=>r.platform+'|'+r.version} exportName="intune-os-versions" onRowClick={r=>drill('osVersion','OS version',r.version)}/></DataCard></>}
+      {view==='updates'&&<><WindowsUpdateHealth devices={base}/><DataCard title="All reported OS versions" subtitle={`${filteredUpdates.length.toLocaleString()} matching platform/version combinations`}><SmartTable rows={filteredUpdates} columns={updateColumns} rowKey={r=>r.platform+'|'+r.version} exportName="intune-os-versions" onRowClick={r=>drill('osVersion','OS version',r.version)}/></DataCard></>}
       {view==='reports'&&<section className="reportsPlaceholder"><div className="reportsIcon">▤</div><h2>Management reports</h2><p>PDF and PowerPoint reporting will be built here using the currently loaded inventory. The report engine will remain fully local in the browser.</p><span>Planned: executive summary · platform overview · compliance · update position · hardware</span></section>}
     </main>}
 
