@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import Papa from 'papaparse';
+import { describeOsVersion } from './deviceIntelligence';
 import type { Device, ImportResult, PlatformFamily } from './types';
 
 const value = (row: Record<string, string>, ...keys: string[]) => {
@@ -25,14 +26,16 @@ function normalizePlatform(os: string | null, model: string | null): PlatformFam
 function normalizeRow(row: Record<string, string>, index: number, sourceFileName: string): Device {
   const sourceOS = value(row, 'OS', 'Operating system');
   const model = value(row, 'Model');
+  const platform = normalizePlatform(sourceOS, model);
+  const rawOsVersion = value(row, 'OS version');
   return {
     id: value(row, 'Device ID', 'DeviceId') ?? `${sourceFileName}:row-${index}`,
     sourceFileName,
     deviceName: value(row, 'Device name'),
     serialNumber: value(row, 'Serial number'),
-    platform: normalizePlatform(sourceOS, model),
+    platform,
     sourceOS,
-    osVersion: value(row, 'OS version'),
+    osVersion: describeOsVersion(platform, rawOsVersion),
     manufacturer: value(row, 'Manufacturer'),
     model,
     userDisplayName: value(row, 'Primary user display name'),
