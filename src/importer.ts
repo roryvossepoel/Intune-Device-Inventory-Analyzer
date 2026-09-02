@@ -11,6 +11,36 @@ const value = (row: Record<string, string>, ...keys: string[]) => {
   return null;
 };
 
+function normalizeManufacturer(input:string|null){
+  if(!input) return null;
+  const value=input.trim();
+  const key=value.toLowerCase().replace(/\s+/g,' ');
+  const aliases:Record<string,string>={
+    'dell inc.':'Dell',
+    'dell inc':'Dell',
+    'dell':'Dell',
+    'lenovo':'Lenovo',
+    'samsung':'Samsung',
+    'samsung electronics':'Samsung',
+    'samsung electronics co., ltd.':'Samsung',
+    'microsoft corporation':'Microsoft',
+    'microsoft':'Microsoft',
+    'apple inc.':'Apple',
+    'apple inc':'Apple',
+    'apple':'Apple',
+    'hp':'HP',
+    'hp inc.':'HP',
+    'hp inc':'HP',
+    'hewlett-packard':'HP',
+    'hewlett packard':'HP',
+    'logitech':'Logitech',
+    'logitech inc.':'Logitech'
+  };
+  if(aliases[key]) return aliases[key];
+  if(value===value.toUpperCase() || value===value.toLowerCase()) return value.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+  return value;
+}
+
 function normalizePlatform(os: string | null, model: string | null): PlatformFamily {
   const source = (os ?? '').toLowerCase();
   const hardware = (model ?? '').toLowerCase();
@@ -36,7 +66,7 @@ function normalizeRow(row: Record<string, string>, index: number, sourceFileName
     platform,
     sourceOS,
     osVersion: describeOsVersion(platform, rawOsVersion),
-    manufacturer: value(row, 'Manufacturer'),
+    manufacturer: normalizeManufacturer(value(row, 'Manufacturer')),
     model,
     userDisplayName: value(row, 'Primary user display name'),
     userUpn: value(row, 'Primary user UPN'),
