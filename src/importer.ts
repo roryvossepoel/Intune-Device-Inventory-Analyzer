@@ -59,7 +59,7 @@ function parseCsv(csv: string, sourceFileName: string, csvFileName: string): Pro
         const devices = result.data.map(normalizeRow);
         resolve({ sourceFileName, csvFileName, devices, columns });
       },
-      error: error => reject(error),
+      error: (error: Error) => reject(error),
     });
   });
 }
