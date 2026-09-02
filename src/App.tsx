@@ -2,40 +2,113 @@ import { useMemo, useRef, useState } from 'react';
 import { importInventory } from './importer';
 import type { Device, ImportResult } from './types';
 
-const platformLabel: Record<string,string>={windows:'Windows',android:'Android',ios:'iOS',ipados:'iPadOS',macos:'macOS',linux:'Linux',unknown:'Unknown'};
-const key=(v:string|null)=>v?.trim()||'Unknown';
-const countBy=(ds:Device[],f:(d:Device)=>string)=>Object.entries(ds.reduce<Record<string,number>>((a,d)=>{const k=f(d);a[k]=(a[k]??0)+1;return a;},{})).sort((a,b)=>b[1]-a[1]);
-type View='overview'|'devices'|'users'|'hardware'|'updates';
-type Filter={field:'compliance'|'osVersion'|'manufacturer'|'model'|'user';label:string;value:string}|null;
+const platformLabel: Record<string,string> = { windows:'Windows', android:'Android', ios:'iOS', ipados:'iPadOS', macos:'macOS', linux:'Linux', unknown:'Unknown' };
+const key = (v:string|null) => v?.trim() || 'Unknown';
+const countBy = (devices:Device[], selector:(d:Device)=>string) => Object.entries(devices.reduce<Record<string,number>>((acc,d)=>{ const k=selector(d); acc[k]=(acc[k]??0)+1; return acc; },{})).sort((a,b)=>b[1]-a[1]);
+
+type View = 'overview'|'devices'|'users'|'hardware'|'updates'|'reports';
+type Filter = { field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'; label:string; value:string } | null;
 
 export default function App(){
- const [data,setData]=useState<ImportResult|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null),[view,setView]=useState<View>('overview'),[query,setQuery]=useState(''),[platform,setPlatform]=useState<string|null>(null),[filter,setFilter]=useState<Filter>(null),[selected,setSelected]=useState<Device|null>(null); const input=useRef<HTMLInputElement>(null);
- async function open(file?:File){if(!file)return;setBusy(true);setError(null);try{setData(await importInventory(file));setView('overview');setPlatform(null);setFilter(null);setQuery('');}catch(e){setError(e instanceof Error?e.message:'The export could not be read.');}finally{setBusy(false)}}
- function drill(field:NonNullable<Filter>['field'],label:string,value:string){setFilter({field,label,value});setView('devices');setQuery('');window.scrollTo({top:0,behavior:'smooth'})}
- const base=useMemo(()=>data?.devices.filter(d=>!platform||d.platform===platform)??[],[data,platform]);
- const scoped=useMemo(()=>base.filter(d=>{if(!filter)return true;const v=filter.field==='compliance'?d.compliance:filter.field==='osVersion'?d.osVersion:filter.field==='manufacturer'?d.manufacturer:filter.field==='model'?d.model:(d.userUpn||d.userDisplayName);return key(v)===filter.value}),[base,filter]);
- const q=query.trim().toLowerCase(), searched=scoped.filter(d=>!q||[d.deviceName,d.serialNumber,d.userDisplayName,d.userUpn,d.manufacturer,d.model,d.osVersion].some(v=>v?.toLowerCase().includes(q)));
- const platforms=useMemo(()=>data?countBy(data.devices,d=>d.platform):[],[data]);
- const compliance=useMemo(()=>countBy(base,d=>key(d.compliance)),[base]), versions=useMemo(()=>countBy(base,d=>key(d.osVersion)),[base]), manufacturers=useMemo(()=>countBy(base,d=>key(d.manufacturer)),[base]);
- const compliant=compliance.find(([v])=>v.toLowerCase()==='compliant')?.[1]??0;
- const users=useMemo(()=>{const m=new Map<string,{name:string;upn:string;devices:Device[]}>();for(const d of base){const id=key(d.userUpn||d.userDisplayName);if(id==='Unknown')continue;const e=m.get(id)??{name:d.userDisplayName||id,upn:d.userUpn||'',devices:[]};e.devices.push(d);m.set(id,e)}return [...m.values()].sort((a,b)=>b.devices.length-a.devices.length)},[base]);
- const hardware=useMemo(()=>{const m=new Map<string,{manufacturer:string;model:string;devices:Device[]}>();for(const d of base){const manufacturer=key(d.manufacturer),model=key(d.model),id=manufacturer+'|'+model,e=m.get(id)??{manufacturer,model,devices:[]};e.devices.push(d);m.set(id,e)}return [...m.values()].sort((a,b)=>b.devices.length-a.devices.length)},[base]);
- const updates=useMemo(()=>{const m=new Map<string,{platform:string;version:string;devices:Device[]}>();for(const d of base){const version=key(d.osVersion),id=d.platform+'|'+version,e=m.get(id)??{platform:d.platform,version,devices:[]};e.devices.push(d);m.set(id,e)}return [...m.values()].sort((a,b)=>b.devices.length-a.devices.length)},[base]);
- const nav:[View,string][]=[['overview','Overview'],['devices','Devices'],['users','Users'],['hardware','Hardware'],['updates','Updates']];
- return <div className="app">
-  <header className="topbar"><div className="topbarInner"><button className="brand" onClick={()=>data&&setView('overview')}><span className="brandMark">ID</span><span><strong>Intune Device Inventory</strong><small>Analyzer</small></span></button>{data&&<nav className="mainNav">{nav.map(([id,label])=><button className={view===id?'active':''} onClick={()=>{setView(id);setQuery('')}} key={id}>{label}</button>)}</nav>}<div className="topActions landingActions"><span className="localState"><i/>Local only</span><button className="primarySmall" onClick={()=>input.current?.click()}>{data?'Open export':'Open export'}</button></div><input ref={input} hidden type="file" accept=".zip,.csv" onChange={e=>open(e.target.files?.[0])}/></div></header>
-  {!data?<main className="landing landingPro"><section className="hero heroPro"><div className="heroBadge">◇ 100% PRIVATE BY DESIGN</div><h1>Understand your<br/>Intune device <em>inventory.</em></h1><p>Open a native Microsoft Intune inventory export and turn raw device data into a clear, interactive overview. Everything is processed locally in your browser.</p><div className="featureGrid"><Feature icon="◇" title="100% local" text="Your data never leaves this browser"/><Feature icon="▣" title="Private by design" text="No uploads, no servers, no tracking"/><Feature icon="ϟ" title="Fast & secure" text="All processing happens on your device"/><Feature icon="▤" title="Native Intune export" text="Supports ZIP or CSV exports"/></div><div className="heroActions"><button className="primary landingPrimary" onClick={()=>input.current?.click()} disabled={busy}><span>↥</span>{busy?'Reading export…':'Open Intune export'}</button><span>ZIP or CSV · nothing is uploaded</span></div>{busy&&<div className="loadingState">Reading and normalizing inventory…</div>}{error&&<div className="error">{error}</div>}</section><section className="drop cleanDrop dropPro" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();open(e.dataTransfer.files[0])}} onClick={()=>input.current?.click()}><span className="dropIcon dropCloud">↥</span><strong>Drop your Intune export here</strong><small>or click to browse files</small><span className="dropDivider"><i/>OR<i/></span><button type="button" className="browseButton">▱ &nbsp; Browse files</button></section><section className="trustStrip"><Trust icon="♙" title="Your data stays with you" text="All files are read locally. Nothing is sent anywhere, ever."/><Trust icon="✓" title="Works offline" text="After loading your export, analysis remains local to your browser."/><Trust icon="▱" title="Built for real inventories" text="Designed for large Intune exports with thousands of devices."/></section></main>:
-  <main className="workspace"><section className="contextBar"><div><span className="contextLabel">CURRENT EXPORT</span><strong>{data.sourceFileName}</strong></div><div className="contextStats"><span><strong>{data.devices.length.toLocaleString()}</strong> devices</span><span><strong>{users.length.toLocaleString()}</strong> users</span><span><strong>{hardware.length.toLocaleString()}</strong> models</span><span><strong>{data.columns.length}</strong> source fields</span></div><button className="ghost" onClick={()=>{setData(null);setSelected(null)}}>Start over</button></section>
-   <section className="pageHead"><div><span className="eyebrow">{view.toUpperCase()}</span><h1>{view==='overview'?'Inventory overview':view==='devices'?'Devices':view==='users'?'Users':view==='hardware'?'Hardware':'Updates'}</h1><p>{view==='overview'?'A clear view of the devices, platforms and health of this Intune export.':view==='devices'?'Search and inspect every device in the imported inventory.':view==='users'?'See which users have managed devices and drill into their inventory.':view==='hardware'?'Explore manufacturers and reported hardware models.':'Explore the operating system versions reported by Intune.'}</p></div>{view!=='overview'&&<Search value={query} setValue={setQuery}/>}</section>
-   <div className="platformStrip"><button className={!platform?'active':''} onClick={()=>{setPlatform(null);setFilter(null)}}><span>All platforms</span><strong>{data.devices.length.toLocaleString()}</strong></button>{platforms.map(([p,n])=><button key={p} className={platform===p?'active':''} onClick={()=>{setPlatform(platform===p?null:p);setFilter(null)}}><span>{platformLabel[p]}</span><strong>{n.toLocaleString()}</strong></button>)}</div>
-   {(platform||filter)&&<div className="activeFilters"><span>Viewing</span>{platform&&<b>{platformLabel[platform]}</b>}{filter&&<b>{filter.label}: {filter.value}</b>}<span>{scoped.length.toLocaleString()} devices</span><button onClick={()=>{setPlatform(null);setFilter(null)}}>Clear</button></div>}
-   {view==='overview'&&<Overview total={base.length} users={users.length} models={hardware.length} compliant={compliant} compliance={compliance} versions={versions} manufacturers={manufacturers} drill={drill}/>} 
-   {view==='devices'&&<DataCard title="Device inventory" subtitle={`${searched.length.toLocaleString()} matching devices`}><DeviceTable devices={searched} onSelect={setSelected}/></DataCard>}
-   {view==='users'&&<DataCard title="Managed users" subtitle={`${users.length.toLocaleString()} users`}><table><thead><tr><th>User</th><th>Devices</th><th>Platforms</th><th>Compliance</th></tr></thead><tbody>{users.filter(u=>!q||u.name.toLowerCase().includes(q)||u.upn.toLowerCase().includes(q)).slice(0,500).map(u=>{const c=u.devices.filter(d=>d.compliance?.toLowerCase()==='compliant').length;return <tr className="clickRow" key={u.upn||u.name} onClick={()=>drill('user','User',key(u.upn||u.name))}><td><strong>{u.name}</strong><small>{u.upn}</small></td><td>{u.devices.length}</td><td>{countBy(u.devices,d=>platformLabel[d.platform]).map(([p,n])=>`${p} ${n}`).join(' · ')}</td><td>{c}/{u.devices.length}</td></tr>})}</tbody></table></DataCard>}
-   {view==='hardware'&&<DataCard title="Hardware inventory" subtitle={`${hardware.length.toLocaleString()} manufacturer/model combinations`}><table><thead><tr><th>Manufacturer</th><th>Reported model</th><th>Devices</th><th>Platform</th><th>Compliance</th></tr></thead><tbody>{hardware.filter(h=>!q||h.manufacturer.toLowerCase().includes(q)||h.model.toLowerCase().includes(q)).slice(0,500).map(h=>{const c=h.devices.filter(d=>d.compliance?.toLowerCase()==='compliant').length;return <tr className="clickRow" key={h.manufacturer+h.model} onClick={()=>drill('model','Model',h.model)}><td><strong>{h.manufacturer}</strong></td><td>{h.model}</td><td>{h.devices.length}</td><td>{countBy(h.devices,d=>platformLabel[d.platform]).map(([p,n])=>`${p} ${n}`).join(' · ')}</td><td>{c}/{h.devices.length}</td></tr>})}</tbody></table></DataCard>}
-   {view==='updates'&&<><div className="infoBanner"><strong>Raw version inventory</strong><span>Readable release names and update status will be added later through Device Intelligence.</span></div><DataCard title="Operating system versions" subtitle={`${updates.length} distinct platform/version combinations`}><table><thead><tr><th>Platform</th><th>Reported version</th><th>Devices</th><th>Share</th></tr></thead><tbody>{updates.filter(r=>!q||r.version.toLowerCase().includes(q)||platformLabel[r.platform].toLowerCase().includes(q)).slice(0,500).map(r=><tr className="clickRow" key={r.platform+r.version} onClick={()=>drill('osVersion','OS version',r.version)}><td><span className="tag">{platformLabel[r.platform]}</span></td><td><strong>{r.version}</strong></td><td>{r.devices.length}</td><td>{base.length?((r.devices.length/base.length)*100).toFixed(1):'0'}%</td></tr>)}</tbody></table></DataCard></>}
-  </main>}
-  <footer className="siteFooter"><div><strong>Intune Device Inventory Analyzer</strong><span>All inventory data is processed locally in your browser. No device or user data is uploaded.</span></div><div><span>Open source</span><span>v0.1</span></div></footer>{selected&&<DeviceDetail device={selected} onClose={()=>setSelected(null)}/>}</div>
+  const [data,setData] = useState<ImportResult|null>(null);
+  const [busy,setBusy] = useState(false);
+  const [error,setError] = useState<string|null>(null);
+  const [view,setView] = useState<View>('overview');
+  const [query,setQuery] = useState('');
+  const [platform,setPlatform] = useState<string|null>(null);
+  const [filter,setFilter] = useState<Filter>(null);
+  const [selected,setSelected] = useState<Device|null>(null);
+  const input = useRef<HTMLInputElement>(null);
+
+  async function open(file?:File){
+    if(!file) return;
+    setBusy(true); setError(null);
+    try {
+      setData(await importInventory(file));
+      setView('overview'); setPlatform(null); setFilter(null); setQuery('');
+    } catch(e) {
+      setError(e instanceof Error ? e.message : 'The export could not be read.');
+    } finally { setBusy(false); }
+  }
+
+  function drill(field:NonNullable<Filter>['field'],label:string,value:string){
+    setFilter({field,label,value}); setView('devices'); setQuery(''); window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  const base = useMemo(()=>data?.devices.filter(d=>!platform || d.platform===platform) ?? [],[data,platform]);
+  const scoped = useMemo(()=>base.filter(d=>{
+    if(!filter) return true;
+    const value = filter.field==='compliance' ? d.compliance : filter.field==='osVersion' ? d.osVersion : filter.field==='manufacturer' ? d.manufacturer : filter.field==='model' ? d.model : (d.userUpn||d.userDisplayName);
+    return key(value)===filter.value;
+  }),[base,filter]);
+  const q = query.trim().toLowerCase();
+  const searched = scoped.filter(d=>!q || [d.deviceName,d.serialNumber,d.userDisplayName,d.userUpn,d.manufacturer,d.model,d.osVersion].some(v=>v?.toLowerCase().includes(q)));
+  const platforms = useMemo(()=>data ? countBy(data.devices,d=>d.platform) : [],[data]);
+  const compliance = useMemo(()=>countBy(base,d=>key(d.compliance)),[base]);
+  const versions = useMemo(()=>countBy(base,d=>key(d.osVersion)),[base]);
+  const manufacturers = useMemo(()=>countBy(base,d=>key(d.manufacturer)),[base]);
+  const compliant = compliance.find(([v])=>v.toLowerCase()==='compliant')?.[1] ?? 0;
+  const users = useMemo(()=>{
+    const map = new Map<string,{name:string;upn:string;devices:Device[]}>();
+    for(const d of base){ const id=key(d.userUpn||d.userDisplayName); if(id==='Unknown') continue; const item=map.get(id)??{name:d.userDisplayName||id,upn:d.userUpn||'',devices:[]}; item.devices.push(d); map.set(id,item); }
+    return [...map.values()].sort((a,b)=>b.devices.length-a.devices.length);
+  },[base]);
+  const hardware = useMemo(()=>{
+    const map = new Map<string,{manufacturer:string;model:string;devices:Device[]}>();
+    for(const d of base){ const manufacturer=key(d.manufacturer), model=key(d.model), id=manufacturer+'|'+model; const item=map.get(id)??{manufacturer,model,devices:[]}; item.devices.push(d); map.set(id,item); }
+    return [...map.values()].sort((a,b)=>b.devices.length-a.devices.length);
+  },[base]);
+  const updates = useMemo(()=>{
+    const map = new Map<string,{platform:string;version:string;devices:Device[]}>();
+    for(const d of base){ const version=key(d.osVersion), id=d.platform+'|'+version; const item=map.get(id)??{platform:d.platform,version,devices:[]}; item.devices.push(d); map.set(id,item); }
+    return [...map.values()].sort((a,b)=>b.devices.length-a.devices.length);
+  },[base]);
+
+  const nav:[View,string][] = [['overview','Overview'],['devices','Devices'],['users','Users'],['hardware','Hardware'],['updates','Updates'],['reports','Reports']];
+  const pageTitle = view==='overview'?'Inventory overview':view==='devices'?'Devices':view==='users'?'Users':view==='hardware'?'Hardware':view==='updates'?'Updates':'Reports';
+  const pageDescription = view==='overview'?'A clear view of the devices, platforms and health of this Intune export.':view==='devices'?'Search and inspect every device in the imported inventory.':view==='users'?'See which users have managed devices and drill into their inventory.':view==='hardware'?'Explore manufacturers and reported hardware models.':view==='updates'?'Explore the operating system versions reported by Intune.':'Prepare management-ready exports and summaries from the current inventory.';
+
+  return <div className="app">
+    <header className="topbar"><div className="topbarInner">
+      <button className="brand" onClick={()=>data&&setView('overview')}><span className="brandMark">ID</span><span><strong>Intune Device Inventory</strong><small>Analyzer</small></span></button>
+      <nav className={`mainNav ${!data?'landingNav':''}`}>{nav.map(([id,label])=><button key={id} disabled={!data} className={data&&view===id?'active':''} onClick={()=>{if(data){setView(id);setQuery('')}}}>{label}</button>)}</nav>
+      <div className="topActions landingActions"><span className="localState"><i/>Local only</span><button className="primarySmall" onClick={()=>input.current?.click()}>Open export</button></div>
+      <input ref={input} hidden type="file" accept=".zip,.csv" onChange={e=>open(e.target.files?.[0])}/>
+    </div></header>
+
+    {!data ? <main className="landing landingPro">
+      <section className="hero heroPro">
+        <div className="heroBadge">◇ 100% PRIVATE BY DESIGN</div>
+        <h1>Understand your<br/>Intune device <em>inventory.</em></h1>
+        <p>Open a native Microsoft Intune inventory export and turn raw device data into a clear, interactive overview. Everything is processed locally in your browser.</p>
+        <div className="featureGrid"><Feature icon="◇" title="100% local" text="Your data never leaves this browser"/><Feature icon="▣" title="Private by design" text="No uploads, no servers, no tracking"/><Feature icon="ϟ" title="Fast & secure" text="All processing happens on your device"/><Feature icon="▤" title="Native Intune export" text="Supports ZIP or CSV exports"/></div>
+        <div className="heroActions"><button className="primary landingPrimary" onClick={()=>input.current?.click()} disabled={busy}><span>↥</span>{busy?'Reading export…':'Open Intune export'}</button><span>ZIP or CSV · nothing is uploaded</span></div>
+        {busy&&<div className="loadingState">Reading and normalizing inventory…</div>}{error&&<div className="error">{error}</div>}
+      </section>
+      <section className="drop cleanDrop dropPro" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();open(e.dataTransfer.files[0])}} onClick={()=>input.current?.click()}>
+        <span className="dropIcon dropCloud">↥</span><strong>Drop your Intune export here</strong><small>or click anywhere in this area to browse files</small><span className="dropFormats">ZIP · CSV</span>
+      </section>
+      <section className="trustStrip"><Trust icon="♙" title="Your data stays with you" text="All files are read locally. Nothing is sent anywhere, ever."/><Trust icon="✓" title="Works offline" text="After loading your export, analysis remains local to your browser."/><Trust icon="▱" title="Built for real inventories" text="Designed for large Intune exports with thousands of devices."/></section>
+    </main> : <main className="workspace">
+      <section className="contextBar"><div><span className="contextLabel">CURRENT EXPORT</span><strong>{data.sourceFileName}</strong></div><div className="contextStats"><span><strong>{data.devices.length.toLocaleString()}</strong> devices</span><span><strong>{users.length.toLocaleString()}</strong> users</span><span><strong>{hardware.length.toLocaleString()}</strong> models</span><span><strong>{data.columns.length}</strong> source fields</span></div><button className="ghost" onClick={()=>{setData(null);setSelected(null);setView('overview')}}>Start over</button></section>
+      <section className="pageHead"><div><span className="eyebrow">{view.toUpperCase()}</span><h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view!=='overview'&&view!=='reports'&&<Search value={query} setValue={setQuery}/>}</section>
+      <div className="platformStrip"><button className={!platform?'active':''} onClick={()=>{setPlatform(null);setFilter(null)}}><span>All platforms</span><strong>{data.devices.length.toLocaleString()}</strong></button>{platforms.map(([p,n])=><button key={p} className={platform===p?'active':''} onClick={()=>{setPlatform(platform===p?null:p);setFilter(null)}}><span>{platformLabel[p]}</span><strong>{n.toLocaleString()}</strong></button>)}</div>
+      {(platform||filter)&&<div className="activeFilters"><span>Viewing</span>{platform&&<b>{platformLabel[platform]}</b>}{filter&&<b>{filter.label}: {filter.value}</b>}<span>{scoped.length.toLocaleString()} devices</span><button onClick={()=>{setPlatform(null);setFilter(null)}}>Clear</button></div>}
+      {view==='overview'&&<Overview total={base.length} users={users.length} models={hardware.length} compliant={compliant} compliance={compliance} versions={versions} manufacturers={manufacturers} drill={drill}/>} 
+      {view==='devices'&&<DataCard title="Device inventory" subtitle={`${searched.length.toLocaleString()} matching devices`}><DeviceTable devices={searched} onSelect={setSelected}/></DataCard>}
+      {view==='users'&&<DataCard title="Managed users" subtitle={`${users.length.toLocaleString()} users`}><table><thead><tr><th>User</th><th>Devices</th><th>Platforms</th><th>Compliance</th></tr></thead><tbody>{users.filter(u=>!q||u.name.toLowerCase().includes(q)||u.upn.toLowerCase().includes(q)).slice(0,500).map(u=>{const c=u.devices.filter(d=>d.compliance?.toLowerCase()==='compliant').length;return <tr className="clickRow" key={u.upn||u.name} onClick={()=>drill('user','User',key(u.upn||u.name))}><td><strong>{u.name}</strong><small>{u.upn}</small></td><td>{u.devices.length}</td><td>{countBy(u.devices,d=>platformLabel[d.platform]).map(([p,n])=>`${p} ${n}`).join(' · ')}</td><td>{c}/{u.devices.length}</td></tr>})}</tbody></table></DataCard>}
+      {view==='hardware'&&<DataCard title="Hardware inventory" subtitle={`${hardware.length.toLocaleString()} manufacturer/model combinations`}><table><thead><tr><th>Manufacturer</th><th>Reported model</th><th>Devices</th><th>Platform</th><th>Compliance</th></tr></thead><tbody>{hardware.filter(h=>!q||h.manufacturer.toLowerCase().includes(q)||h.model.toLowerCase().includes(q)).slice(0,500).map(h=>{const c=h.devices.filter(d=>d.compliance?.toLowerCase()==='compliant').length;return <tr className="clickRow" key={h.manufacturer+h.model} onClick={()=>drill('model','Model',h.model)}><td><strong>{h.manufacturer}</strong></td><td>{h.model}</td><td>{h.devices.length}</td><td>{countBy(h.devices,d=>platformLabel[d.platform]).map(([p,n])=>`${p} ${n}`).join(' · ')}</td><td>{c}/{h.devices.length}</td></tr>})}</tbody></table></DataCard>}
+      {view==='updates'&&<><div className="infoBanner"><strong>Raw version inventory</strong><span>Readable release names and update status will be added later through Device Intelligence.</span></div><DataCard title="Operating system versions" subtitle={`${updates.length} distinct platform/version combinations`}><table><thead><tr><th>Platform</th><th>Reported version</th><th>Devices</th><th>Share</th></tr></thead><tbody>{updates.filter(r=>!q||r.version.toLowerCase().includes(q)||platformLabel[r.platform].toLowerCase().includes(q)).slice(0,500).map(r=><tr className="clickRow" key={r.platform+r.version} onClick={()=>drill('osVersion','OS version',r.version)}><td><span className="tag">{platformLabel[r.platform]}</span></td><td><strong>{r.version}</strong></td><td>{r.devices.length}</td><td>{base.length?((r.devices.length/base.length)*100).toFixed(1):'0'}%</td></tr>)}</tbody></table></DataCard></>}
+      {view==='reports'&&<section className="reportsPlaceholder"><div className="reportsIcon">▤</div><h2>Management reports</h2><p>PDF and PowerPoint reporting will be built here using the currently loaded inventory. The report engine will remain fully local in the browser.</p><span>Planned: executive summary · platform overview · compliance · update position · hardware</span></section>}
+    </main>}
+
+    <footer className="siteFooter professionalFooter">
+      <div className="footerBrand"><span className="footerMark">ID</span><div><strong>Intune Device Inventory Analyzer</strong><span>Open-source device inventory analysis for Microsoft Intune.</span></div></div>
+      <div className="footerPrivacy"><strong>Private by design</strong><span>Inventory processing happens locally in your browser. No device or user data is uploaded.</span></div>
+      <div className="footerMeta"><span>Open source</span><span>GitHub Pages</span><strong>v0.1.0</strong></div>
+    </footer>
+    {selected&&<DeviceDetail device={selected} onClose={()=>setSelected(null)}/>} 
+  </div>;
 }
 
 function Feature({icon,title,text}:{icon:string;title:string;text:string}){return <article className="feature"><span>{icon}</span><div><strong>{title}</strong><small>{text}</small></div></article>}
@@ -46,21 +119,6 @@ function Insight({title,subtitle,items,total,onClick}:{title:string;subtitle:str
 function Search({value,setValue}:{value:string;setValue:(v:string)=>void}){return <div className="search"><span>⌕</span><input value={value} onChange={e=>setValue(e.target.value)} placeholder="Search…"/></div>}
 function DataCard({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}){return <section className="dataCard"><div className="dataHead"><div><h2>{title}</h2><p>{subtitle}</p></div></div><div className="tableWrap">{children}</div></section>}
 function DeviceTable({devices,onSelect}:{devices:Device[];onSelect:(d:Device)=>void}){return <table><thead><tr><th>Device</th><th>Platform</th><th>OS version</th><th>Manufacturer / model</th><th>Primary user</th><th>Compliance</th></tr></thead><tbody>{devices.slice(0,500).map(d=><tr className="clickRow" key={d.id} onClick={()=>onSelect(d)}><td><strong>{d.deviceName||'—'}</strong><small>{d.serialNumber}</small></td><td><span className="tag">{platformLabel[d.platform]}</span></td><td>{d.osVersion||'—'}</td><td>{[d.manufacturer,d.model].filter(Boolean).join(' · ')||'—'}</td><td>{d.userDisplayName||d.userUpn||'—'}</td><td>{d.compliance||'—'}</td></tr>)}</tbody></table>}
-
-function DeviceDetail({device,onClose}:{device:Device;onClose:()=>void}){
- const groups=groupRaw(device.raw);
- return <div className="drawerShade" onMouseDown={e=>e.target===e.currentTarget&&onClose()}><aside className="drawer">
-  <div className="drawerTop"><button onClick={onClose}>← Back</button><span className="tag">{platformLabel[device.platform]}</span></div>
-  <section className="drawerHero"><span className="eyebrow">DEVICE DETAIL</span><h2>{device.deviceName||'Unnamed device'}</h2><p>{[device.manufacturer,device.model].filter(Boolean).join(' · ')||'Unknown hardware'} · {device.compliance||'Unknown compliance'}</p></section>
-  <section className="detailCards">
-   <DetailCard title="Identity" rows={[['Device ID',device.id],['Serial number',device.serialNumber],['Primary user',device.userDisplayName],['User UPN',device.userUpn]]}/>
-   <DetailCard title="Operating system" rows={[['Platform',platformLabel[device.platform]],['Source OS',device.sourceOS],['OS version',device.osVersion]]}/>
-   <DetailCard title="Management" rows={[['Managed by',device.managedBy],['Ownership',device.ownership],['Compliance',device.compliance],['Last check-in',device.lastCheckIn]]}/>
-   <DetailCard title="Hardware" rows={[['Manufacturer',device.manufacturer],['Model',device.model]]}/>
-  </section>
-  <div className="rawTitle"><div><h3>Raw Intune data</h3><p>Original values from the imported export.</p></div><span>{Object.keys(device.raw).length} fields</span></div>
-  {Object.entries(groups).map(([name,entries])=><details className="raw" key={name} open={name==='Device & management'}><summary>{name} · {entries.length}</summary><div className="rawGrid">{entries.map(([k,v])=><div key={k}><span>{k}</span><strong>{v||'—'}</strong></div>)}</div></details>)}
- </aside></div>
-}
+function DeviceDetail({device,onClose}:{device:Device;onClose:()=>void}){const groups=groupRaw(device.raw);return <div className="drawerShade" onMouseDown={e=>e.target===e.currentTarget&&onClose()}><aside className="drawer"><div className="drawerTop"><button onClick={onClose}>← Back</button><span className="tag">{platformLabel[device.platform]}</span></div><section className="drawerHero"><span className="eyebrow">DEVICE DETAIL</span><h2>{device.deviceName||'Unnamed device'}</h2><p>{[device.manufacturer,device.model].filter(Boolean).join(' · ')||'Unknown hardware'} · {device.compliance||'Unknown compliance'}</p></section><section className="detailCards"><DetailCard title="Identity" rows={[['Device ID',device.id],['Serial number',device.serialNumber],['Primary user',device.userDisplayName],['User UPN',device.userUpn]]}/><DetailCard title="Operating system" rows={[['Platform',platformLabel[device.platform]],['Source OS',device.sourceOS],['OS version',device.osVersion]]}/><DetailCard title="Management" rows={[['Managed by',device.managedBy],['Ownership',device.ownership],['Compliance',device.compliance],['Last check-in',device.lastCheckIn]]}/><DetailCard title="Hardware" rows={[['Manufacturer',device.manufacturer],['Model',device.model]]}/></section><div className="rawTitle"><div><h3>Raw Intune data</h3><p>Original values from the imported export.</p></div><span>{Object.keys(device.raw).length} fields</span></div>{Object.entries(groups).map(([name,entries])=><details className="raw" key={name} open={name==='Device & management'}><summary>{name} · {entries.length}</summary><div className="rawGrid">{entries.map(([k,v])=><div key={k}><span>{k}</span><strong>{v||'—'}</strong></div>)}</div></details>)}</aside></div>}
 function DetailCard({title,rows}:{title:string;rows:[string,string|null][]}){return <article><h3>{title}</h3>{rows.map(([label,value])=><div key={label}><span>{label}</span><strong>{value||'—'}</strong></div>)}</article>}
 function groupRaw(raw:Record<string,string>){const result:Record<string,[string,string][]>= {'Device & management':[],'User':[],'Hardware':[],'Operating system':[],'Security':[],'Storage & network':[],'Other':[]};for(const entry of Object.entries(raw)){const name=entry[0].toLowerCase();let group='Other';if(/user|email|upn/.test(name))group='User';else if(/manufacturer|model|serial|processor|tpm|bios|architecture|physical|memory/.test(name))group='Hardware';else if(/os|operating|version|build|edition|sku/.test(name))group='Operating system';else if(/compliance|encrypt|secure|defender|firewall|password|threat/.test(name))group='Security';else if(/storage|disk|wifi|wi-fi|ethernet|ip address|mac address|imei|meid|phone|network|subscriber/.test(name))group='Storage & network';else if(/device|managed|management|enroll|ownership|join|check-in|last sync|intune|azure|entra/.test(name))group='Device & management';result[group].push(entry)}return Object.fromEntries(Object.entries(result).filter(([,entries])=>entries.length))}
