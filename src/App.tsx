@@ -6,6 +6,7 @@ import WindowsUpdateHealth from './WindowsUpdateHealth';
 import EncryptionCard, { securityAttention } from './SecurityInsights';
 import DashboardSection from './DashboardSection';
 import LandingContent from './LandingContent';
+import FaqPage from './FaqPage';
 import type { SmartColumn } from './SmartTable';
 import type { Device, ImportResult } from './types';
 
@@ -16,7 +17,7 @@ const formatNumber = (value:number) => value.toLocaleString();
 const daysSince = (value:string|null) => { if(!value) return null; const time=Date.parse(value); return Number.isFinite(time)?(Date.now()-time)/(24*60*60*1000):null };
 const rawValue=(d:Device,pattern:RegExp)=>Object.entries(d.raw).find(([name])=>pattern.test(name))?.[1]?.trim()||'';
 
-type View = 'overview'|'devices'|'users'|'hardware'|'updates'|'reports';
+type View = 'overview'|'devices'|'updates'|'reports'|'faq';
 type Filter = { field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'; label:string; value:string } | null;
 type UserRow={name:string;upn:string;devices:Device[]};
 type HardwareRow={manufacturer:string;model:string;devices:Device[]};
@@ -57,7 +58,6 @@ export default function App(){
   const users=useMemo<UserRow[]>(()=>{const map=new Map<string,UserRow>();for(const d of base){const id=key(d.userUpn||d.userDisplayName);if(id==='Unknown')continue;const item=map.get(id)??{name:d.userDisplayName||id,upn:d.userUpn||'',devices:[]};item.devices.push(d);map.set(id,item)}return[...map.values()].sort((a,b)=>b.devices.length-a.devices.length)},[base]);
   const hardware=useMemo<HardwareRow[]>(()=>{const map=new Map<string,HardwareRow>();for(const d of base){const manufacturer=key(d.manufacturer),model=key(d.model),id=manufacturer+'|'+model;const item=map.get(id)??{manufacturer,model,devices:[]};item.devices.push(d);map.set(id,item)}return[...map.values()].sort((a,b)=>b.devices.length-a.devices.length)},[base]);
   const updates=useMemo<UpdateRow[]>(()=>{const map=new Map<string,UpdateRow>();for(const d of base){const version=key(d.osVersion),id=d.platform+'|'+version;const item=map.get(id)??{platform:d.platform,version,devices:[]};item.devices.push(d);map.set(id,item)}return[...map.values()].sort((a,b)=>b.devices.length-a.devices.length)},[base]);
-
   const filteredUpdates=updates.filter(r=>!q||r.version.toLowerCase().includes(q)||(platformLabel[r.platform]||r.platform).toLowerCase().includes(q));
 
   const deviceColumns:SmartColumn<Device>[]=[
@@ -76,19 +76,25 @@ export default function App(){
     {key:'share',label:'Share',value:r=>base.length?r.devices.length/base.length*100:0,numeric:true,render:r=>`${base.length?(r.devices.length/base.length*100).toFixed(1):'0'}%`}
   ];
 
-  const nav:[View,string][]=[['overview','Overview'],['devices','Devices'],['updates','Updates'],['reports','Reports']];
-  const pageTitle=view==='overview'?'Inventory dashboard':view==='devices'?'Devices':view==='updates'?'Updates':'Reports';
+  const nav:[View,string][]=[['overview','Overview'],['devices','Devices'],['updates','Updates'],['reports','Reports'],['faq','FAQ']];
+  const pageTitle=view==='overview'?'Inventory dashboard':view==='devices'?'Devices':view==='updates'?'Updates':view==='reports'?'Reports':'FAQ';
   const pageDescription=view==='overview'?'Health, composition and attention points from the current Intune inventory.':view==='devices'?'Search and inspect every device in the imported inventory.':view==='updates'?'Update health and operating system versions enriched with Device Intelligence.':'Prepare management-ready exports and summaries from the current inventory.';
 
   return <div className="app">
     <header className="topbar"><div className="topbarInner">
-      <button className="brand" onClick={()=>data&&setView('overview')}><span className="brandMark">ID</span><span><strong>Intune Device Inventory</strong><small>Analyzer</small></span></button>
-      <nav className={`mainNav ${!data?'landingNav':''}`}>{nav.map(([id,label])=><button key={id} disabled={!data} className={data&&view===id?'active':''} onClick={()=>{if(data){setView(id);setQuery('')}}}>{label}</button>)}</nav>
+      <button className="brand" onClick={()=>setView('overview')}><span className="brandMark">ID</span><span><strong>Intune Device Inventory</strong><small>Analyzer</small></span></button>
+      <nav className={`mainNav ${!data?'publicNav':''}`}>
+        {nav.map(([id,label])=>{
+          if(!data && id!=='faq') return null;
+          return <button key={id} className={view===id?'active':''} onClick={()=>{setView(id);setQuery('');window.scrollTo({top:0,behavior:'smooth'})}}>{label}</button>;
+        })}
+        {!data&&<a className="navExternal" href="https://github.com/roryvossepoel/Intune-Device-Inventory-Analyzer" target="_blank" rel="noreferrer">GitHub ↗</a>}
+      </nav>
       <div className="topActions landingActions">{data&&<button className="primarySmall" onClick={()=>input.current?.click()}>Open export</button>}</div>
       <input ref={input} hidden type="file" accept=".zip,.csv" onChange={e=>open(e.target.files?.[0])}/>
     </div></header>
 
-    {!data?<main className="landing landingPro">
+    {view==='faq'?<FaqPage/>:!data?<main className="landing landingPro">
       <section className="hero heroPro"><div className="heroBadge">◇ 100% PRIVATE BY DESIGN</div><h1>Understand your<br/>Intune device <em>inventory.</em></h1><p>Open a native Microsoft Intune inventory export and turn raw device data into a clear, interactive overview. Everything is processed locally in your browser.</p><div className="featureGrid"><Feature icon="◇" title="100% local" text="Your data never leaves this browser"/><Feature icon="▣" title="Private by design" text="No uploads, no servers, no tracking"/><Feature icon="ϟ" title="Fast & secure" text="All processing happens on your device"/><Feature icon="▤" title="Native Intune export" text="Supports ZIP or CSV exports"/></div>{busy&&<div className="loadingState">Reading and normalizing inventory…</div>}{error&&<div className="error">{error}</div>}</section>
       <section className="drop cleanDrop dropPro" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();open(e.dataTransfer.files[0])}} onClick={()=>input.current?.click()}><span className="dropIcon dropCloud">↥</span><strong>Drop your Intune export here</strong><small>or click anywhere in this area to browse files</small><span className="dropFormats">ZIP · CSV</span></section>
       <section className="trustStrip"><Trust icon="♙" title="Your data stays with you" text="All files are read locally. Nothing is sent anywhere, ever."/><Trust icon="✓" title="Works offline" text="After loading your export, analysis remains local to your browser."/><Trust icon="▱" title="Built for real inventories" text="Designed for large Intune exports with thousands of devices."/></section>
@@ -103,7 +109,7 @@ export default function App(){
       {view==='reports'&&<section className="reportsPlaceholder"><div className="reportsIcon">▤</div><h2>Management reports</h2><p>PDF and PowerPoint reporting will be built here using the currently loaded inventory. The report engine will remain fully local in the browser.</p><span>Planned: executive summary · platform overview · compliance · update position · hardware</span></section>}
     </main>}
 
-    <footer className="siteFooter professionalFooter"><div className="footerBrand"><span className="footerMark">ID</span><div><strong>Intune Device Inventory Analyzer</strong><span>Open-source device inventory analysis for Microsoft Intune.</span></div></div><div className="footerPrivacy"><strong>Private by design</strong><span>Inventory processing happens locally in your browser. No device or user data is uploaded or stored.</span></div><div className="footerMeta"><a href="https://github.com/roryvossepoel/Intune-Device-Inventory-Analyzer" target="_blank" rel="noreferrer">GitHub</a>{!data&&<a href="#faq">FAQ</a>}<strong>v0.1.0</strong></div></footer>
+    <footer className="siteFooter professionalFooter"><div className="footerBrand"><span className="footerMark">ID</span><div><strong>Intune Device Inventory Analyzer</strong><span>Open-source device inventory analysis for Microsoft Intune.</span></div></div><div className="footerPrivacy"><strong>Private by design</strong><span>Inventory processing happens locally in your browser. No device or user data is uploaded or stored.</span></div><div className="footerMeta"><a href="https://github.com/roryvossepoel/Intune-Device-Inventory-Analyzer" target="_blank" rel="noreferrer">GitHub</a><button onClick={()=>{setView('faq');window.scrollTo({top:0,behavior:'smooth'})}}>FAQ</button><strong>v0.1.0</strong></div></footer>
     {selected&&<DeviceDetail device={selected} onClose={()=>setSelected(null)}/>} 
   </div>;
 }
