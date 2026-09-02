@@ -52,7 +52,7 @@ export function getWindowsIntelligence(version:string|null):WindowsIntelligence|
   let updateHealth:WindowsUpdateHealth='unknown';
   if(release.status==='edition-dependent') updateHealth='edition-review';
   else if(revision!==null && currentRevisions.includes(revision)) updateHealth='current';
-  else if(revision!==null && currentRevisions.length) updateHealth='behind';
+  else if(revision!==null && currentRevisions.length && revision < Math.max(...currentRevisions)) updateHealth='behind';
   return {rawVersion:version,release,releaseName:release.displayName,build,revision,latestBuild:release.latestBuild,updateHealth,servicing:release.status};
 }
 
