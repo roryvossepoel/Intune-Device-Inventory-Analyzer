@@ -1,38 +1,68 @@
 import type { PlatformFamily } from './types';
+import windowsData from './generated/windows-builds.json';
 
-type WindowsRelease = {
-  build: number;
+export type WindowsRelease = {
+  product: string;
   version: string;
   displayName: string;
-  status: 'supported' | 'edition-dependent';
+  build: number;
+  availabilityDate: string;
+  endOfUpdatesHomePro: string;
+  endOfUpdatesEnterpriseEducation: string;
   latestBuild: string;
+  latestHotpatchBuild?: string;
+  status: 'supported' | 'edition-dependent';
+  deployment: string;
 };
 
-const windowsReleases: WindowsRelease[] = [
-  { build: 28000, version: '26H1', displayName: 'Windows 11, version 26H1', status: 'supported', latestBuild: '28000.2704' },
-  { build: 26200, version: '25H2', displayName: 'Windows 11, version 25H2', status: 'supported', latestBuild: '26200.9168' },
-  { build: 26100, version: '24H2', displayName: 'Windows 11, version 24H2', status: 'supported', latestBuild: '26100.9168' },
-  { build: 22631, version: '23H2', displayName: 'Windows 11, version 23H2', status: 'edition-dependent', latestBuild: '22631.7517' },
-];
+export type WindowsUpdateHealth = 'current' | 'behind' | 'edition-review' | 'unknown';
+export type WindowsIntelligence = {
+  rawVersion: string;
+  release: WindowsRelease | null;
+  releaseName: string;
+  build: number | null;
+  revision: number | null;
+  latestBuild: string | null;
+  updateHealth: WindowsUpdateHealth;
+  servicing: 'supported' | 'edition-dependent' | 'unknown';
+};
 
-export function describeOsVersion(platform: PlatformFamily, rawVersion: string | null): string | null {
-  if (!rawVersion) return null;
-  if (platform !== 'windows') return rawVersion;
+const windowsReleases = windowsData.records as WindowsRelease[];
 
-  const parts = rawVersion.trim().split('.');
-  const build = Number(parts.length >= 3 ? parts[2] : parts[0]);
-  if (!Number.isFinite(build)) return rawVersion;
-
-  const release = windowsReleases.find(item => item.build === build);
-  if (!release) return rawVersion;
-
-  return `${release.displayName} · build ${rawVersion}`;
+function parseBuild(version:string){
+  const match=version.match(/(?:^|build\s+)(?:10\.0\.)?(\d{5})(?:\.(\d+))?/i) || version.match(/10\.0\.(\d{5})\.(\d+)/);
+  if(!match) return {build:null,revision:null};
+  return {build:Number(match[1]),revision:match[2]?Number(match[2]):null};
 }
 
-export function getWindowsRelease(rawVersion: string | null): WindowsRelease | null {
-  if (!rawVersion) return null;
-  const parts = rawVersion.trim().split('.');
-  const build = Number(parts.length >= 3 ? parts[2] : parts[0]);
-  if (!Number.isFinite(build)) return null;
-  return windowsReleases.find(item => item.build === build) ?? null;
+function revisionOf(version:string|undefined){
+  if(!version)return null;
+  const parts=version.split('.');
+  const value=Number(parts[parts.length-1]);
+  return Number.isFinite(value)?value:null;
+}
+
+export function getWindowsIntelligence(version:string|null):WindowsIntelligence|null{
+  if(!version)return null;
+  const {build,revision}=parseBuild(version);
+  if(!build) return {rawVersion:version,release:null,releaseName:version,build:null,revision:null,latestBuild:null,updateHealth:'unknown',servicing:'unknown'};
+  const release=windowsReleases.find(r=>r.build===build)??null;
+  if(!release) return {rawVersion:version,release:null,releaseName:version,build,revision,latestBuild:null,updateHealth:'unknown',servicing:'unknown'};
+  const currentRevisions=[revisionOf(release.latestBuild),revisionOf(release.latestHotpatchBuild)].filter((n):n is number=>n!==null);
+  let updateHealth:WindowsUpdateHealth='unknown';
+  if(release.status==='edition-dependent') updateHealth='edition-review';
+  else if(revision!==null && currentRevisions.includes(revision)) updateHealth='current';
+  else if(revision!==null && currentRevisions.length) updateHealth='behind';
+  return {rawVersion:version,release,releaseName:release.displayName,build,revision,latestBuild:release.latestBuild,updateHealth,servicing:release.status};
+}
+
+export function describeOsVersion(platform:PlatformFamily,rawVersion:string|null):string|null{
+  if(!rawVersion)return null;
+  if(platform!=='windows')return rawVersion;
+  const info=getWindowsIntelligence(rawVersion);
+  return info?.release ? `${info.release.displayName} · build ${rawVersion}` : rawVersion;
+}
+
+export function getWindowsRelease(version:string|null):WindowsRelease|null{
+  return getWindowsIntelligence(version)?.release??null;
 }
