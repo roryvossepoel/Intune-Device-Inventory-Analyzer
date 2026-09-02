@@ -11,6 +11,7 @@ import './table.css';
 import './typography.css';
 import './extended-insights.css';
 import './dashboard-cleanup.css';
+import './update-health.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
