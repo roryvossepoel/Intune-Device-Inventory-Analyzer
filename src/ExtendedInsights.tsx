@@ -41,11 +41,12 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
   const total=devices.length;
   const ownership=countValues(devices.map(d=>clean(d.ownership)));
   const types=countValues(devices.map(hardwareType));
+  const manufacturerCounts=countValues(devices.map(d=>clean(d.manufacturer))).filter(([name])=>name!=='Unknown');
+  const modelCounts=countValues(devices.map(d=>clean(d.model)).filter(v=>v!=='Unknown'));
 
   const byPlatform=Object.entries(devices.reduce<Record<string,Device[]>>((a,d)=>{(a[d.platform]??=[]).push(d);return a},{})).sort((a,b)=>b[1].length-a[1].length);
   const fragmentation=byPlatform.map(([platform,list])=>{const versions=countValues(list.map(d=>clean(d.osVersion)));const top=versions[0];return{platform,devices:list.length,versions:versions.length,topVersion:top?.[0]||'Unknown',topCount:top?.[1]||0}});
 
-  const modelCounts=countValues(devices.map(d=>clean(d.model)).filter(v=>v!=='Unknown'));
   const top10=modelCounts.slice(0,10).reduce((s,[,n])=>s+n,0);
   const singletonModels=modelCounts.filter(([,n])=>n===1).length;
 
@@ -60,14 +61,14 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
   const missingSerial=total-serials.length;
   const unknownPlatform=devices.filter(d=>d.platform==='unknown').length;
 
-  const activityRows:[string,number][]=[
+  const activity: [string,number][]=[
     ['0–7 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age<=7}).length],
     ['8–30 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>7&&age<=30}).length],
     ['31–90 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>30&&age<=90}).length],
     ['>90 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>90}).length],
     ['Unknown',devices.filter(d=>daysSince(d.lastCheckIn)===null).length]
   ];
-  const activity=activityRows.filter(([,n])=>n>0);
+  const visibleActivity=activity.filter((row):row is [string,number]=>row[1]>0);
 
   return <section className="extendedInsightGrid">
     <InsightCard title="Hardware type" subtitle="Form factor inferred from explicit inventory and trusted model cues">
@@ -96,12 +97,20 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
     </InsightCard>
 
     <InsightCard title="Activity distribution" subtitle="Recency of the most recent reported Intune check-in">
-      <div className="activityBars">{activity.map(([label,n])=><div key={label}><div><span>{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small></div><i><b style={{width:pct(n,total)}}/></i></div>)}</div>
+      <div className="activityBars">{visibleActivity.map(([label,n])=><div key={label}><div><span>{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small></div><i><b style={{width:pct(n,total)}}/></i></div>)}</div>
+    </InsightCard>
+
+    <InsightCard title="Hardware manufacturers" subtitle="Largest hardware vendors in the current view">
+      <Distribution rows={manufacturerCounts.slice(0,7)} total={total}/>
+    </InsightCard>
+
+    <InsightCard title="Hardware models" subtitle="Most common reported models in the current view">
+      <Distribution rows={modelCounts.slice(0,7)} total={total}/>
     </InsightCard>
   </section>
 }
 
 function InsightCard({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}){return <article className="dashboardCard extendedInsightCard"><header className="dashboardCardHead"><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
-function Distribution({rows,total}:{rows:[string,number][];total:number}){return <div className="distributionList">{rows.filter(([,n])=>n>0).slice(0,7).map(([label,n],i)=><div key={label}><span className={`distributionDot dot${i%6}`}/><span className="truncate">{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small><i><b style={{width:pct(n,total)}}/></i></div>)}</div>}
+function Distribution({rows,total}:{rows:[string,number][];total:number}){return <div className="distributionList">{rows.filter(([,n])=>n>0).slice(0,7).map(([label,n],i)=><div key={label}><span className={`distributionDot dot${i%6}`}/><span className="truncate" title={label}>{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small><i><b style={{width:pct(n,total)}}/></i></div>)}</div>}
 function Metric({label,value}:{label:string;value:string}){return <div className="metricTile"><span>{label}</span><strong>{value}</strong></div>}
 function Anomaly({label,value}:{label:string;value:number}){return <div className={value?'anomaly hasValue':'anomaly'}><span>{label}</span><strong>{fmt(value)}</strong></div>}
