@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { importInventory } from './importer';
 import SmartTable from './SmartTable';
+import ExtendedInsights from './ExtendedInsights';
 import type { SmartColumn } from './SmartTable';
 import type { Device, ImportResult } from './types';
 
@@ -144,6 +145,7 @@ function Overview({devices,allDevices,total,users,models,compliant,noncompliant,
       <DashboardCard title="Check-in age" subtitle="How long stale devices have been inactive" className="checkinCard"><div className="staleBuckets">{staleBuckets.map(item=><div key={item.label} className={`staleBucket ${item.tone}`}><span>{item.label}</span><strong>{formatNumber(item.count)}</strong><small>{total?(item.count/total*100).toFixed(1):'0'}% of inventory</small></div>)}</div><div className="checkinSummary"><span>Active within 30 days</span><strong>{formatNumber(Math.max(0,total-stale))}</strong><small>{total?((total-stale)/total*100).toFixed(1):'0'}%</small></div></DashboardCard>
       <DashboardCard title="Inventory quality" subtitle="Completeness of key exported fields" className="qualityCard"><div className="qualityScore"><strong>{total?((completeModel+completeSerial+withUser)/(total*3)*100).toFixed(1):'100'}%</strong><span>field completeness</span></div><div className="qualityList">{qualityChecks.map(item=>{const pct=item.total?item.complete/item.total*100:100;return <div key={item.label}><div><span>{item.label}</span><strong>{pct.toFixed(1)}%</strong></div><i><b style={{width:`${pct}%`}}/></i><small>{formatNumber(item.total-item.complete)} missing</small></div>})}</div><p className="qualityNote">Missing primary users can be expected for shared, kiosk or self-deploying devices.</p></DashboardCard>
     </section>
+    <ExtendedInsights devices={devices}/>
     <section className="dashboardLowerGrid">
       <DashboardCard title="OS landscape" subtitle="Most common reported versions, grouped by platform" className="osDashboardCard"><div className="osPlatformGrid">{osGroups.slice(0,5).map(([p,list])=>{const versions=countBy(list,d=>key(d.osVersion)).slice(0,3);return <article key={p}><header><span>{platformLabel[p]||p}</span><strong>{formatNumber(list.length)}</strong></header>{versions.map(([v,n])=><button key={v} onClick={()=>drill('osVersion','OS version',v)}><div><span>{v}</span><strong>{formatNumber(n)}</strong></div><i><b style={{width:`${list.length?n/list.length*100:0}%`}}/></i></button>)}</article>})}</div></DashboardCard>
       <DashboardCard title="Hardware manufacturers" subtitle="Largest hardware vendors in the current view" className="hardwareDashboardCard"><div className="dashboardBars">{manufacturers.slice(0,7).map(([v,n])=><button key={v} onClick={()=>drill('manufacturer','Manufacturer',v)}><div><span>{v}</span><strong>{formatNumber(n)}</strong></div><i><b style={{width:`${total?n/total*100:0}%`}}/></i><small>{total?(n/total*100).toFixed(1):0}%</small></button>)}</div></DashboardCard>
