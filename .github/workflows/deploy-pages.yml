@@ -29,6 +29,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Sync Device Intelligence
+        env:
+          DEVICE_INTELLIGENCE_TOKEN: ${{ secrets.DEVICE_INTELLIGENCE_TOKEN }}
+        run: node scripts/sync-device-intelligence.mjs
+
       - name: Build
         run: npm run build
 
