@@ -5,6 +5,7 @@ import type { Device, ImportResult } from './types';
 const platformLabel: Record<string,string> = { windows:'Windows', android:'Android', ios:'iOS', ipados:'iPadOS', macos:'macOS', linux:'Linux', unknown:'Unknown' };
 const key = (v:string|null) => v?.trim() || 'Unknown';
 const countBy = (devices:Device[], selector:(d:Device)=>string) => Object.entries(devices.reduce<Record<string,number>>((acc,d)=>{ const k=selector(d); acc[k]=(acc[k]??0)+1; return acc; },{})).sort((a,b)=>b[1]-a[1]);
+const formatNumber = (value:number) => value.toLocaleString();
 
 type View = 'overview'|'devices'|'users'|'hardware'|'updates'|'reports';
 type Filter = { field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'; label:string; value:string } | null;
@@ -48,6 +49,16 @@ export default function App(){
   const versions = useMemo(()=>countBy(base,d=>key(d.osVersion)),[base]);
   const manufacturers = useMemo(()=>countBy(base,d=>key(d.manufacturer)),[base]);
   const compliant = compliance.find(([v])=>v.toLowerCase()==='compliant')?.[1] ?? 0;
+  const noncompliant = compliance.find(([v])=>v.toLowerCase()==='noncompliant')?.[1] ?? 0;
+  const grace = compliance.find(([v])=>v.toLowerCase()==='ingraceperiod')?.[1] ?? 0;
+  const stale = useMemo(()=>base.filter(d=>{
+    if(!d.lastCheckIn) return false;
+    const time=Date.parse(d.lastCheckIn);
+    return Number.isFinite(time) && Date.now()-time > 30*24*60*60*1000;
+  }).length,[base]);
+  const unknownModels = useMemo(()=>base.filter(d=>!d.model || d.model.trim()==='' || d.model.toLowerCase()==='unknown').length,[base]);
+  const noUser = useMemo(()=>base.filter(d=>!d.userUpn && !d.userDisplayName).length,[base]);
+
   const users = useMemo(()=>{
     const map = new Map<string,{name:string;upn:string;devices:Device[]}>();
     for(const d of base){ const id=key(d.userUpn||d.userDisplayName); if(id==='Unknown') continue; const item=map.get(id)??{name:d.userDisplayName||id,upn:d.userUpn||'',devices:[]}; item.devices.push(d); map.set(id,item); }
@@ -65,8 +76,8 @@ export default function App(){
   },[base]);
 
   const nav:[View,string][] = [['overview','Overview'],['devices','Devices'],['users','Users'],['hardware','Hardware'],['updates','Updates'],['reports','Reports']];
-  const pageTitle = view==='overview'?'Inventory overview':view==='devices'?'Devices':view==='users'?'Users':view==='hardware'?'Hardware':view==='updates'?'Updates':'Reports';
-  const pageDescription = view==='overview'?'A clear view of the devices, platforms and health of this Intune export.':view==='devices'?'Search and inspect every device in the imported inventory.':view==='users'?'See which users have managed devices and drill into their inventory.':view==='hardware'?'Explore manufacturers and reported hardware models.':view==='updates'?'Explore the operating system versions reported by Intune.':'Prepare management-ready exports and summaries from the current inventory.';
+  const pageTitle = view==='overview'?'Inventory dashboard':view==='devices'?'Devices':view==='users'?'Users':view==='hardware'?'Hardware':view==='updates'?'Updates':'Reports';
+  const pageDescription = view==='overview'?'Health, composition and attention points from the current Intune inventory.':view==='devices'?'Search and inspect every device in the imported inventory.':view==='users'?'See which users have managed devices and drill into their inventory.':view==='hardware'?'Explore manufacturers and reported hardware models.':view==='updates'?'Explore the operating system versions reported by Intune.':'Prepare management-ready exports and summaries from the current inventory.';
 
   return <div className="app">
     <header className="topbar"><div className="topbarInner">
@@ -82,19 +93,17 @@ export default function App(){
         <h1>Understand your<br/>Intune device <em>inventory.</em></h1>
         <p>Open a native Microsoft Intune inventory export and turn raw device data into a clear, interactive overview. Everything is processed locally in your browser.</p>
         <div className="featureGrid"><Feature icon="◇" title="100% local" text="Your data never leaves this browser"/><Feature icon="▣" title="Private by design" text="No uploads, no servers, no tracking"/><Feature icon="ϟ" title="Fast & secure" text="All processing happens on your device"/><Feature icon="▤" title="Native Intune export" text="Supports ZIP or CSV exports"/></div>
-        <div className="heroActions"><button className="primary landingPrimary" onClick={()=>input.current?.click()} disabled={busy}><span>↥</span>{busy?'Reading export…':'Open Intune export'}</button><span>ZIP or CSV · nothing is uploaded</span></div>
         {busy&&<div className="loadingState">Reading and normalizing inventory…</div>}{error&&<div className="error">{error}</div>}
       </section>
       <section className="drop cleanDrop dropPro" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();open(e.dataTransfer.files[0])}} onClick={()=>input.current?.click()}>
         <span className="dropIcon dropCloud">↥</span><strong>Drop your Intune export here</strong><small>or click anywhere in this area to browse files</small><span className="dropFormats">ZIP · CSV</span>
       </section>
       <section className="trustStrip"><Trust icon="♙" title="Your data stays with you" text="All files are read locally. Nothing is sent anywhere, ever."/><Trust icon="✓" title="Works offline" text="After loading your export, analysis remains local to your browser."/><Trust icon="▱" title="Built for real inventories" text="Designed for large Intune exports with thousands of devices."/></section>
-    </main> : <main className="workspace">
-      <section className="contextBar"><div><span className="contextLabel">CURRENT EXPORT</span><strong>{data.sourceFileName}</strong></div><div className="contextStats"><span><strong>{data.devices.length.toLocaleString()}</strong> devices</span><span><strong>{users.length.toLocaleString()}</strong> users</span><span><strong>{hardware.length.toLocaleString()}</strong> models</span><span><strong>{data.columns.length}</strong> source fields</span></div><button className="ghost" onClick={()=>{setData(null);setSelected(null);setView('overview')}}>Start over</button></section>
-      <section className="pageHead"><div><span className="eyebrow">{view.toUpperCase()}</span><h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view!=='overview'&&view!=='reports'&&<Search value={query} setValue={setQuery}/>}</section>
-      <div className="platformStrip"><button className={!platform?'active':''} onClick={()=>{setPlatform(null);setFilter(null)}}><span>All platforms</span><strong>{data.devices.length.toLocaleString()}</strong></button>{platforms.map(([p,n])=><button key={p} className={platform===p?'active':''} onClick={()=>{setPlatform(platform===p?null:p);setFilter(null)}}><span>{platformLabel[p]}</span><strong>{n.toLocaleString()}</strong></button>)}</div>
-      {(platform||filter)&&<div className="activeFilters"><span>Viewing</span>{platform&&<b>{platformLabel[platform]}</b>}{filter&&<b>{filter.label}: {filter.value}</b>}<span>{scoped.length.toLocaleString()} devices</span><button onClick={()=>{setPlatform(null);setFilter(null)}}>Clear</button></div>}
-      {view==='overview'&&<Overview total={base.length} users={users.length} models={hardware.length} compliant={compliant} compliance={compliance} versions={versions} manufacturers={manufacturers} drill={drill}/>} 
+    </main> : <main className="workspace dashboardWorkspace">
+      <section className="pageHead dashboardHead"><div><span className="eyebrow">{view.toUpperCase()}</span><h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view==='overview'?<PlatformSelect value={platform} platforms={platforms} onChange={p=>{setPlatform(p);setFilter(null)}}/>:view!=='reports'?<Search value={query} setValue={setQuery}/>:null}</section>
+      {view!=='overview'&&<div className="platformStrip"><button className={!platform?'active':''} onClick={()=>{setPlatform(null);setFilter(null)}}><span>All platforms</span><strong>{data.devices.length.toLocaleString()}</strong></button>{platforms.map(([p,n])=><button key={p} className={platform===p?'active':''} onClick={()=>{setPlatform(platform===p?null:p);setFilter(null)}}><span>{platformLabel[p]}</span><strong>{n.toLocaleString()}</strong></button>)}</div>}
+      {(platform||filter)&&view!=='overview'&&<div className="activeFilters"><span>Viewing</span>{platform&&<b>{platformLabel[platform]}</b>}{filter&&<b>{filter.label}: {filter.value}</b>}<span>{scoped.length.toLocaleString()} devices</span><button onClick={()=>{setPlatform(null);setFilter(null)}}>Clear</button></div>}
+      {view==='overview'&&<Overview devices={base} allDevices={data.devices} total={base.length} users={users.length} models={hardware.length} compliant={compliant} noncompliant={noncompliant} grace={grace} stale={stale} unknownModels={unknownModels} noUser={noUser} compliance={compliance} manufacturers={manufacturers} platforms={platforms} platform={platform} onPlatform={setPlatform} drill={drill}/>} 
       {view==='devices'&&<DataCard title="Device inventory" subtitle={`${searched.length.toLocaleString()} matching devices`}><DeviceTable devices={searched} onSelect={setSelected}/></DataCard>}
       {view==='users'&&<DataCard title="Managed users" subtitle={`${users.length.toLocaleString()} users`}><table><thead><tr><th>User</th><th>Devices</th><th>Platforms</th><th>Compliance</th></tr></thead><tbody>{users.filter(u=>!q||u.name.toLowerCase().includes(q)||u.upn.toLowerCase().includes(q)).slice(0,500).map(u=>{const c=u.devices.filter(d=>d.compliance?.toLowerCase()==='compliant').length;return <tr className="clickRow" key={u.upn||u.name} onClick={()=>drill('user','User',key(u.upn||u.name))}><td><strong>{u.name}</strong><small>{u.upn}</small></td><td>{u.devices.length}</td><td>{countBy(u.devices,d=>platformLabel[d.platform]).map(([p,n])=>`${p} ${n}`).join(' · ')}</td><td>{c}/{u.devices.length}</td></tr>})}</tbody></table></DataCard>}
       {view==='hardware'&&<DataCard title="Hardware inventory" subtitle={`${hardware.length.toLocaleString()} manufacturer/model combinations`}><table><thead><tr><th>Manufacturer</th><th>Reported model</th><th>Devices</th><th>Platform</th><th>Compliance</th></tr></thead><tbody>{hardware.filter(h=>!q||h.manufacturer.toLowerCase().includes(q)||h.model.toLowerCase().includes(q)).slice(0,500).map(h=>{const c=h.devices.filter(d=>d.compliance?.toLowerCase()==='compliant').length;return <tr className="clickRow" key={h.manufacturer+h.model} onClick={()=>drill('model','Model',h.model)}><td><strong>{h.manufacturer}</strong></td><td>{h.model}</td><td>{h.devices.length}</td><td>{countBy(h.devices,d=>platformLabel[d.platform]).map(([p,n])=>`${p} ${n}`).join(' · ')}</td><td>{c}/{h.devices.length}</td></tr>})}</tbody></table></DataCard>}
@@ -113,9 +122,59 @@ export default function App(){
 
 function Feature({icon,title,text}:{icon:string;title:string;text:string}){return <article className="feature"><span>{icon}</span><div><strong>{title}</strong><small>{text}</small></div></article>}
 function Trust({icon,title,text}:{icon:string;title:string;text:string}){return <article className="trustItem"><span>{icon}</span><div><strong>{title}</strong><small>{text}</small></div></article>}
-function Overview({total,users,models,compliant,compliance,versions,manufacturers,drill}:{total:number;users:number;models:number;compliant:number;compliance:[string,number][];versions:[string,number][];manufacturers:[string,number][];drill:(f:NonNullable<Filter>['field'],l:string,v:string)=>void}){return <><section className="kpis"><Kpi label="Devices" value={total}/><Kpi label="Users" value={users}/><Kpi label="Compliance" value={`${total?((compliant/total)*100).toFixed(1):0}%`} note={`${compliant.toLocaleString()} compliant`}/><Kpi label="Hardware models" value={models}/></section><section className="overviewGrid"><Insight title="Compliance" subtitle="Device compliance state" items={compliance.slice(0,6)} total={total} onClick={v=>drill('compliance','Compliance',v)}/><Insight title="OS landscape" subtitle="Most reported OS versions" items={versions.slice(0,7)} total={total} onClick={v=>drill('osVersion','OS version',v)}/><Insight title="Hardware landscape" subtitle="Largest manufacturers" items={manufacturers.slice(0,7)} total={total} onClick={v=>drill('manufacturer','Manufacturer',v)}/><article className="privacyCard"><span className="privacyIcon">✓</span><h2>Processed locally</h2><p>The selected Intune export stays on this device. The analyzer does not upload inventory or user information to a backend.</p><small>Safe for sensitive inventory exports</small></article></section></>}
-function Kpi({label,value,note}:{label:string;value:string|number;note?:string}){return <article><span>{label}</span><strong>{typeof value==='number'?value.toLocaleString():value}</strong><small>{note||'From current export'}</small></article>}
-function Insight({title,subtitle,items,total,onClick}:{title:string;subtitle:string;items:[string,number][];total:number;onClick:(v:string)=>void}){return <article className="insight"><div className="cardTitle"><h2>{title}</h2><p>{subtitle}</p></div><div className="rankList">{items.map(([v,n])=><button key={v} onClick={()=>onClick(v)}><div><span>{v}</span><strong>{n.toLocaleString()}</strong></div><i><b style={{width:`${total?n/total*100:0}%`}}/></i></button>)}</div></article>}
+
+function PlatformSelect({value,platforms,onChange}:{value:string|null;platforms:[string,number][];onChange:(value:string|null)=>void}){return <label className="platformSelect"><span>Platform</span><select value={value||''} onChange={e=>onChange(e.target.value||null)}><option value="">All platforms</option>{platforms.map(([p,n])=><option key={p} value={p}>{platformLabel[p]} · {formatNumber(n)}</option>)}</select></label>}
+
+function Overview({devices,allDevices,total,users,models,compliant,noncompliant,grace,stale,unknownModels,noUser,compliance,manufacturers,platforms,platform,onPlatform,drill}:{devices:Device[];allDevices:Device[];total:number;users:number;models:number;compliant:number;noncompliant:number;grace:number;stale:number;unknownModels:number;noUser:number;compliance:[string,number][];manufacturers:[string,number][];platforms:[string,number][];platform:string|null;onPlatform:(p:string|null)=>void;drill:(f:NonNullable<Filter>['field'],l:string,v:string)=>void}){
+  const compliancePct=total?compliant/total*100:0;
+  const osGroups=Object.entries(devices.reduce<Record<string,Device[]>>((acc,d)=>{(acc[d.platform]??=[]).push(d);return acc},{})).sort((a,b)=>b[1].length-a[1].length);
+  return <div className="inventoryDashboard">
+    <section className="healthKpis">
+      <HealthKpi icon="devices" label="Devices" value={formatNumber(total)} note={platform?`${platformLabel[platform]} inventory`:'Managed inventory'} tone="blue"/>
+      <HealthKpi icon="users" label="Users" value={formatNumber(users)} note={`${total?((users/total)*100).toFixed(0):0}% user/device ratio`} tone="neutral"/>
+      <HealthKpi icon="shield" label="Compliance" value={`${compliancePct.toFixed(1)}%`} note={`${formatNumber(compliant)} compliant`} tone={compliancePct>=90?'good':compliancePct>=75?'warn':'bad'}/>
+      <HealthKpi icon="clock" label="Stale > 30 days" value={formatNumber(stale)} note={stale?'Needs review':'No stale check-ins'} tone={stale?'warn':'good'}/>
+    </section>
+
+    <section className="dashboardMainGrid">
+      <DashboardCard title="Platform distribution" subtitle="Device mix across the imported inventory" className="platformCard">
+        <Donut total={allDevices.length} items={platforms} centerLabel={formatNumber(allDevices.length)} centerSub="devices"/>
+        <div className="legendList">{platforms.map(([p,n],i)=><button key={p} className={platform===p?'selected':''} onClick={()=>onPlatform(platform===p?null:p)}><i className={`legendDot dot${i%6}`}/><span>{platformLabel[p]||p}</span><strong>{formatNumber(n)}</strong><small>{allDevices.length?(n/allDevices.length*100).toFixed(1):0}%</small></button>)}</div>
+      </DashboardCard>
+
+      <DashboardCard title="Compliance status" subtitle="Current device compliance state" className="complianceCard">
+        <Donut total={total} items={compliance} centerLabel={`${compliancePct.toFixed(1)}%`} centerSub="compliant"/>
+        <div className="legendList complianceLegend">{compliance.slice(0,5).map(([v,n],i)=><button key={v} onClick={()=>drill('compliance','Compliance',v)}><i className={`legendDot status${i}`}/><span>{humanize(v)}</span><strong>{formatNumber(n)}</strong><small>{total?(n/total*100).toFixed(1):0}%</small></button>)}</div>
+      </DashboardCard>
+
+      <DashboardCard title="Needs attention" subtitle="Signals worth investigating first" className="attentionCard">
+        <div className="attentionList">
+          <AttentionItem tone="bad" title="Noncompliant devices" value={noncompliant} detail="Compliance policy action required" onClick={()=>noncompliant&&drill('compliance','Compliance','Noncompliant')}/>
+          <AttentionItem tone="warn" title="In grace period" value={grace} detail="Approaching compliance deadline" onClick={()=>grace&&drill('compliance','Compliance','InGracePeriod')}/>
+          <AttentionItem tone="warn" title="Stale check-in" value={stale} detail="No Intune check-in for over 30 days"/>
+          <AttentionItem tone="neutral" title="Unknown hardware model" value={unknownModels} detail="Reported model is empty or unknown"/>
+          <AttentionItem tone="neutral" title="No primary user" value={noUser} detail="No user reported in this export"/>
+        </div>
+      </DashboardCard>
+    </section>
+
+    <section className="dashboardLowerGrid">
+      <DashboardCard title="OS landscape" subtitle="Most common reported versions, grouped by platform" className="osDashboardCard">
+        <div className="osPlatformGrid">{osGroups.slice(0,5).map(([p,list])=>{const versions=countBy(list,d=>key(d.osVersion)).slice(0,3);return <article key={p}><header><span>{platformLabel[p]||p}</span><strong>{formatNumber(list.length)}</strong></header>{versions.map(([v,n])=><button key={v} onClick={()=>drill('osVersion','OS version',v)}><div><span>{v}</span><strong>{formatNumber(n)}</strong></div><i><b style={{width:`${list.length?n/list.length*100:0}%`}}/></i></button>)}</article>})}</div>
+      </DashboardCard>
+
+      <DashboardCard title="Hardware manufacturers" subtitle="Largest hardware vendors in the current view" className="hardwareDashboardCard">
+        <div className="dashboardBars">{manufacturers.slice(0,7).map(([v,n])=><button key={v} onClick={()=>drill('manufacturer','Manufacturer',v)}><div><span>{v}</span><strong>{formatNumber(n)}</strong></div><i><b style={{width:`${total?n/total*100:0}%`}}/></i><small>{total?(n/total*100).toFixed(1):0}%</small></button>)}</div>
+      </DashboardCard>
+    </section>
+  </div>
+}
+
+function humanize(value:string){return value.replace(/([a-z])([A-Z])/g,'$1 $2')}
+function HealthKpi({icon,label,value,note,tone}:{icon:string;label:string;value:string;note:string;tone:string}){return <article className={`healthKpi ${tone}`}><span className={`healthIcon ${icon}`}/><div><span>{label}</span><strong>{value}</strong><small>{note}</small></div></article>}
+function DashboardCard({title,subtitle,className='',children}:{title:string;subtitle:string;className?:string;children:React.ReactNode}){return <article className={`dashboardCard ${className}`}><header className="dashboardCardHead"><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
+function Donut({total,items,centerLabel,centerSub}:{total:number;items:[string,number][];centerLabel:string;centerSub:string}){let cursor=0;const stops=items.map(([,n],i)=>{const start=cursor;cursor+=total?n/total*100:0;return `var(--chart-${i%6}) ${start}% ${cursor}%`});return <div className="donut" style={{background:`conic-gradient(${stops.join(',')||'#e7eef7 0 100%'})`}}><div><strong>{centerLabel}</strong><span>{centerSub}</span></div></div>}
+function AttentionItem({tone,title,value,detail,onClick}:{tone:string;title:string;value:number;detail:string;onClick?:()=>void}){return <button className={`attentionItem ${tone}`} onClick={onClick} disabled={!onClick}><span className="attentionSignal"/><div><strong>{title}</strong><small>{detail}</small></div><b>{formatNumber(value)}</b><span className="attentionArrow">›</span></button>}
 function Search({value,setValue}:{value:string;setValue:(v:string)=>void}){return <div className="search"><span>⌕</span><input value={value} onChange={e=>setValue(e.target.value)} placeholder="Search…"/></div>}
 function DataCard({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}){return <section className="dataCard"><div className="dataHead"><div><h2>{title}</h2><p>{subtitle}</p></div></div><div className="tableWrap">{children}</div></section>}
 function DeviceTable({devices,onSelect}:{devices:Device[];onSelect:(d:Device)=>void}){return <table><thead><tr><th>Device</th><th>Platform</th><th>OS version</th><th>Manufacturer / model</th><th>Primary user</th><th>Compliance</th></tr></thead><tbody>{devices.slice(0,500).map(d=><tr className="clickRow" key={d.id} onClick={()=>onSelect(d)}><td><strong>{d.deviceName||'—'}</strong><small>{d.serialNumber}</small></td><td><span className="tag">{platformLabel[d.platform]}</span></td><td>{d.osVersion||'—'}</td><td>{[d.manufacturer,d.model].filter(Boolean).join(' · ')||'—'}</td><td>{d.userDisplayName||d.userUpn||'—'}</td><td>{d.compliance||'—'}</td></tr>)}</tbody></table>}
