@@ -71,46 +71,61 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
   const visibleActivity=activity.filter((row):row is [string,number]=>row[1]>0);
 
   return <section className="extendedInsightGrid">
-    <InsightCard title="Hardware type" subtitle="Form factor inferred from explicit inventory and trusted model cues">
+    <InsightCard icon="hardware" title="Hardware type" subtitle="Form factor inferred from explicit inventory and trusted model cues">
       <Distribution rows={types} total={total}/><p className="insightFootnote">Unknown is retained only when the available inventory does not provide enough evidence.</p>
     </InsightCard>
 
-    <InsightCard title="Ownership" subtitle="Corporate, personal and other ownership states">
+    <InsightCard icon="ownership" title="Ownership" subtitle="Corporate, personal and other ownership states">
       <Distribution rows={ownership} total={total}/>
     </InsightCard>
 
-    <InsightCard title="OS fragmentation" subtitle="Version diversity and dominant release per platform">
+    <InsightCard icon="versions" title="OS fragmentation" subtitle="Version diversity and dominant release per platform">
       <div className="fragmentationList">{fragmentation.map(row=><div key={row.platform}><header><strong>{platformLabel[row.platform]||row.platform}</strong><span>{row.versions} version{row.versions===1?'':'s'}</span></header><div><span className="truncate">{row.topVersion}</span><b>{pct(row.topCount,row.devices)} on top version</b></div><i><b style={{width:pct(row.topCount,row.devices)}}/></i></div>)}</div>
     </InsightCard>
 
-    <InsightCard title="Hardware standardization" subtitle="How concentrated the fleet is around common models">
+    <InsightCard icon="standardize" title="Hardware standardization" subtitle="How concentrated the fleet is around common models">
       <div className="metricTiles"><Metric label="Unique models" value={fmt(modelCounts.length)}/><Metric label="Top 10 coverage" value={pct(top10,total)}/><Metric label="One-off models" value={fmt(singletonModels)}/></div>
       <div className="miniBars">{modelCounts.slice(0,5).map(([model,n])=><div key={model}><span className="truncate">{model}</span><strong>{fmt(n)}</strong><i><b style={{width:pct(n,modelCounts[0]?.[1]||1)}}/></i></div>)}</div>
     </InsightCard>
 
-    <InsightCard title="Devices per user" subtitle="Managed-device density across identified users">
+    <InsightCard icon="users" title="Devices per user" subtitle="Managed-device density across identified users">
       <div className="metricTiles userTiles">{userDistribution.map(([label,n])=><Metric key={label} label={label} value={fmt(n)}/>)}</div><div className="inlineInsight"><span>No primary user</span><strong>{fmt(noUser)}</strong><small>{pct(noUser,total)} of devices</small></div>
     </InsightCard>
 
-    <InsightCard title="Inventory anomalies" subtitle="Potential duplicates and inconsistent inventory signals">
+    <InsightCard icon="alert" title="Inventory anomalies" subtitle="Potential duplicates and inconsistent inventory signals">
       <div className="anomalyList"><Anomaly label="Duplicate serial entries" value={duplicateSerials}/><Anomaly label="Duplicate device names" value={duplicateNames}/><Anomaly label="Missing serial number" value={missingSerial}/><Anomaly label="Unknown platform" value={unknownPlatform}/></div>
     </InsightCard>
 
-    <InsightCard title="Activity distribution" subtitle="Recency of the most recent reported Intune check-in">
+    <InsightCard icon="activity" title="Activity distribution" subtitle="Recency of the most recent reported Intune check-in">
       <div className="activityBars">{visibleActivity.map(([label,n])=><div key={label}><div><span>{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small></div><i><b style={{width:pct(n,total)}}/></i></div>)}</div>
     </InsightCard>
 
-    <InsightCard title="Hardware manufacturers" subtitle="Largest hardware vendors in the current view">
-      <Distribution rows={manufacturerCounts.slice(0,7)} total={total}/>
+    <InsightCard icon="manufacturer" title="Hardware manufacturers" subtitle="Largest hardware vendors in the current view">
+      <ManufacturerDistribution rows={manufacturerCounts.slice(0,7)} total={total}/>
     </InsightCard>
 
-    <InsightCard title="Hardware models" subtitle="Most common reported models in the current view">
+    <InsightCard icon="models" title="Hardware models" subtitle="Most common reported models in the current view">
       <Distribution rows={modelCounts.slice(0,7)} total={total}/>
     </InsightCard>
   </section>
 }
 
-function InsightCard({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}){return <article className="dashboardCard extendedInsightCard"><header className="dashboardCardHead"><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
+function InsightCard({icon,title,subtitle,children}:{icon:string;title:string;subtitle:string;children:React.ReactNode}){return <article className={`dashboardCard extendedInsightCard insight-${icon}`}><header className="dashboardCardHead insightCardHead"><span className="cardIcon"><DashboardIcon name={icon}/></span><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
 function Distribution({rows,total}:{rows:[string,number][];total:number}){return <div className="distributionList">{rows.filter(([,n])=>n>0).slice(0,7).map(([label,n],i)=><div key={label}><span className={`distributionDot dot${i%6}`}/><span className="truncate" title={label}>{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small><i><b style={{width:pct(n,total)}}/></i></div>)}</div>}
+function ManufacturerDistribution({rows,total}:{rows:[string,number][];total:number}){return <div className="distributionList manufacturerList">{rows.filter(([,n])=>n>0).slice(0,7).map(([label,n],i)=><div key={label}><ManufacturerMark name={label}/><span className="truncate" title={label}>{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small><i><b style={{width:pct(n,total)}}/></i></div>)}</div>}
 function Metric({label,value}:{label:string;value:string}){return <div className="metricTile"><span>{label}</span><strong>{value}</strong></div>}
 function Anomaly({label,value}:{label:string;value:number}){return <div className={value?'anomaly hasValue':'anomaly'}><span>{label}</span><strong>{fmt(value)}</strong></div>}
+
+function ManufacturerMark({name}:{name:string}){const n=name.toLowerCase();const key=n.includes('microsoft')?'MS':n.includes('apple')?'A':n.includes('samsung')?'S':n.includes('lenovo')?'L':n.includes('dell')?'D':n==='hp'||n.includes('hewlett')?'hp':n.includes('logitech')?'G':name.slice(0,2).toUpperCase();return <span className={`manufacturerMark manufacturer-${key.toLowerCase()}`} aria-hidden="true">{key}</span>}
+
+function DashboardIcon({name}:{name:string}){switch(name){
+  case'hardware':return <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="11" rx="2"/><path d="M8 20h8M10 16v4m4-4v4"/></svg>;
+  case'ownership':return <svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.7 3.1 7.7 7.5 9.5 4.4-1.8 7.5-4.8 7.5-9.5V6L12 3Z"/><path d="m8.7 12 2.1 2.1 4.7-5"/></svg>;
+  case'versions':return <svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h10M5 18h6"/><circle cx="18" cy="12" r="2"/><circle cx="14" cy="18" r="2"/></svg>;
+  case'standardize':return <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>;
+  case'users':return <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.5-3.7 2.4-5.5 5.5-5.5s5 1.8 5.5 5.5"/><circle cx="17" cy="9" r="2.2"/><path d="M15.5 14.5c2.9-.4 4.6 1.1 5 4.5"/></svg>;
+  case'alert':return <svg viewBox="0 0 24 24"><path d="M12 3.5 21 20H3L12 3.5Z"/><path d="M12 9v5m0 3h.01"/></svg>;
+  case'activity':return <svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>;
+  case'manufacturer':return <svg viewBox="0 0 24 24"><path d="M4 20V8l8-4v16M12 9l8-3v14M7 11h2m-2 4h2m6-3h2m-2 4h2"/></svg>;
+  default:return <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>;
+}}
