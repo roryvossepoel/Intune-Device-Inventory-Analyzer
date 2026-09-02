@@ -14,6 +14,7 @@ import './dashboard-cleanup.css';
 import './update-health.css';
 import './dashboard-design-system.css';
 import './navigation-v2.css';
+import './platform-context.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
