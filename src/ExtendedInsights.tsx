@@ -11,23 +11,35 @@ function rawValue(device:Device,patterns:RegExp[]){for(const [name,value] of Obj
 function hardwareType(device:Device){
   if(device.platform==='ios')return 'Smartphone';
   if(device.platform==='ipados')return 'Tablet';
+
   const explicit=rawValue(device,[/chassis/i,/form.?factor/i,/device.?type/i,/hardware.?type/i,/device.?category/i]).toLowerCase();
   const model=(device.model||'').toLowerCase();
   const manufacturer=(device.manufacturer||'').toLowerCase();
   const signal=`${explicit} ${model} ${manufacturer}`;
-  if(/virtual|vmware|hyper-v|parallels|virtualbox|kvm/.test(signal))return 'Virtual';
+
+  if(/virtual|vmware|hyper-v|parallels|virtualbox|kvm|virtual machine/.test(signal))return 'Virtual';
   if(/server/.test(signal))return 'Server';
-  if(/tablet|slate|ipad|galaxy tab|surface pro/.test(signal))return 'Tablet';
+
+  if(device.platform==='android'){
+    if(/tablet|slate|galaxy tab|tab active|sm-[xtp]/.test(signal))return 'Tablet';
+    return 'Smartphone';
+  }
+
+  if(/tablet|slate|ipad|galaxy tab|surface pro|surface go/.test(signal))return 'Tablet';
   if(/smartphone|phone|handheld/.test(explicit))return 'Smartphone';
-  if(/laptop|notebook|portable|macbook|latitude|thinkpad|elitebook|probook|surface laptop/.test(signal))return 'Laptop';
-  if(/desktop|tower|mini pc|optiplex|thinkcentre|prodesk|elitedesk|imac|mac mini|mac studio/.test(signal))return 'Desktop';
+
+  if(/laptop|notebook|portable|macbook|latitude|thinkpad|thinkbook|ideapad|elitebook|probook|zbook|surface laptop|galaxy book/.test(signal))return 'Laptop';
+  if(/vostro\s*(3|5|7)\d{3}|dell pro\s*(13|14|16)|precision\s*(3|5|7)\d{3}/.test(model))return 'Laptop';
+
+  if(/desktop|tower|mini pc|optiplex|thinkcentre|prodesk|elitedesk|imac|mac mini|mac studio|surface studio/.test(signal))return 'Desktop';
+  if(/dell pro\s*(micro|slim|tower)|qcm\d+|optiplex/.test(model))return 'Desktop';
+
   return 'Unknown';
 }
 
 export default function ExtendedInsights({devices}:{devices:Device[]}){
   const total=devices.length;
   const ownership=countValues(devices.map(d=>clean(d.ownership)));
-  const management=countValues(devices.map(d=>clean(d.managedBy)));
   const types=countValues(devices.map(hardwareType));
 
   const byPlatform=Object.entries(devices.reduce<Record<string,Device[]>>((a,d)=>{(a[d.platform]??=[]).push(d);return a},{})).sort((a,b)=>b[1].length-a[1].length);
@@ -54,19 +66,15 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
     ['31–90 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>30&&age<=90}).length],
     ['>90 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>90}).length],
     ['Unknown',devices.filter(d=>daysSince(d.lastCheckIn)===null).length]
-  ] as [string,number][];
+  ].filter(([,n])=>n>0) as [string,number][];
 
   return <section className="extendedInsightGrid">
     <InsightCard title="Hardware type" subtitle="Form factor inferred from explicit inventory and trusted model cues">
-      <Distribution rows={types} total={total}/><p className="insightFootnote">Unknown is retained when the export does not provide enough evidence.</p>
+      <Distribution rows={types} total={total}/><p className="insightFootnote">Unknown is retained only when the available inventory does not provide enough evidence.</p>
     </InsightCard>
 
     <InsightCard title="Ownership" subtitle="Corporate, personal and other ownership states">
       <Distribution rows={ownership} total={total}/>
-    </InsightCard>
-
-    <InsightCard title="Management authority" subtitle="How devices report their management source">
-      <Distribution rows={management} total={total}/>
     </InsightCard>
 
     <InsightCard title="OS fragmentation" subtitle="Version diversity and dominant release per platform">
@@ -93,6 +101,6 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
 }
 
 function InsightCard({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}){return <article className="dashboardCard extendedInsightCard"><header className="dashboardCardHead"><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
-function Distribution({rows,total}:{rows:[string,number][];total:number}){return <div className="distributionList">{rows.slice(0,7).map(([label,n],i)=><div key={label}><span className={`distributionDot dot${i%6}`}/><span className="truncate">{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small><i><b style={{width:pct(n,total)}}/></i></div>)}</div>}
+function Distribution({rows,total}:{rows:[string,number][];total:number}){return <div className="distributionList">{rows.filter(([,n])=>n>0).slice(0,7).map(([label,n],i)=><div key={label}><span className={`distributionDot dot${i%6}`}/><span className="truncate">{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small><i><b style={{width:pct(n,total)}}/></i></div>)}</div>}
 function Metric({label,value}:{label:string;value:string}){return <div className="metricTile"><span>{label}</span><strong>{value}</strong></div>}
 function Anomaly({label,value}:{label:string;value:number}){return <div className={value?'anomaly hasValue':'anomaly'}><span>{label}</span><strong>{fmt(value)}</strong></div>}
