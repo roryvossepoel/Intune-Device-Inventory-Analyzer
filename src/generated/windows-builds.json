@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0.0",
+  "lastUpdated": "2026-09-02",
+  "source": "https://learn.microsoft.com/windows/release-health/windows11-release-information",
+  "records": [
+    {"product":"Windows 11","version":"26H1","displayName":"Windows 11, version 26H1","build":28000,"availabilityDate":"2026-02-10","endOfUpdatesHomePro":"2028-03-14","endOfUpdatesEnterpriseEducation":"2029-03-13","latestBuild":"28000.2704","status":"supported","deployment":"new-devices-only"},
+    {"product":"Windows 11","version":"25H2","displayName":"Windows 11, version 25H2","build":26200,"availabilityDate":"2025-09-30","endOfUpdatesHomePro":"2027-10-12","endOfUpdatesEnterpriseEducation":"2028-10-10","latestBuild":"26200.9168","latestHotpatchBuild":"26200.9106","status":"supported","deployment":"general-availability"},
+    {"product":"Windows 11","version":"24H2","displayName":"Windows 11, version 24H2","build":26100,"availabilityDate":"2024-10-01","endOfUpdatesHomePro":"2026-10-13","endOfUpdatesEnterpriseEducation":"2027-10-12","latestBuild":"26100.9168","status":"supported","deployment":"general-availability"},
+    {"product":"Windows 11","version":"23H2","displayName":"Windows 11, version 23H2","build":22631,"availabilityDate":"2023-10-31","endOfUpdatesHomePro":"2025-11-11","endOfUpdatesEnterpriseEducation":"2026-11-10","latestBuild":"22631.7517","status":"edition-dependent","deployment":"general-availability"}
+  ]
+}
