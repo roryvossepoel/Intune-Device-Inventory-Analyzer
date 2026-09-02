@@ -60,13 +60,14 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
   const missingSerial=total-serials.length;
   const unknownPlatform=devices.filter(d=>d.platform==='unknown').length;
 
-  const activity=[
+  const activityRows:[string,number][]=[
     ['0–7 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age<=7}).length],
     ['8–30 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>7&&age<=30}).length],
     ['31–90 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>30&&age<=90}).length],
     ['>90 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>90}).length],
     ['Unknown',devices.filter(d=>daysSince(d.lastCheckIn)===null).length]
-  ].filter(([,n])=>n>0) as [string,number][];
+  ];
+  const activity=activityRows.filter(([,n])=>n>0);
 
   return <section className="extendedInsightGrid">
     <InsightCard title="Hardware type" subtitle="Form factor inferred from explicit inventory and trusted model cues">
