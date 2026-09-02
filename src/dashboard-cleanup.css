@@ -1,1 +1,1 @@
-.qualityCard{display:none!important}.fleetInsightGrid{grid-template-columns:1.15fr .85fr!important}.osDashboardCard{display:none!important}.dashboardLowerGrid{grid-template-columns:1fr!important}@media(max-width:780px){.fleetInsightGrid{grid-template-columns:1fr!important}}
+.qualityCard{display:none!important}.fleetInsightGrid{grid-template-columns:1.15fr .85fr!important}.osDashboardCard{display:none!important}.dashboardLowerGrid{display:none!important}@media(max-width:780px){.fleetInsightGrid{grid-template-columns:1fr!important}}
