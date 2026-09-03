@@ -9,6 +9,8 @@ import EncryptionCard, { securityAttention } from './SecurityInsights';
 import DashboardSection from './DashboardSection';
 import LandingContent from './LandingContent';
 import FaqPage from './FaqPage';
+import DeviceDetailPanel from './DeviceDetail';
+import { describeOsVersion } from './deviceIntelligence';
 import type { DeviceTableInitialFilters, SmartColumn } from './SmartTable';
 import type { Device, ImportResult } from './types';
 
@@ -21,7 +23,8 @@ const countBy=(devices:Device[],selector:(d:Device)=>string)=>Object.entries(dev
 const formatNumber=(value:number)=>value.toLocaleString();
 const daysSince=(value:string|null)=>{if(!value)return null;const time=Date.parse(value);return Number.isFinite(time)?(Date.now()-time)/(24*60*60*1000):null};
 const rawValue=(d:Device,pattern:RegExp)=>Object.entries(d.raw).find(([name])=>pattern.test(name))?.[1]?.trim()||'';
-const displayOsVersion=(d:Device)=>platformKey(d.platform)==='applemobile'?`iOS/iPadOS ${d.osVersion||'Unknown'}`:(d.osVersion||'');
+const intelligencePlatform=(value:string)=>platformKey(value) as 'windows'|'android'|'applemobile'|'macos'|'linux'|'unknown';
+const displayOsVersion=(d:Device)=>describeOsVersion(intelligencePlatform(d.platform),d.osVersion)||(d.osVersion||'');
 
 type View='overview'|'devices'|'updates'|'reports'|'faq';
 type Filter={field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption';label:string;value:string}|null;
@@ -102,7 +105,7 @@ export default function App(){
   ];
   const updateColumns:SmartColumn<UpdateRow>[]=[
     {key:'platform',label:'Operating system',value:r=>osPlatformLabel[r.platform]||r.platform,render:r=><span className="tag">{osPlatformLabel[r.platform]||r.platform}</span>},
-    {key:'version',label:'Reported version',value:r=>r.version,render:r=><strong>{r.version}</strong>},
+    {key:'version',label:'Reported version',value:r=>describeOsVersion(r.platform as 'windows'|'android'|'applemobile'|'macos'|'linux'|'unknown',r.version)||r.version,render:r=><strong>{describeOsVersion(r.platform as 'windows'|'android'|'applemobile'|'macos'|'linux'|'unknown',r.version)||r.version}</strong>},
     {key:'devices',label:'Devices',value:r=>r.devices.length,numeric:true},
     {key:'share',label:'Share',value:r=>base.length?r.devices.length/base.length*100:0,numeric:true,render:r=>`${base.length?(r.devices.length/base.length*100).toFixed(1):'0'}%`}
   ];
@@ -138,7 +141,7 @@ export default function App(){
     </main>}
 
     <footer className="siteFooter professionalFooter"><div className="footerBrand"><span className="footerMark">ID</span><div><strong>Intune Device Inventory Analyzer</strong><span>Open-source device inventory analysis for Microsoft Intune.</span></div></div><div className="footerPrivacy"><strong>Private by design</strong><span>Inventory processing happens locally in your browser. No device or user data is uploaded or stored.</span></div><div className="footerMeta"><a href="https://github.com/roryvossepoel/Intune-Device-Inventory-Analyzer" target="_blank" rel="noreferrer">GitHub</a><button onClick={()=>navigate('faq')}>FAQ</button><strong>v0.1.0</strong></div></footer>
-    {selected&&<DeviceDetail device={selected} onClose={()=>setSelected(null)}/>} 
+    {selected&&<DeviceDetailPanel device={selected} onClose={()=>setSelected(null)}/>} 
   </div>;
 }
 
