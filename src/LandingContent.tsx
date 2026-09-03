@@ -1,4 +1,4 @@
-export default function LandingContent(){
+export default function LandingContent({onDemo}:{onDemo:()=>void}){
   const openExport=()=>document.querySelector<HTMLInputElement>('input[type="file"]')?.click();
   return <div className="landingStory landingReference">
     <section className="referenceHero">
@@ -6,7 +6,10 @@ export default function LandingContent(){
         <span className="referenceEyebrow">PRIVATE BY DESIGN · OPEN SOURCE</span>
         <h1>Understand your<br/>Intune environment.<br/><em>Fully in control.</em></h1>
         <p>Turn a native Microsoft Intune inventory export into clear insights about devices, compliance, security and updates — all processed locally in your browser.</p>
-        <button className="referencePrimary" onClick={openExport}><span>↥</span> Open Intune export</button>
+        <div className="referenceCtas">
+          <button className="referencePrimary" onClick={openExport}><span>↥</span> Open Intune export</button>
+          <button className="referenceSecondary" onClick={onDemo}>Try with demo data →</button>
+        </div>
         <small>CSV or ZIP export from Microsoft Intune</small>
         <div className="referencePrivacyNote"><span>♙</span><b>100% private.</b> Your data never leaves your device.</div>
       </div>
@@ -32,7 +35,7 @@ export default function LandingContent(){
         <h2>Powerful insights,<br/>complete control.</h2>
         <p>Go beyond native inventory views with a workspace built for exploration, security review, fleet analysis and reporting.</p>
         <ul><li>Deep dive and drill down into your data</li><li>Security, compliance, updates and usage</li><li>Actionable insights for IT and management</li><li>Built around native Intune exports</li></ul>
-        <button onClick={openExport}>Explore with your export</button>
+        <button onClick={onDemo}>Explore the dashboard</button>
       </div>
       <FleetPreview/>
     </section>
