@@ -30,7 +30,7 @@ function hardwareType(device:Device){
   return 'Unknown';
 }
 
-export default function ExtendedInsights({devices}:{devices:Device[]}){
+export default function ExtendedInsights({devices,showPlatformDistribution=true}:{devices:Device[];showPlatformDistribution?:boolean}){
   const total=devices.length;
   const ownership=countValues(devices.map(d=>clean(d.ownership)));
   const types=countValues(devices.map(hardwareType));
@@ -65,8 +65,8 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
     </div>
 
     <InsightCategory title="Operating systems" subtitle="Platform mix, OS families, version diversity and dominant releases.">
-      <div className="extendedInsightGrid twoInsightGrid operatingSystemsGrid">
-        <InsightCard icon="platforms" title="Platform distribution" subtitle="Device mix across the current inventory view"><PlatformDistribution rows={platformCounts} total={total}/></InsightCard>
+      <div className="extendedInsightGrid twoInsightGrid operatingSystemsGrid" style={!showPlatformDistribution?{gridTemplateColumns:'1fr'}:undefined}>
+        {showPlatformDistribution&&<InsightCard icon="platforms" title="Platform distribution" subtitle="Device mix across the current inventory view"><PlatformDistribution rows={platformCounts} total={total}/></InsightCard>}
         <InsightCard icon="versions" title="OS fragmentation" subtitle="Version diversity and dominant release per OS family"><div className="fragmentationList">{fragmentation.map(row=><div key={row.platform}><header><span className="labelWithIcon"><PlatformIcon name={row.platform}/><strong>{platformLabel[row.platform]||row.platform}</strong></span><span>{row.versions} version{row.versions===1?'':'s'}</span></header><div><span className="truncate">{row.topVersion}</span><b>{pct(row.topCount,row.devices)} on top version</b></div><i><b style={{width:pct(row.topCount,row.devices)}}/></i></div>)}</div></InsightCard>
       </div>
     </InsightCategory>
