@@ -1,3 +1,7 @@
-.search{gap:10px}
+.search{gap:10px;position:relative}
 .search>span:first-child{display:inline-block;width:18px;height:18px;flex:0 0 18px;font-size:0;color:#3684dc;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.5' cy='10.5' r='5.5'/%3E%3Cpath d='m15 15 4 4'/%3E%3C/svg%3E") center/18px 18px no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.5' cy='10.5' r='5.5'/%3E%3Cpath d='m15 15 4 4'/%3E%3C/svg%3E") center/18px 18px no-repeat}
-.search input{line-height:1.25}
+.search input{line-height:1.25;min-width:0}
+.searchClear{width:28px;height:28px;flex:0 0 28px;border:0;border-radius:7px;background:transparent;color:#52769d;display:grid;place-items:center;cursor:pointer;padding:0}
+.searchClear:hover{background:#dcecff;color:#145fae}
+.searchClear:focus-visible{outline:2px solid #79afe8;outline-offset:1px}
+.searchClear svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
