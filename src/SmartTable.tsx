@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 type SortDirection = 'asc' | 'desc';
@@ -37,10 +37,24 @@ function SortIcon({active,direction}:{active:boolean;direction:SortDirection}){
   return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round"><path d="m5.25 6.5 2.75-2.75 2.75 2.75"/><path d="m5.25 9.5 2.75 2.75 2.75-2.75"/></svg>;
 }
 
+function DropdownChevron({open}:{open:boolean}){
+  return <svg className="multiFilterChevron" aria-hidden="true" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={open?'m4.5 9.5 3.5-3 3.5 3':'m4.5 6.5 3.5 3 3.5-3'}/></svg>;
+}
+
 function MultiSelect({label,values,selected,onChange,allLabel='All'}:{label:string;values:string[];selected:string[];onChange:(values:string[])=>void;allLabel?:string}){
+  const [open,setOpen]=useState(false);
+  const root=useRef<HTMLDivElement>(null);
   const summary=selected.length===0?allLabel:selected.length===1?selected[0]:`${selected.length} selected`;
   function toggle(value:string){onChange(selected.includes(value)?selected.filter(v=>v!==value):[...selected,value])}
-  return <label className="multiFilter"><span>{label}</span><details><summary>{summary}</summary><div className="multiFilterMenu"><button type="button" onClick={()=>onChange([])} className={selected.length===0?'selected':''}>{allLabel}</button>{values.map(value=><label key={value}><input type="checkbox" checked={selected.includes(value)} onChange={()=>toggle(value)}/><span>{value}</span></label>)}</div></details></label>;
+  useEffect(()=>{
+    if(!open)return;
+    const outside=(event:PointerEvent)=>{if(root.current&&!root.current.contains(event.target as Node))setOpen(false)};
+    const escape=(event:KeyboardEvent)=>{if(event.key==='Escape')setOpen(false)};
+    document.addEventListener('pointerdown',outside);
+    document.addEventListener('keydown',escape);
+    return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape)};
+  },[open]);
+  return <div className="multiFilter" ref={root}><span>{label}</span><div className="multiFilterControl"><button type="button" className={`multiFilterTrigger ${open?'open':''}`} aria-expanded={open} onClick={()=>setOpen(v=>!v)}><span>{summary}</span><DropdownChevron open={open}/></button>{open&&<div className="multiFilterMenu"><button type="button" onClick={()=>{onChange([]);setOpen(false)}} className={selected.length===0?'selected':''}>{allLabel}</button>{values.map(value=><label key={value}><input type="checkbox" checked={selected.includes(value)} onChange={()=>toggle(value)}/><span>{value}</span></label>)}</div>}</div></div>;
 }
 
 export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick,initialPageSize=50}:Props<T>){
