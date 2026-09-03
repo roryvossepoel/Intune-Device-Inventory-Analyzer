@@ -11,5 +11,16 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      document.addEventListener('click', function (event) {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const brand = target.closest('.brand');
+        if (!brand) return;
+        event.preventDefault();
+        event.stopPropagation();
+        window.location.reload();
+      }, true);
+    </script>
   </body>
 </html>
