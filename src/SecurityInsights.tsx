@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { Device } from './types';
 const fmt=(n:number)=>n.toLocaleString();
 function raw(d:Device,names:RegExp[]){for(const [k,v] of Object.entries(d.raw)){if(names.some(r=>r.test(k.trim()))&&v?.trim())return v.trim()}return ''}
@@ -17,8 +19,20 @@ function HighlightText({text}:{text:string}){
 }
 
 export function InventorySummary({devices}:{devices:Device[]}){
+  const [host,setHost]=useState<HTMLDivElement|null>(null);
+  useEffect(()=>{
+    const dashboard=document.querySelector('.inventoryDashboard');
+    const kpis=dashboard?.querySelector('.healthKpis');
+    if(!dashboard||!kpis)return;
+    const node=document.createElement('div');
+    node.className='inventorySummaryHost';
+    dashboard.insertBefore(node,kpis);
+    setHost(node);
+    return()=>{node.remove();setHost(null)};
+  },[]);
+
   const total=devices.length;
-  if(!total)return null;
+  if(!total||!host)return null;
   const platformCounts=count(devices.map(d=>platformFamily(d.platform)));
   const topPlatform=platformCounts[0];
   const compliant=devices.filter(d=>d.compliance?.toLowerCase()==='compliant').length;
@@ -51,10 +65,10 @@ export function InventorySummary({devices}:{devices:Device[]}){
   if(uniqueModels){const diversity=uniqueModels/total;if(diversity<0.03)estateParts.push(`across a highly standardized mix of ${fmt(uniqueModels)} reported models`);else if(diversity<0.08)estateParts.push(`across ${fmt(uniqueModels)} reported models`);else estateParts.push(`across a relatively diverse mix of ${fmt(uniqueModels)} reported models`)}
   const paragraph3=estateParts.length?estateParts.join(' ')+'.':'';
 
-  return <article className="inventorySummaryCard">
+  return createPortal(<article className="inventorySummaryCard">
     <div className="inventorySummaryCopy"><p><HighlightText text={paragraph1}/></p><p><HighlightText text={paragraph2}/></p>{paragraph3&&<p><HighlightText text={paragraph3}/></p>}</div>
-  </article>
+  </article>,host);
 }
 
-export default function EncryptionCard({devices,onNotEncrypted}:{devices:Device[];onNotEncrypted?:()=>void}){let encrypted=0,notEncrypted=0,unknown=0;for(const d of devices){const s=encryptionState(d);if(s===true)encrypted++;else if(s===false)notEncrypted++;else unknown++}const total=devices.length,p=total?encrypted/total*100:0;const parts=[['Encrypted',encrypted,'good'],['Not encrypted',notEncrypted,'bad'],['Unknown',unknown,'neutral']] as const;let cursor=0;const colors={good:'#18a873',bad:'#e45d61',neutral:'#9aa9ba'};const stops=parts.filter(([,n])=>n>0).map(([,n,t])=>{const start=cursor;cursor+=total?n/total*100:0;return `${colors[t]} ${start}% ${cursor}%`});return <article className="dashboardCard encryptionCard"><header className="dashboardCardHead securityCardHead"><span className="securityCardIcon"><LockIcon/></span><div><h2>Encryption status</h2><p>Reported device encryption state</p></div></header><div className="encryptionBody"><div className="securityDonut" style={{background:`conic-gradient(${stops.join(',')||'#e7eef7 0 100%'})`}}><div><strong>{p.toFixed(1)}%</strong><span>encrypted</span></div></div><div className="securityLegend">{parts.filter(([,n])=>n>0).map(([label,n,t])=><button key={label} className={t} disabled={label!=='Not encrypted'||!onNotEncrypted} onClick={label==='Not encrypted'?onNotEncrypted:undefined}><i/><span>{label}</span><strong>{fmt(n)}</strong><small>{total?(n/total*100).toFixed(1):'0'}%</small></button>)}</div></div></article>}
+export default function EncryptionCard({devices,onNotEncrypted}:{devices:Device[];onNotEncrypted?:()=>void}){let encrypted=0,notEncrypted=0,unknown=0;for(const d of devices){const s=encryptionState(d);if(s===true)encrypted++;else if(s===false)notEncrypted++;else unknown++}const total=devices.length,p=total?encrypted/total*100:0;const parts=[['Encrypted',encrypted,'good'],['Not encrypted',notEncrypted,'bad'],['Unknown',unknown,'neutral']] as const;let cursor=0;const colors={good:'#18a873',bad:'#e45d61',neutral:'#9aa9ba'};const stops=parts.filter(([,n])=>n>0).map(([,n,t])=>{const start=cursor;cursor+=total?n/total*100:0;return `${colors[t]} ${start}% ${cursor}%`});return <><InventorySummary devices={devices}/><article className="dashboardCard encryptionCard"><header className="dashboardCardHead securityCardHead"><span className="securityCardIcon"><LockIcon/></span><div><h2>Encryption status</h2><p>Reported device encryption state</p></div></header><div className="encryptionBody"><div className="securityDonut" style={{background:`conic-gradient(${stops.join(',')||'#e7eef7 0 100%'})`}}><div><strong>{p.toFixed(1)}%</strong><span>encrypted</span></div></div><div className="securityLegend">{parts.filter(([,n])=>n>0).map(([label,n,t])=><button key={label} className={t} disabled={label!=='Not encrypted'||!onNotEncrypted} onClick={label==='Not encrypted'?onNotEncrypted:undefined}><i/><span>{label}</span><strong>{fmt(n)}</strong><small>{total?(n/total*100).toFixed(1):'0'}%</small></button>)}</div></div></article></>}
 function LockIcon(){return <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v2"/></svg>}
