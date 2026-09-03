@@ -20,8 +20,23 @@ type Props<T> = {
   initialPageSize?: number;
 };
 
-type DeviceLike={platform?:string;osVersion?:string|null;compliance?:string|null;manufacturer?:string|null;model?:string|null;ownership?:string|null;userUpn?:string|null;userDisplayName?:string|null;lastCheckIn?:string|null;raw?:Record<string,string>};
-type ExplorerColumn<T>=SmartColumn<T>&{rawField?:boolean};
+type DeviceLike={
+  id?:string;
+  deviceName?:string|null;
+  serialNumber?:string|null;
+  platform?:string;
+  osVersion?:string|null;
+  compliance?:string|null;
+  manufacturer?:string|null;
+  model?:string|null;
+  ownership?:string|null;
+  managedBy?:string|null;
+  userUpn?:string|null;
+  userDisplayName?:string|null;
+  lastCheckIn?:string|null;
+  raw?:Record<string,string>;
+};
+type ExplorerColumn<T>=SmartColumn<T>&{rawField?:boolean;pickerLabel?:string;exportLabel?:string};
 const pageSizes=[25,50,100,250];
 const normalize=(value:string|number|null|undefined)=>value==null?'':value;
 const csvCell=(value:unknown)=>`"${String(value??'').replace(/"/g,'""')}"`;
@@ -31,6 +46,7 @@ const encryption=(row:DeviceLike)=>{const v=rawValue(row,/^encrypted$|encryption
 const ageDays=(value?:string|null)=>{if(!value)return null;const t=Date.parse(value);return Number.isFinite(t)?Math.max(0,(Date.now()-t)/86400000):null};
 const platformFamily=(value?:string)=>value==='ios'||value==='ipados'?'applemobile':value||'unknown';
 const platformName=(value:string)=>value==='windows'?'Windows':value==='android'?'Android':value==='applemobile'?'Apple Mobile':value==='macos'?'macOS':value==='linux'?'Linux':value==='unknown'?'Unknown':value;
+const deviceOf=<T,>(row:T)=>row as unknown as DeviceLike;
 
 function SortIcon({active,direction}:{active:boolean;direction:SortDirection}){
   if(active)return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{direction==='asc'?<path d="m4.75 9.25 3.25-3.25 3.25 3.25"/>:<path d="m4.75 6.75 3.25 3.25 3.25-3.25"/>}</svg>;
@@ -86,17 +102,44 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   const encryptionValues=['Encrypted','Not encrypted','Unknown'];
   const userStateValues=['Has primary user','No primary user'];
 
-  const rawColumns=useMemo<ExplorerColumn<T>[]>(()=>{
+  const standardColumns=useMemo<ExplorerColumn<T>[]>(()=>{
+    if(!isDevices)return columns;
+    const source=new Map(columns.map(c=>[c.key,c]));
+    const fromSource=(key:string,pickerLabel:string,exportLabel=pickerLabel,valueOverride?:ExplorerColumn<T>['value']):ExplorerColumn<T>|null=>{
+      const column=source.get(key);
+      return column?{...column,pickerLabel,exportLabel,value:valueOverride??column.value}:null;
+    };
+    const result:(ExplorerColumn<T>|null)[]=[
+      {key:'std:deviceId',label:'Device ID',pickerLabel:'Device ID',exportLabel:'Device ID',value:(row:T)=>deviceOf(row).id||''},
+      fromSource('device','Device name','Device name'),
+      {key:'std:serialNumber',label:'Serial number',pickerLabel:'Serial number',exportLabel:'Serial number',value:(row:T)=>deviceOf(row).serialNumber||''},
+      fromSource('platform','Platform'),
+      fromSource('os','OS version'),
+      fromSource('manufacturer','Manufacturer'),
+      fromSource('model','Model'),
+      fromSource('user','Primary user display name','Primary user display name',(row:T)=>deviceOf(row).userDisplayName||''),
+      {key:'std:userUpn',label:'Primary user UPN',pickerLabel:'Primary user UPN',exportLabel:'Primary user UPN',value:(row:T)=>deviceOf(row).userUpn||''},
+      fromSource('compliance','Compliance'),
+      {key:'std:encryption',label:'Encryption',pickerLabel:'Encryption',exportLabel:'Encryption',value:(row:T)=>encryption(deviceOf(row))},
+      {key:'std:ownership',label:'Ownership',pickerLabel:'Ownership',exportLabel:'Ownership',value:(row:T)=>deviceOf(row).ownership||''},
+      {key:'std:managedBy',label:'Managed by',pickerLabel:'Managed by',exportLabel:'Managed by',value:(row:T)=>deviceOf(row).managedBy||''},
+      fromSource('checkin','Last check-in')
+    ];
+    const known=new Set(result.filter((c):c is ExplorerColumn<T>=>Boolean(c)).map(c=>c.key));
+    return [...result.filter((c):c is ExplorerColumn<T>=>Boolean(c)),...columns.filter(c=>!known.has(c.key))];
+  },[columns,isDevices]);
+
+  const originalColumns=useMemo<ExplorerColumn<T>[]>(()=>{
     if(!isDevices)return [];
-    const names=[...new Set(devices.flatMap(d=>Object.keys(d.raw||{})))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
-    return names.map(name=>({key:`raw:${name}`,label:name,value:(row:T)=>((row as unknown as DeviceLike).raw||{})[name]||'',rawField:true}));
+    const names=[...new Set(devices.flatMap(d=>Object.keys(d.raw||{})))];
+    return names.map(name=>({key:`raw:${name}`,label:name,pickerLabel:name,exportLabel:name,value:(row:T)=>deviceOf(row).raw?.[name]||'',rawField:true}));
   },[rows,isDevices]);
-  const effectiveColumns=useMemo<ExplorerColumn<T>[]>(()=>[...columns,...rawColumns],[columns,rawColumns]);
+  const effectiveColumns=useMemo<ExplorerColumn<T>[]>(()=>[...standardColumns,...originalColumns],[standardColumns,originalColumns]);
 
   const activeFilterCount=[platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected].filter(v=>v.length).length+(checkin?1:0)+(maxAge<180?1:0);
 
   const filteredRows=useMemo(()=>!isDevices?rows:rows.filter(row=>{
-    const d=row as unknown as DeviceLike;
+    const d=deviceOf(row);
     if(platformsSelected.length&&!platformsSelected.includes(platformName(platformFamily(d.platform))))return false;
     if(manufacturersSelected.length&&!manufacturersSelected.includes(d.manufacturer||''))return false;
     if(modelsSelected.length&&!modelsSelected.includes(d.model||''))return false;
@@ -122,17 +165,20 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
 
   const sorted=useMemo(()=>{
     const column=effectiveColumns.find(c=>c.key===sortKey);
-    if(!column) return [...filteredRows];
+    if(!column)return [...filteredRows];
     const direction=sortDirection==='asc'?1:-1;
     return [...filteredRows].sort((a,b)=>{const av=normalize(column.value(a));const bv=normalize(column.value(b));if(column.numeric)return(Number(av)-Number(bv))*direction;return String(av).localeCompare(String(bv),undefined,{numeric:true,sensitivity:'base'})*direction});
   },[filteredRows,effectiveColumns,sortKey,sortDirection]);
 
-  const pageCount=Math.max(1,Math.ceil(sorted.length/pageSize));const safePage=Math.min(page,pageCount);const start=(safePage-1)*pageSize;const visible=sorted.slice(start,start+pageSize);
+  const pageCount=Math.max(1,Math.ceil(sorted.length/pageSize));
+  const safePage=Math.min(page,pageCount);
+  const start=(safePage-1)*pageSize;
+  const visible=sorted.slice(start,start+pageSize);
   function sort(column:SmartColumn<T>){if(sortKey===column.key)setSortDirection(d=>d==='asc'?'desc':'asc');else{setSortKey(column.key);setSortDirection('asc')}setPage(1)}
-  function exportCsv(){const csv=[shownColumns.map(c=>csvCell(c.label)).join(','),...sorted.map(row=>shownColumns.map(c=>csvCell(c.value(row))).join(','))].join('\r\n');const blob=new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`${exportName}.csv`;document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url)}
+  function exportCsv(){const csv=[shownColumns.map(c=>csvCell(c.exportLabel??c.label)).join(','),...sorted.map(row=>shownColumns.map(c=>csvCell(c.value(row))).join(','))].join('\r\n');const blob=new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`${exportName}.csv`;document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url)}
   function clearFilters(){setPlatformsSelected([]);setManufacturersSelected([]);setModelsSelected([]);setOsVersionsSelected([]);setCompliancesSelected([]);setEncryptionsSelected([]);setOwnershipsSelected([]);setUserStatesSelected([]);setCheckin('');setMaxAge(180)}
-  const first=sorted.length?start+1:0;const last=Math.min(start+pageSize,sorted.length);
-  const standardColumns=effectiveColumns.filter(c=>!c.rawField);const rawFieldColumns=effectiveColumns.filter(c=>c.rawField);
+  const first=sorted.length?start+1:0;
+  const last=Math.min(start+pageSize,sorted.length);
   function toggleColumn(key:string){setVisibleKeys(keys=>keys.includes(key)?(keys.length>1?keys.filter(k=>k!==key):keys):[...keys,key])}
 
   return <>
@@ -152,7 +198,7 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
       </div>
     </div>}
     <div className={`tableToolbar ${isDevices?'deviceTableToolbar':''}`}><div className="tableResultCount"><strong>{sorted.length.toLocaleString()}</strong><span>{isDevices?`of ${rows.length.toLocaleString()} devices`:'items'}</span></div><div className="tableToolbarActions">{isDevices?<button className={`tableExport tableColumns ${columnsOpen?'active':''}`} onClick={()=>setColumnsOpen(v=>!v)}><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="5" height="14" rx="1.2"/><rect x="9.5" y="5" width="5" height="14" rx="1.2"/><rect x="16" y="5" width="5" height="14" rx="1.2"/></svg><span>Columns</span><b>{shownColumns.length}</b></button>:<><label><span>Rows</span><select value={pageSize} onChange={e=>setPageSize(Number(e.target.value))}>{pageSizes.map(size=><option key={size} value={size}>{size}</option>)}</select></label><button className="tableExport" onClick={exportCsv}><span>↓</span> Export CSV</button></>}</div></div>
-    {isDevices&&columnsOpen&&<div className="columnPicker enhancedColumnPicker"><div className="columnPickerIntro"><strong>Columns & export fields</strong><span>Select any normalized or original Intune field. CSV export uses exactly this selection.</span><div><button type="button" onClick={()=>setVisibleKeys(standardColumns.map(c=>c.key))}>Standard only</button><button type="button" onClick={()=>setVisibleKeys(effectiveColumns.map(c=>c.key))}>Select all</button></div></div><div className="columnGroups"><section><header>Standard columns <span>{standardColumns.length}</span></header><div>{standardColumns.map(c=><label key={c.key}><input type="checkbox" checked={visibleKeys.includes(c.key)} onChange={()=>toggleColumn(c.key)}/><span>{c.label}</span></label>)}</div></section><section><header>Raw Intune fields <span>{rawFieldColumns.length}</span></header><div className="rawColumnList">{rawFieldColumns.map(c=><label key={c.key}><input type="checkbox" checked={visibleKeys.includes(c.key)} onChange={()=>toggleColumn(c.key)}/><span>{c.label}</span></label>)}</div></section></div></div>}
+    {isDevices&&columnsOpen&&<div className="columnPicker enhancedColumnPicker"><div className="columnPickerIntro"><strong>Columns & export fields</strong><span>Select normalized analyzer fields or original fields from the Intune export. CSV export uses exactly this selection.</span><div><button type="button" onClick={()=>setVisibleKeys(standardColumns.map(c=>c.key))}>Standard only</button><button type="button" onClick={()=>setVisibleKeys(effectiveColumns.map(c=>c.key))}>Select all</button></div></div><div className="columnGroups"><section><header>Standard fields <span>{standardColumns.length}</span></header><div>{standardColumns.map(c=><label key={c.key}><input type="checkbox" checked={visibleKeys.includes(c.key)} onChange={()=>toggleColumn(c.key)}/><span title={c.pickerLabel??c.label}>{c.pickerLabel??c.label}</span></label>)}</div></section><section><header>Original Intune fields <span>{originalColumns.length}</span></header><div className="rawColumnList">{originalColumns.map(c=><label key={c.key}><input type="checkbox" checked={visibleKeys.includes(c.key)} onChange={()=>toggleColumn(c.key)}/><span title={c.label}>{c.label}</span></label>)}</div></section></div></div>}
     <div className="tableWrap smartTableWrap"><table className="smartTable"><thead><tr>{shownColumns.map(column=><th key={column.key} className={sortKey===column.key?'sorted':''}><button onClick={()=>sort(column)}><span>{column.label}</span><i><SortIcon active={sortKey===column.key} direction={sortDirection}/></i></button></th>)}</tr></thead><tbody>{visible.map(row=><tr key={rowKey(row)} className={onRowClick?'clickRow':''} onClick={()=>onRowClick?.(row)}>{shownColumns.map(column=><td key={column.key}>{column.render?column.render(row):String(column.value(row)??'—')}</td>)}</tr>)}</tbody></table></div>
     <div className={`tablePager ${isDevices?'deviceTablePager':''}`}><span>Showing <strong>{first.toLocaleString()}</strong>–<strong>{last.toLocaleString()}</strong> of <strong>{sorted.length.toLocaleString()}</strong></span><div className="pagerActions">{isDevices&&<label className="pagerRows"><span>Rows</span><select value={pageSize} onChange={e=>setPageSize(Number(e.target.value))}>{pageSizes.map(size=><option key={size} value={size}>{size}</option>)}</select></label>}<button disabled={safePage<=1} onClick={()=>setPage(1)}>«</button><button disabled={safePage<=1} onClick={()=>setPage(p=>Math.max(1,p-1))}>‹</button><span>Page <strong>{safePage}</strong> of <strong>{pageCount}</strong></span><button disabled={safePage>=pageCount} onClick={()=>setPage(p=>Math.min(pageCount,p+1))}>›</button><button disabled={safePage>=pageCount} onClick={()=>setPage(pageCount)}>»</button></div></div>
   </>;
