@@ -9,6 +9,7 @@ function countValues(values:string[]){return Object.entries(values.reduce<Record
 function rawValue(device:Device,patterns:RegExp[]){for(const [name,value] of Object.entries(device.raw)){if(patterns.some(p=>p.test(name))&&value?.trim())return value.trim()}return ''}
 function osFamily(platform:string){return platform==='ios'||platform==='ipados'?'iosipados':platform}
 function platformFamily(platform:string){return platform==='ios'||platform==='ipados'?'applemobile':platform}
+function skuFamily(device:Device){return rawValue(device,[/^sku\s*family$/i,/^skufamily$/i,/^os\s*sku$/i,/^sku$/i])||'Unknown'}
 
 function hardwareType(device:Device){
   if(device.platform==='ios')return 'Smartphone';
@@ -39,6 +40,13 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
   const platformCounts=countValues(devices.map(d=>platformFamily(d.platform))).filter(([n])=>n!=='unknown');
   const byPlatform=Object.entries(devices.reduce<Record<string,Device[]>>((a,d)=>{const family=osFamily(d.platform);(a[family]??=[]).push(d);return a},{})).sort((a,b)=>b[1].length-a[1].length);
   const fragmentation=byPlatform.map(([platform,list])=>{const versions=countValues(list.map(d=>clean(d.osVersion))),top=versions[0];return{platform,devices:list.length,versions:versions.length,topVersion:top?.[0]||'Unknown',topCount:top?.[1]||0}});
+  const platformDetails=byPlatform.filter(([platform])=>platform!=='unknown').map(([platform,list])=>({
+    platform,
+    devices:list,
+    versions:countValues(list.map(d=>clean(d.osVersion))),
+    models:countValues(list.map(d=>clean(d.model)).filter(v=>v!=='Unknown')),
+    skus:platform==='windows'?countValues(list.map(skuFamily)):[] as [string,number][]
+  }));
   const userCounts=countValues(devices.map(d=>clean(d.userUpn||d.userDisplayName)).filter(v=>v!=='Unknown'));
   const userDistribution=[['1 device',userCounts.filter(([,n])=>n===1).length],['2 devices',userCounts.filter(([,n])=>n===2).length],['3+ devices',userCounts.filter(([,n])=>n>=3).length]] as [string,number][];
   const noUser=devices.filter(d=>!d.userUpn&&!d.userDisplayName).length;
@@ -70,6 +78,14 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
         <InsightCard icon="versions" title="OS fragmentation" subtitle="Version diversity and dominant release per OS family"><div className="fragmentationList">{fragmentation.map(row=><div key={row.platform}><header><span className="labelWithIcon"><PlatformIcon name={row.platform}/><strong>{platformLabel[row.platform]||row.platform}</strong></span><span>{row.versions} version{row.versions===1?'':'s'}</span></header><div><span className="truncate">{row.topVersion}</span><b>{pct(row.topCount,row.devices)} on top version</b></div><i><b style={{width:pct(row.topCount,row.devices)}}/></i></div>)}</div></InsightCard>
       </div>
     </InsightCategory>
+
+    {platformDetails.map(detail=><InsightCategory key={detail.platform} title={`${platformLabel[detail.platform]||detail.platform} inventory`} subtitle={`${fmt(detail.devices.length)} devices · platform-specific inventory details.`}>
+      <div className="extendedInsightGrid twoInsightGrid">
+        <InsightCard icon="versions" title={`${platformLabel[detail.platform]||detail.platform} OS versions`} subtitle="Reported operating system versions for this platform"><Distribution rows={detail.versions} total={detail.devices.length}/></InsightCard>
+        <InsightCard icon="models" title={`${platformLabel[detail.platform]||detail.platform} models`} subtitle="Most common hardware models for this platform"><Distribution rows={detail.models} total={detail.devices.length}/></InsightCard>
+        {detail.platform==='windows'&&<InsightCard icon="versions" title="Windows SKU / edition" subtitle="Windows SKU family reported by the Intune inventory export"><Distribution rows={detail.skus} total={detail.devices.length}/><p className="insightFootnote">Reads SkuFamily, OS SKU or SKU when present in the export. Unknown means the field was not populated.</p></InsightCard>}
+      </div>
+    </InsightCategory>)}
 
     <InsightCategory title="Users & ownership" subtitle="Primary-user coverage, device density and ownership state.">
       <div className="extendedInsightGrid twoInsightGrid">
