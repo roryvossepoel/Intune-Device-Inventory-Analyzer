@@ -11,6 +11,15 @@ export type SmartColumn<T> = {
   numeric?: boolean;
 };
 
+export type DeviceTableInitialFilters = {
+  platform?: string;
+  manufacturer?: string;
+  model?: string;
+  osVersion?: string;
+  compliance?: string;
+  encryption?: string;
+};
+
 type Props<T> = {
   rows: T[];
   columns: SmartColumn<T>[];
@@ -18,6 +27,8 @@ type Props<T> = {
   exportName: string;
   onRowClick?: (row:T)=>void;
   initialPageSize?: number;
+  initialFilters?: DeviceTableInitialFilters;
+  onClearFilters?: ()=>void;
 };
 
 type DeviceLike={
@@ -73,7 +84,7 @@ function MultiSelect({label,values,selected,onChange,allLabel='All'}:{label:stri
   return <div className="multiFilter" ref={root}><span>{label}</span><div className="multiFilterControl"><button type="button" className={`multiFilterTrigger ${open?'open':''}`} aria-expanded={open} onClick={()=>setOpen(v=>!v)}><span>{summary}</span><DropdownChevron open={open}/></button>{open&&<div className="multiFilterMenu"><button type="button" onClick={()=>{onChange([]);setOpen(false)}} className={selected.length===0?'selected':''}>{allLabel}</button>{values.map(value=><label key={value}><input type="checkbox" checked={selected.includes(value)} onChange={()=>toggle(value)}/><span>{value}</span></label>)}</div>}</div></div>;
 }
 
-export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick,initialPageSize=50}:Props<T>){
+export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick,initialPageSize=50,initialFilters,onClearFilters}:Props<T>){
   const [page,setPage]=useState(1);
   const [pageSize,setPageSize]=useState(initialPageSize);
   const [sortKey,setSortKey]=useState(columns[0]?.key??'');
@@ -91,6 +102,20 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   const [maxAge,setMaxAge]=useState(180);
   const [columnsOpen,setColumnsOpen]=useState(false);
   const [visibleKeys,setVisibleKeys]=useState<string[]>(()=>columns.map(c=>c.key));
+
+  useEffect(()=>{
+    if(!isDevices)return;
+    setPlatformsSelected(initialFilters?.platform?[initialFilters.platform]:[]);
+    setManufacturersSelected(initialFilters?.manufacturer?[initialFilters.manufacturer]:[]);
+    setModelsSelected(initialFilters?.model?[initialFilters.model]:[]);
+    setOsVersionsSelected(initialFilters?.osVersion?[initialFilters.osVersion]:[]);
+    setCompliancesSelected(initialFilters?.compliance?[initialFilters.compliance]:[]);
+    setEncryptionsSelected(initialFilters?.encryption?[initialFilters.encryption]:[]);
+    setUserStatesSelected([]);
+    setCheckin('');
+    setMaxAge(180);
+    setPage(1);
+  },[isDevices,initialFilters]);
 
   const devices=rows as unknown as DeviceLike[];
   const platformValues=useMemo(()=>unique(devices.map(d=>platformName(platformFamily(d.platform)))),[rows]);
@@ -176,7 +201,7 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   const visible=sorted.slice(start,start+pageSize);
   function sort(column:SmartColumn<T>){if(sortKey===column.key)setSortDirection(d=>d==='asc'?'desc':'asc');else{setSortKey(column.key);setSortDirection('asc')}setPage(1)}
   function exportCsv(){const csv=[shownColumns.map(c=>csvCell(c.exportLabel??c.label)).join(','),...sorted.map(row=>shownColumns.map(c=>csvCell(c.value(row))).join(','))].join('\r\n');const blob=new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`${exportName}.csv`;document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url)}
-  function clearFilters(){setPlatformsSelected([]);setManufacturersSelected([]);setModelsSelected([]);setOsVersionsSelected([]);setCompliancesSelected([]);setEncryptionsSelected([]);setOwnershipsSelected([]);setUserStatesSelected([]);setCheckin('');setMaxAge(180)}
+  function clearFilters(){setPlatformsSelected([]);setManufacturersSelected([]);setModelsSelected([]);setOsVersionsSelected([]);setCompliancesSelected([]);setEncryptionsSelected([]);setOwnershipsSelected([]);setUserStatesSelected([]);setCheckin('');setMaxAge(180);onClearFilters?.()}
   const first=sorted.length?start+1:0;
   const last=Math.min(start+pageSize,sorted.length);
   function toggleColumn(key:string){setVisibleKeys(keys=>keys.includes(key)?(keys.length>1?keys.filter(k=>k!==key):keys):[...keys,key])}
