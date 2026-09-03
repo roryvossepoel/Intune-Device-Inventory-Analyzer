@@ -1,7 +1,10 @@
-.dataCard:has(.deviceFilterShell)>.dataHead{padding:14px 18px 8px;border-bottom:0}
-.dataCard:has(.deviceFilterShell)>.dataHead p{display:block;margin-top:2px}
+.dataCard:has(.deviceFilterShell){position:relative}
+.dataCard:has(.deviceFilterShell)>.dataHead{padding:13px 210px 12px 18px;border-bottom:0;min-height:52px;display:flex;align-items:center}
+.dataCard:has(.deviceFilterShell)>.dataHead h2{margin:0}
+.dataCard:has(.deviceFilterShell)>.dataHead p{display:none}
 .dataCard:has(.deviceFilterShell) .deviceFilterShell{border-top:0;background:transparent}
-.dataCard:has(.deviceFilterShell) .deviceFilterTop{padding:0 18px 10px;border-bottom:1px solid #e6eef7;justify-content:flex-end}
+.dataCard:has(.deviceFilterShell) .deviceFilterTop{position:absolute;top:7px;right:18px;padding:0;border-bottom:0;justify-content:flex-end;z-index:5}
 .dataCard:has(.deviceFilterShell) .deviceFilterTop>div:first-child{display:none}
 .dataCard:has(.deviceFilterShell) .deviceFilterTop>div:last-child{align-items:center}
 .dataCard:has(.deviceFilterShell) .deviceFilterTop .clearExplorer{padding-left:8px;padding-right:8px}
+@media(max-width:760px){.dataCard:has(.deviceFilterShell)>.dataHead{padding-right:18px}.dataCard:has(.deviceFilterShell) .deviceFilterTop{position:static;padding:0 18px 10px}.dataCard:has(.deviceFilterShell) .deviceFilterTop>div:last-child{margin-left:auto}}
