@@ -3,6 +3,17 @@
 .deviceTablePager>.pagerActions>button:first-of-type{margin-left:auto}
 .deviceTablePager .pagerRows{margin:0 0 0 10px}
 
+/* Keep the device header clean: Export stays in the header while Clear filters belongs to the filter area. */
+.dataCard:has(.deviceFilterShell) .deviceFilterShell{position:relative;display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:14px;padding:17px 18px 20px;border-top:1px solid #e6eef7;background:rgba(244,249,255,.82)}
+.dataCard:has(.deviceFilterShell) .deviceFilterTop{display:contents;position:static;padding:0;border:0}
+.dataCard:has(.deviceFilterShell) .deviceFilterTop>div:first-child{display:none}
+.dataCard:has(.deviceFilterShell) .deviceFilterTop>div:last-child{display:contents}
+.dataCard:has(.deviceFilterShell) .deviceFilterPanel{display:contents;padding:0;border:0;background:transparent}
+.dataCard:has(.deviceFilterShell) .deviceTopExport{position:absolute;top:-51px;right:18px;z-index:6}
+.dataCard:has(.deviceFilterShell) .clearExplorer{grid-column:4;grid-row:3;align-self:end;justify-self:end;height:40px;padding:0 12px!important;border:1px solid transparent!important;background:transparent!important;color:#617a96!important;display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;box-shadow:none;white-space:nowrap}
+.dataCard:has(.deviceFilterShell) .clearExplorer:before{content:"";width:14px;height:14px;flex:0 0 14px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4v6h6M20 20v-6h-6'/%3E%3Cpath d='M5.5 15a7.5 7.5 0 0 0 12.6 2.6L20 14M4 10l1.9-3.6A7.5 7.5 0 0 1 18.5 9'/%3E%3C/svg%3E") center/14px 14px no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4v6h6M20 20v-6h-6'/%3E%3Cpath d='M5.5 15a7.5 7.5 0 0 0 12.6 2.6L20 14M4 10l1.9-3.6A7.5 7.5 0 0 1 18.5 9'/%3E%3C/svg%3E") center/14px 14px no-repeat}
+.dataCard:has(.deviceFilterShell) .clearExplorer:hover{background:#eef6ff!important;border-color:#d4e4f4!important;color:#1769c2!important}
+
 /* Use crisp, font-independent chevrons for pagination controls. */
 .pagerActions>button{position:relative;font-size:0;display:inline-grid;place-items:center}
 .pagerActions>button::before,.pagerActions>button::after{content:"";position:absolute;width:6px;height:6px;border-top:1.7px solid currentColor;border-right:1.7px solid currentColor;border-radius:.5px}
@@ -16,4 +27,19 @@
 .pagerActions>button:nth-of-type(4)::before{left:11px}
 .pagerActions>button:nth-of-type(4)::after{left:16px}
 
-@media(max-width:760px){.deviceTablePager{display:flex;align-items:flex-start;flex-direction:column}.deviceTablePager>.pagerActions{display:flex;width:100%;justify-content:flex-end;flex-wrap:wrap}.deviceTablePager .pagerRows{margin-right:auto;margin-left:0}}
+@media(max-width:1200px){
+  .dataCard:has(.deviceFilterShell) .deviceFilterShell{grid-template-columns:repeat(3,minmax(160px,1fr))}
+  .dataCard:has(.deviceFilterShell) .clearExplorer{grid-column:3;grid-row:4}
+}
+@media(max-width:900px){
+  .dataCard:has(.deviceFilterShell) .deviceFilterShell{grid-template-columns:repeat(2,minmax(160px,1fr))}
+  .dataCard:has(.deviceFilterShell) .clearExplorer{grid-column:2;grid-row:5}
+}
+@media(max-width:760px){
+  .deviceTablePager{display:flex;align-items:flex-start;flex-direction:column}
+  .deviceTablePager>.pagerActions{display:flex;width:100%;justify-content:flex-end;flex-wrap:wrap}
+  .deviceTablePager .pagerRows{margin-right:auto;margin-left:0}
+  .dataCard:has(.deviceFilterShell) .deviceFilterShell{grid-template-columns:1fr}
+  .dataCard:has(.deviceFilterShell) .deviceTopExport{position:static;grid-column:1;justify-self:end;order:-2}
+  .dataCard:has(.deviceFilterShell) .clearExplorer{grid-column:1;grid-row:auto;justify-self:end;order:99}
+}
