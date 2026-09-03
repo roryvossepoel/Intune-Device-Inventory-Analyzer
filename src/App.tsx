@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { importInventory } from './importer';
+import { createDemoInventory } from './demoData';
 import SmartTable from './SmartTable';
 import ExtendedInsights from './ExtendedInsights';
 import WindowsUpdateHealth from './WindowsUpdateHealth';
@@ -32,14 +33,31 @@ export default function App(){
   const [platform,setPlatform] = useState<string|null>(null);
   const [filter,setFilter] = useState<Filter>(null);
   const [selected,setSelected] = useState<Device|null>(null);
+  const [demoMode,setDemoMode] = useState(false);
   const input = useRef<HTMLInputElement>(null);
 
   async function open(file?:File){
     if(!file) return;
     setBusy(true); setError(null);
-    try { setData(await importInventory(file)); setView('overview'); setPlatform(null); setFilter(null); setQuery(''); }
+    try { setData(await importInventory(file)); setDemoMode(false); setView('overview'); setPlatform(null); setFilter(null); setQuery(''); }
     catch(e){ setError(e instanceof Error ? e.message : 'The export could not be read.'); }
     finally { setBusy(false); }
+  }
+
+  function openDemo(target:View='overview'){
+    setData(createDemoInventory());
+    setDemoMode(true);
+    setView(target);
+    setPlatform(null);
+    setFilter(null);
+    setQuery('');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function navigate(target:View){
+    if(target==='faq'){setView('faq');window.scrollTo({top:0,behavior:'smooth'});return;}
+    if(!data){openDemo(target);return;}
+    setView(target);setQuery('');window.scrollTo({top:0,behavior:'smooth'});
   }
 
   function drill(field:NonNullable<Filter>['field'],label:string,value:string){ setFilter({field,label,value}); setView('devices'); setQuery(''); window.scrollTo({top:0,behavior:'smooth'}); }
@@ -81,25 +99,22 @@ export default function App(){
   const pageDescription=view==='overview'?'Health, composition and attention points from the current Intune inventory.':view==='devices'?'Search and inspect every device in the imported inventory.':view==='updates'?'Update health and operating system versions enriched with Device Intelligence.':'Prepare management-ready exports and summaries from the current inventory.';
 
   return <div className="app">
-    <header className="topbar"><div className="topbarInner">
-      <button className="brand" onClick={()=>setView('overview')}><span className="brandMark">ID</span><span><strong>Intune Device Inventory</strong><small>Analyzer</small></span></button>
+    <header className={`topbar ${!data||view==='faq'?'publicTopbar':''}`}><div className="topbarInner">
+      <button className="brand" onClick={()=>data?navigate('overview'):window.scrollTo({top:0,behavior:'smooth'})}><span className="brandMark">ID</span><span><strong>Intune Device Inventory</strong><small>Analyzer</small></span></button>
       <nav className={`mainNav ${!data?'publicNav':''}`}>
-        {nav.map(([id,label])=>{
-          if(!data && id!=='faq') return null;
-          return <button key={id} className={view===id?'active':''} onClick={()=>{setView(id);setQuery('');window.scrollTo({top:0,behavior:'smooth'})}}>{label}</button>;
-        })}
-        {!data&&<a className="navExternal" href="https://github.com/roryvossepoel/Intune-Device-Inventory-Analyzer" target="_blank" rel="noreferrer">GitHub ↗</a>}
+        {nav.map(([id,label])=><button key={id} className={view===id&&data?'active':''} onClick={()=>navigate(id)}>{label}</button>)}
       </nav>
-      <div className="topActions landingActions">{data&&<button className="primarySmall" onClick={()=>input.current?.click()}>Open export</button>}</div>
+      <div className="topActions landingActions"><button className="primarySmall" onClick={()=>input.current?.click()}>Open export</button></div>
       <input ref={input} hidden type="file" accept=".zip,.csv" onChange={e=>open(e.target.files?.[0])}/>
     </div></header>
 
     {view==='faq'?<FaqPage/>:!data?<main className="landing landingPro">
-      <section className="hero heroPro"><div className="heroBadge">◇ 100% PRIVATE BY DESIGN</div><h1>Understand your<br/>Intune device <em>inventory.</em></h1><p>Open a native Microsoft Intune inventory export and turn raw device data into a clear, interactive overview. Everything is processed locally in your browser.</p><div className="featureGrid"><Feature icon="◇" title="100% local" text="Your data never leaves this browser"/><Feature icon="▣" title="Private by design" text="No uploads, no servers, no tracking"/><Feature icon="ϟ" title="Fast & secure" text="All processing happens on your device"/><Feature icon="▤" title="Native Intune export" text="Supports ZIP or CSV exports"/></div>{busy&&<div className="loadingState">Reading and normalizing inventory…</div>}{error&&<div className="error">{error}</div>}</section>
+      <section className="hero heroPro"><div className="heroBadge">◇ 100% PRIVATE BY DESIGN</div><h1>Understand your<br/>Intune device <em>inventory.</em></h1><p>Open a native Microsoft Intune inventory export and turn raw device data into a clear, interactive overview. Everything is processed locally in your browser.</p><div className="landingCtas"><button className="landingPrimary" onClick={()=>input.current?.click()}>↥ Open Intune export</button><button className="landingSecondary" onClick={()=>openDemo('overview')}>Try with demo data →</button></div><small className="demoHint">No export available? Explore the complete experience with a local, fictional demo inventory.</small><div className="featureGrid"><Feature icon="◇" title="100% local" text="Your data never leaves this browser"/><Feature icon="▣" title="Private by design" text="No uploads, no servers, no tracking"/><Feature icon="ϟ" title="Fast & secure" text="All processing happens on your device"/><Feature icon="▤" title="Native Intune export" text="Supports ZIP or CSV exports"/></div>{busy&&<div className="loadingState">Reading and normalizing inventory…</div>}{error&&<div className="error">{error}</div>}</section>
       <section className="drop cleanDrop dropPro" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();open(e.dataTransfer.files[0])}} onClick={()=>input.current?.click()}><span className="dropIcon dropCloud">↥</span><strong>Drop your Intune export here</strong><small>or click anywhere in this area to browse files</small><span className="dropFormats">ZIP · CSV</span></section>
       <section className="trustStrip"><Trust icon="♙" title="Your data stays with you" text="All files are read locally. Nothing is sent anywhere, ever."/><Trust icon="✓" title="Works offline" text="After loading your export, analysis remains local to your browser."/><Trust icon="▱" title="Built for real inventories" text="Designed for large Intune exports with thousands of devices."/></section>
       <LandingContent/>
     </main>:<main className="workspace dashboardWorkspace">
+      {demoMode&&<div className="demoBanner"><span>Demo inventory</span><strong>You're exploring fictional data.</strong><button onClick={()=>input.current?.click()}>Open your own export</button></div>}
       <section className="pageHead dashboardHead"><div><span className="eyebrow">{view.toUpperCase()}</span><h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view==='overview'?<PlatformSelect value={platform} platforms={platforms} onChange={p=>{setPlatform(p);setFilter(null)}}/>:view!=='reports'?<Search value={query} setValue={setQuery}/>:null}</section>
       {view!=='overview'&&<div className="platformStrip"><button className={!platform?'active':''} onClick={()=>{setPlatform(null);setFilter(null)}}><span>All platforms</span><strong>{data.devices.length.toLocaleString()}</strong></button>{platforms.map(([p,n])=><button key={p} className={platform===p?'active':''} onClick={()=>{setPlatform(platform===p?null:p);setFilter(null)}}><span>{platformLabel[p]}</span><strong>{n.toLocaleString()}</strong></button>)}</div>}
       {(platform||filter)&&view!=='overview'&&<div className="activeFilters"><span>Viewing</span>{platform&&<b>{platformLabel[platform]}</b>}{filter&&<b>{filter.label}: {filter.value}</b>}<span>{scoped.length.toLocaleString()} devices</span><button onClick={()=>{setPlatform(null);setFilter(null)}}>Clear</button></div>}
@@ -109,7 +124,7 @@ export default function App(){
       {view==='reports'&&<section className="reportsPlaceholder"><div className="reportsIcon">▤</div><h2>Management reports</h2><p>PDF and PowerPoint reporting will be built here using the currently loaded inventory. The report engine will remain fully local in the browser.</p><span>Planned: executive summary · platform overview · compliance · update position · hardware</span></section>}
     </main>}
 
-    <footer className="siteFooter professionalFooter"><div className="footerBrand"><span className="footerMark">ID</span><div><strong>Intune Device Inventory Analyzer</strong><span>Open-source device inventory analysis for Microsoft Intune.</span></div></div><div className="footerPrivacy"><strong>Private by design</strong><span>Inventory processing happens locally in your browser. No device or user data is uploaded or stored.</span></div><div className="footerMeta"><a href="https://github.com/roryvossepoel/Intune-Device-Inventory-Analyzer" target="_blank" rel="noreferrer">GitHub</a><button onClick={()=>{setView('faq');window.scrollTo({top:0,behavior:'smooth'})}}>FAQ</button><strong>v0.1.0</strong></div></footer>
+    <footer className="siteFooter professionalFooter"><div className="footerBrand"><span className="footerMark">ID</span><div><strong>Intune Device Inventory Analyzer</strong><span>Open-source device inventory analysis for Microsoft Intune.</span></div></div><div className="footerPrivacy"><strong>Private by design</strong><span>Inventory processing happens locally in your browser. No device or user data is uploaded or stored.</span></div><div className="footerMeta"><a href="https://github.com/roryvossepoel/Intune-Device-Inventory-Analyzer" target="_blank" rel="noreferrer">GitHub</a><button onClick={()=>navigate('faq')}>FAQ</button><strong>v0.1.0</strong></div></footer>
     {selected&&<DeviceDetail device={selected} onClose={()=>setSelected(null)}/>} 
   </div>;
 }
