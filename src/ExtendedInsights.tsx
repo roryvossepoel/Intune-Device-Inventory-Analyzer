@@ -56,13 +56,11 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
   const visibleActivity=activity.filter((r):r is [string,number]=>r[1]>0);
 
   return <section className="insightCategoryStack">
-    <InsightCategory title="Hardware" subtitle="Form factor, manufacturers and model distribution.">
-      <div className="extendedInsightGrid">
-        <InsightCard icon="hardware" title="Hardware type" subtitle="Form factor inferred from inventory and trusted model families"><Distribution rows={types} total={total} icons="hardware"/><p className="insightFootnote">Unknown means the export and current model rules do not provide enough evidence.</p></InsightCard>
-        <InsightCard icon="manufacturer" title="Hardware manufacturers" subtitle="Largest hardware vendors in the current view"><ManufacturerDistribution rows={manufacturerCounts.slice(0,7)} total={total}/></InsightCard>
-        <InsightCard icon="models" title="Hardware models" subtitle="Most common reported models in the current view"><Distribution rows={modelCounts.slice(0,7)} total={total}/></InsightCard>
-      </div>
-    </InsightCategory>
+    <div className="extendedInsightGrid hardwareInsightGrid">
+      <InsightCard icon="hardware" title="Hardware type" subtitle="Form factor inferred from inventory and trusted model families"><Distribution rows={types} total={total} icons="hardware"/><p className="insightFootnote">Unknown means the export and current model rules do not provide enough evidence.</p></InsightCard>
+      <InsightCard icon="manufacturer" title="Hardware manufacturers" subtitle="Largest hardware vendors in the current view"><ManufacturerDistribution rows={manufacturerCounts.slice(0,7)} total={total}/></InsightCard>
+      <InsightCard icon="models" title="Hardware models" subtitle="Most common reported models in the current view"><Distribution rows={modelCounts.slice(0,7)} total={total}/></InsightCard>
+    </div>
 
     <InsightCategory title="Operating systems" subtitle="OS families, version diversity and dominant releases.">
       <div className="extendedInsightGrid singleInsightGrid">
