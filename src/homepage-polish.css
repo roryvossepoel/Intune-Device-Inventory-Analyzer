@@ -1,4 +1,4 @@
-.mainNav button:first-child{font-size:0}.mainNav button:first-child:before{content:"Dashboard";font-size:14px;font-weight:inherit}
+.mainNav button:first-child{font-size:0!important}.mainNav button:first-child:before{content:"Dashboard";font-size:14px;font-weight:inherit}
 .app:has(.landingReference){background:
 radial-gradient(circle at 82% 16%,rgba(72,138,236,.055),transparent 28%),
 radial-gradient(circle at 14% 72%,rgba(85,181,146,.045),transparent 30%),
