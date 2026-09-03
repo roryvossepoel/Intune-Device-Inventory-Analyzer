@@ -9,7 +9,7 @@ import EncryptionCard, { securityAttention } from './SecurityInsights';
 import DashboardSection from './DashboardSection';
 import LandingContent from './LandingContent';
 import FaqPage from './FaqPage';
-import type { SmartColumn } from './SmartTable';
+import type { DeviceTableInitialFilters, SmartColumn } from './SmartTable';
 import type { Device, ImportResult } from './types';
 
 const platformLabel:Record<string,string>={windows:'Windows',android:'Android',applemobile:'Apple Mobile',macos:'macOS',linux:'Linux',unknown:'Unknown'};
@@ -64,6 +64,21 @@ export default function App(){
   const scoped=useMemo(()=>base.filter(d=>{if(!filter)return true;const value=filter.field==='compliance'?d.compliance:filter.field==='osVersion'?d.osVersion:filter.field==='manufacturer'?d.manufacturer:filter.field==='model'?d.model:filter.field==='user'?(d.userUpn||d.userDisplayName):rawValue(d,/^encrypted$/i).toLowerCase();return filter.field==='encryption'?value===filter.value.toLowerCase():key(value)===filter.value}),[base,filter]);
   const q=query.trim().toLowerCase();
   const searched=scoped.filter(d=>!q||[d.deviceName,d.serialNumber,d.userDisplayName,d.userUpn,d.manufacturer,d.model,d.osVersion,d.sourceOS].some(v=>v?.toLowerCase().includes(q)));
+  const deviceRows=useMemo(()=>data?.devices.filter(d=>!q||[d.deviceName,d.serialNumber,d.userDisplayName,d.userUpn,d.manufacturer,d.model,d.osVersion,d.sourceOS].some(v=>v?.toLowerCase().includes(q)))??[],[data,q]);
+  const deviceInitialFilters=useMemo<DeviceTableInitialFilters>(()=>{
+    const initial:DeviceTableInitialFilters={};
+    if(platform)initial.platform=platformLabel[platform]||platform;
+    if(!filter)return initial;
+    if(filter.field==='compliance')initial.compliance=filter.value;
+    if(filter.field==='osVersion')initial.osVersion=filter.value;
+    if(filter.field==='manufacturer')initial.manufacturer=filter.value;
+    if(filter.field==='model')initial.model=filter.value;
+    if(filter.field==='encryption'){
+      const value=filter.value.toLowerCase();
+      initial.encryption=['false','no','0','not encrypted','unencrypted'].includes(value)?'Not encrypted':['true','yes','1','encrypted'].includes(value)?'Encrypted':'Unknown';
+    }
+    return initial;
+  },[platform,filter]);
   const platforms=useMemo(()=>data?countBy(data.devices,d=>platformKey(d.platform)):[],[data]);
   const compliance=useMemo(()=>countBy(base,d=>key(d.compliance)),[base]);
   const compliant=compliance.find(([v])=>v.toLowerCase()==='compliant')?.[1]??0;
@@ -114,10 +129,10 @@ export default function App(){
     </main>:<main className="workspace dashboardWorkspace">
       {demoMode&&<div className="demoBanner"><span>Demo inventory</span><strong>You're exploring fictional data.</strong><button onClick={()=>input.current?.click()}>Open your own export</button></div>}
       <section className="pageHead dashboardHead"><div><span className="eyebrow">{view.toUpperCase()}</span><h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view==='overview'?<PlatformSelect value={platform} platforms={platforms} onChange={p=>{setPlatform(p);setFilter(null)}}/>:view!=='reports'?<Search value={query} setValue={setQuery}/>:null}</section>
-      {view!=='overview'&&<div className="platformStrip"><button className={!platform?'active':''} onClick={()=>{setPlatform(null);setFilter(null)}}><span>All platforms</span><strong>{data.devices.length.toLocaleString()}</strong></button>{platforms.map(([p,n])=><button key={p} className={platform===p?'active':''} onClick={()=>{setPlatform(platform===p?null:p);setFilter(null)}}><span>{platformLabel[p]||p}</span><strong>{n.toLocaleString()}</strong></button>)}</div>}
-      {(platform||filter)&&view!=='overview'&&<div className="activeFilters"><span>Viewing</span>{platform&&<b>{platformLabel[platform]||platform}</b>}{filter&&<b>{filter.label}: {filter.value}</b>}<span>{scoped.length.toLocaleString()} devices</span><button onClick={()=>{setPlatform(null);setFilter(null)}}>Clear</button></div>}
+      {view!=='overview'&&view!=='devices'&&<div className="platformStrip"><button className={!platform?'active':''} onClick={()=>{setPlatform(null);setFilter(null)}}><span>All platforms</span><strong>{data.devices.length.toLocaleString()}</strong></button>{platforms.map(([p,n])=><button key={p} className={platform===p?'active':''} onClick={()=>{setPlatform(platform===p?null:p);setFilter(null)}}><span>{platformLabel[p]||p}</span><strong>{n.toLocaleString()}</strong></button>)}</div>}
+      {(platform||filter)&&view!=='overview'&&view!=='devices'&&<div className="activeFilters"><span>Viewing</span>{platform&&<b>{platformLabel[platform]||platform}</b>}{filter&&<b>{filter.label}: {filter.value}</b>}<span>{scoped.length.toLocaleString()} devices</span><button onClick={()=>{setPlatform(null);setFilter(null)}}>Clear</button></div>}
       {view==='overview'&&<Overview devices={base} allDevices={data.devices} total={base.length} users={users.length} models={modelCount} compliant={compliant} noncompliant={noncompliant} grace={grace} stale={stale} compliance={compliance} platforms={platforms} platform={platform} onPlatform={setPlatform} drill={drill}/>} 
-      {view==='devices'&&<DataCard title="Device inventory" subtitle={`${searched.length.toLocaleString()} matching devices`}><SmartTable rows={searched} columns={deviceColumns} rowKey={d=>d.id} exportName="intune-devices" onRowClick={setSelected}/></DataCard>}
+      {view==='devices'&&<DataCard title="Device inventory" subtitle=""><SmartTable rows={deviceRows} columns={deviceColumns} rowKey={d=>d.id} exportName="intune-devices" onRowClick={setSelected} initialFilters={deviceInitialFilters} onClearFilters={()=>{setPlatform(null);setFilter(null)}}/></DataCard>}
       {view==='updates'&&<><WindowsUpdateHealth devices={base}/><DataCard title="All reported OS versions" subtitle={`${filteredUpdates.length.toLocaleString()} matching platform/version combinations`}><SmartTable rows={filteredUpdates} columns={updateColumns} rowKey={r=>r.platform+'|'+r.version} exportName="intune-os-versions" onRowClick={r=>drill('osVersion','OS version',r.version)}/></DataCard></>}
       {view==='reports'&&<section className="reportsPlaceholder"><div className="reportsIcon">▤</div><h2>Management reports</h2><p>PDF and PowerPoint reporting will be built here using the currently loaded inventory. The report engine will remain fully local in the browser.</p><span>Planned: executive summary · platform overview · compliance · update position · hardware</span></section>}
     </main>}
