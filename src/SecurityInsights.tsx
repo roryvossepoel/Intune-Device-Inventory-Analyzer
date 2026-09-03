@@ -11,6 +11,11 @@ function cleanManufacturer(value:string|null){const rawName=value?.trim()||'Unkn
 export function encryptionState(d:Device){return boolState(raw(d,[/^encrypted$/i,/encryption status/i,/is encrypted/i]))}
 export function securityAttention(devices:Device[]){let notEncrypted=0,wipePending=0,approvalPending=0,rooted=0;for(const d of devices){if(encryptionState(d)===false)notEncrypted++;const state=raw(d,[/^device state$/i,/management state/i]).toLowerCase();if(state.includes('wipepending')||state.includes('wipe pending'))wipePending++;const reg=raw(d,[/registration state/i]).toLowerCase();if(reg.includes('approvalpending')||reg.includes('approval pending'))approvalPending++;const jail=boolState(raw(d,[/jailbroken/i,/rooted/i,/jailbreak/i]));if(jail===true)rooted++}return{notEncrypted,wipePending,approvalPending,rooted}}
 
+function HighlightText({text}:{text:string}){
+  const highlight=/((?:\d{1,3}(?:[.,]\d{3})+|\d+(?:\.\d+)?)%?|Windows|Android|Apple Mobile|macOS|Linux|Dell|Apple|Samsung|Microsoft|Lenovo|HP|Google)/g;
+  return <>{text.split(highlight).map((part,index)=>highlight.test(part)?<strong className="summaryHighlight" key={index}>{part}</strong>:part)}</>;
+}
+
 function InventorySummary({devices}:{devices:Device[]}){
   const total=devices.length;
   if(!total)return null;
@@ -42,13 +47,13 @@ function InventorySummary({devices}:{devices:Device[]}){
   const paragraph2=healthParts.join('. ')+'.';
 
   const estateParts:string[]=[];
-  if(topManufacturers.length)estateParts.push(`The hardware estate is led by ${topManufacturers.join(', ')}`);
-  if(uniqueModels){const diversity=uniqueModels/total;if(diversity<0.03)estateParts.push(`with a highly standardized mix of ${fmt(uniqueModels)} reported models`);else if(diversity<0.08)estateParts.push(`across ${fmt(uniqueModels)} reported models`);else estateParts.push(`with a relatively diverse mix of ${fmt(uniqueModels)} reported models`)}
+  if(topManufacturers.length)estateParts.push(`Hardware is spread across several major vendors, with ${topManufacturers.join(', ')} accounting for most of the current view`);
+  if(uniqueModels){const diversity=uniqueModels/total;if(diversity<0.03)estateParts.push(`across a highly standardized mix of ${fmt(uniqueModels)} reported models`);else if(diversity<0.08)estateParts.push(`across ${fmt(uniqueModels)} reported models`);else estateParts.push(`across a relatively diverse mix of ${fmt(uniqueModels)} reported models`)}
   const paragraph3=estateParts.length?estateParts.join(' ')+'.':'';
 
   return <article className="inventorySummaryCard" style={{gridColumn:'1 / -1',width:'100%',order:-1}}>
-    <header><span className="inventorySummaryIcon" aria-hidden="true"><span className="inventorySummaryGlyph">≡</span></span><div><h2>Inventory summary</h2><p>Automatically composed from the current dashboard scope.</p></div><span className="inventorySummaryBadge">Current view</span></header>
-    <div className="inventorySummaryCopy"><p>{paragraph1}</p><p>{paragraph2}</p>{paragraph3&&<p>{paragraph3}</p>}</div>
+    <header><div><h2>Inventory summary</h2><p>Automatically composed from the current dashboard scope.</p></div><span className="inventorySummaryBadge">Current view</span></header>
+    <div className="inventorySummaryCopy"><p><HighlightText text={paragraph1}/></p><p><HighlightText text={paragraph2}/></p>{paragraph3&&<p><HighlightText text={paragraph3}/></p>}</div>
   </article>
 }
 
