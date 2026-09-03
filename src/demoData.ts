@@ -2,19 +2,47 @@ import type { Device, ImportResult, PlatformFamily } from './types';
 
 type Template={platform:PlatformFamily;manufacturer:string;model:string;os:string;versions:string[];weight:number};
 const templates:Template[]=[
-  {platform:'windows',manufacturer:'Dell',model:'Dell Pro 16 PC16250',os:'Windows',versions:['10.0.26200.9106','10.0.26200.8893'],weight:18},
-  {platform:'windows',manufacturer:'Microsoft',model:'Surface Laptop 5',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:11},
-  {platform:'windows',manufacturer:'Lenovo',model:'ThinkPad T14 Gen 5',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:9},
-  {platform:'macos',manufacturer:'Apple',model:'MacBook Air (M3)',os:'macOS',versions:['26.6.1','26.6'],weight:6},
-  {platform:'macos',manufacturer:'Apple',model:'MacBook Pro 14-inch (M4)',os:'macOS',versions:['26.6.1','26.5'],weight:4},
-  {platform:'ipados',manufacturer:'Apple',model:'iPad Pro 11-inch (M4)',os:'iPadOS',versions:['26.6.1','26.6'],weight:14},
-  {platform:'ipados',manufacturer:'Apple',model:'iPad (10th generation)',os:'iPadOS',versions:['26.6.1','26.5.2'],weight:8},
-  {platform:'ios',manufacturer:'Apple',model:'iPhone 16e',os:'iOS',versions:['26.6.1','26.6'],weight:12},
-  {platform:'android',manufacturer:'Samsung',model:'SM-A566B',os:'Android',versions:['16','15'],weight:13},
-  {platform:'android',manufacturer:'Samsung',model:'SM-A556B',os:'Android',versions:['16','15'],weight:5},
+  // Windows — intentionally varied across the four major enterprise PC vendors.
+  {platform:'windows',manufacturer:'Dell',model:'Dell Pro 16 PC16250',os:'Windows',versions:['10.0.26200.9106','10.0.26200.8893'],weight:10},
+  {platform:'windows',manufacturer:'Dell',model:'Latitude 3550',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:7},
+  {platform:'windows',manufacturer:'Dell',model:'OptiPlex 7020 Micro Plus',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:5},
+  {platform:'windows',manufacturer:'HP',model:'EliteBook 840 G11',os:'Windows',versions:['10.0.26200.9106','10.0.26200.8893'],weight:8},
+  {platform:'windows',manufacturer:'HP',model:'ProBook 440 G11',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:5},
+  {platform:'windows',manufacturer:'HP',model:'Elite Mini 800 G9',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:4},
+  {platform:'windows',manufacturer:'Lenovo',model:'ThinkPad T14 Gen 5',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:8},
+  {platform:'windows',manufacturer:'Lenovo',model:'ThinkBook 16 G7',os:'Windows',versions:['10.0.26200.9106','10.0.26200.8893'],weight:5},
+  {platform:'windows',manufacturer:'Lenovo',model:'ThinkCentre M75q Gen 5',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:4},
+  {platform:'windows',manufacturer:'Microsoft',model:'Surface Laptop 7',os:'Windows',versions:['10.0.26200.9106','10.0.26200.8893'],weight:7},
+  {platform:'windows',manufacturer:'Microsoft',model:'Surface Pro 11',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:5},
+  {platform:'windows',manufacturer:'Microsoft',model:'Surface Laptop 5',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:3},
+
+  // macOS
+  {platform:'macos',manufacturer:'Apple',model:'MacBook Air 13-inch (M3)',os:'macOS',versions:['26.6.1','26.6'],weight:5},
+  {platform:'macos',manufacturer:'Apple',model:'MacBook Air 15-inch (M4)',os:'macOS',versions:['26.6.1','26.5'],weight:4},
+  {platform:'macos',manufacturer:'Apple',model:'MacBook Pro 14-inch (M4)',os:'macOS',versions:['26.6.1','26.5'],weight:3},
+
+  // Apple Mobile — iPhone and iPad remain distinct internally, but are presented together in the UI.
+  {platform:'ios',manufacturer:'Apple',model:'iPhone 16e',os:'iOS',versions:['26.6.1','26.6'],weight:8},
+  {platform:'ios',manufacturer:'Apple',model:'iPhone 16',os:'iOS',versions:['26.6.1','26.6'],weight:6},
+  {platform:'ios',manufacturer:'Apple',model:'iPhone SE (3rd generation)',os:'iOS',versions:['26.6.1','26.5.2'],weight:4},
+  {platform:'ipados',manufacturer:'Apple',model:'iPad Pro 11-inch (M4)',os:'iPadOS',versions:['26.6.1','26.6'],weight:6},
+  {platform:'ipados',manufacturer:'Apple',model:'iPad Air 11-inch (M3)',os:'iPadOS',versions:['26.6.1','26.6'],weight:5},
+  {platform:'ipados',manufacturer:'Apple',model:'iPad (10th generation)',os:'iPadOS',versions:['26.6.1','26.5.2'],weight:4},
+
+  // Android — multiple recognizable enterprise/mobile vendors and model families.
+  {platform:'android',manufacturer:'Samsung',model:'Galaxy A56 5G',os:'Android',versions:['16','15'],weight:8},
+  {platform:'android',manufacturer:'Samsung',model:'Galaxy S25',os:'Android',versions:['16','15'],weight:5},
+  {platform:'android',manufacturer:'Samsung',model:'Galaxy XCover7',os:'Android',versions:['16','15'],weight:4},
+  {platform:'android',manufacturer:'Google',model:'Pixel 9',os:'Android',versions:['16','15'],weight:5},
+  {platform:'android',manufacturer:'Google',model:'Pixel 9a',os:'Android',versions:['16','15'],weight:4},
+  {platform:'android',manufacturer:'Google',model:'Pixel Tablet',os:'Android',versions:['16','15'],weight:2},
+  {platform:'android',manufacturer:'Motorola',model:'Edge 60',os:'Android',versions:['16','15'],weight:4},
+  {platform:'android',manufacturer:'Motorola',model:'Moto G75 5G',os:'Android',versions:['16','15'],weight:3},
+  {platform:'android',manufacturer:'Xiaomi',model:'Xiaomi 15',os:'Android',versions:['16','15'],weight:3},
+  {platform:'android',manufacturer:'Xiaomi',model:'Redmi Note 14 Pro 5G',os:'Android',versions:['16','15'],weight:3},
 ];
 
-const total=100;
+const total=180;
 const now=Date.now();
 const people=[
   'Michael Scott','Dwight Schrute','Jim Halpert','Pam Beesly','Ryan Howard','Andy Bernard','Robert California',
