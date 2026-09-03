@@ -27,6 +27,8 @@ export type WindowsIntelligence = {
   servicing: 'supported' | 'edition-dependent' | 'unknown';
 };
 
+export type IntelligencePlatform = PlatformFamily | 'applemobile';
+
 const windowsReleases = windowsData.records as WindowsRelease[];
 
 function parseBuild(version:string){
@@ -56,11 +58,18 @@ export function getWindowsIntelligence(version:string|null):WindowsIntelligence|
   return {rawVersion:version,release,releaseName:release.displayName,build,revision,latestBuild:release.latestBuild,updateHealth,servicing:release.status};
 }
 
-export function describeOsVersion(platform:PlatformFamily,rawVersion:string|null):string|null{
+export function describeOsVersion(platform:IntelligencePlatform,rawVersion:string|null):string|null{
   if(!rawVersion)return null;
-  if(platform!=='windows')return rawVersion;
-  const info=getWindowsIntelligence(rawVersion);
-  return info?.release ? `${info.release.displayName} · build ${rawVersion}` : rawVersion;
+  const value=rawVersion.trim();
+  if(platform==='windows'){
+    const info=getWindowsIntelligence(value);
+    return info?.release ? `${info.release.displayName} · build ${value}` : value;
+  }
+  if(platform==='applemobile'||platform==='ios'||platform==='ipados')return /^iOS\/iPadOS\s/i.test(value)?value:`iOS/iPadOS ${value}`;
+  if(platform==='macos')return /^macOS\s/i.test(value)?value:`macOS ${value}`;
+  if(platform==='android')return /^Android\s/i.test(value)?value:`Android ${value}`;
+  if(platform==='linux')return /^Linux\s/i.test(value)?value:`Linux ${value}`;
+  return value;
 }
 
 export function getWindowsRelease(version:string|null):WindowsRelease|null{
