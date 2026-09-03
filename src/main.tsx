@@ -26,6 +26,8 @@ import './device-table-layout.css';
 import './search-polish.css';
 import './active-filter-state.css';
 import './device-ux-polish.css';
+import './sticky-device-header.css';
+import './sticky-device-header';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
