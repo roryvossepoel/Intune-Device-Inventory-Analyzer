@@ -48,7 +48,9 @@ function normalizePlatform(os: string | null, model: string | null): PlatformFam
   if (source.includes('android') || source.includes('aosp')) return 'android';
   if (source.includes('mac')) return 'macos';
   if (source.includes('linux')) return 'linux';
-  if (source.includes('ipad') || hardware.includes('ipad')) return 'ipados';
+  // Intune presents iPhone and iPad management as the Apple Mobile platform.
+  // Keep the actual operating-system name in sourceOS, but use one platform key for UI filtering/reporting.
+  if (source.includes('ipad') || hardware.includes('ipad')) return 'ios';
   if (source.includes('ios') || source.includes('iphone') || hardware.includes('iphone')) return 'ios';
   return 'unknown';
 }
