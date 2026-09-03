@@ -14,7 +14,14 @@ const templates:Template[]=[
 
 const total=90;
 const now=Date.now();
-const people=['Alex Morgan','Jamie de Vries','Sam Peters','Taylor Jansen','Robin Smit','Charlie Willems','Jordan Vos','Casey Jacobs','Morgan Bakker','Dani Mulder','Riley Bos','Avery Meijer'];
+const people=[
+  'Michael Scott','Dwight Schrute','Jim Halpert','Pam Beesly','Ryan Howard','Andy Bernard','Robert California',
+  'Stanley Hudson','Kevin Malone','Angela Martin','Oscar Martinez','Phyllis Vance','Creed Bratton','Meredith Palmer',
+  'Kelly Kapoor','Toby Flenderson','Darryl Philbin','Erin Hannon','Gabe Lewis','Holly Flax','Jan Levinson',
+  'David Wallace','Roy Anderson','Karen Filippelli','Nellie Bertram','Clark Green','Pete Miller','Todd Packer',
+  'Jo Bennett','Charles Miner','Deangelo Vickers','Mose Schrute','Bob Vance','Carol Stills','Val Johnson',
+  'Senator Lipton','Cathy Simms','Helene Beesly','Isabel Poreba','Hank Tate'
+];
 const allocated:Template[]=[];
 for(const t of templates) for(let i=0;i<t.weight;i++) allocated.push(t);
 
@@ -43,7 +50,7 @@ function device(i:number,t:Template):Device{
     'Total storage':String(isWindows?512:256),
     'Management certificate expiration date':new Date(now+(45+(i%250))*86400000).toISOString(),
   };
-  return {id:`demo-${i+1}`,sourceFileName:'Demo inventory',deviceName:name,serialNumber:`DM${String(100000+i)}`,platform:t.platform,sourceOS:t.os,osVersion:version,manufacturer:t.manufacturer,model:t.model,userDisplayName:noUser?null:person,userUpn:noUser?null:`${person.toLowerCase().replace(/ /g,'.')}@example.org`,compliance:compliant?'Compliant':grace?'InGracePeriod':'Noncompliant',ownership:i%37===0?'Personal':'Corporate',managedBy:'Intune',lastCheckIn:isoDaysAgo(age),raw};
+  return {id:`demo-${i+1}`,sourceFileName:'Demo inventory',deviceName:name,serialNumber:`DM${String(100000+i)}`,platform:t.platform,sourceOS:t.os,osVersion:version,manufacturer:t.manufacturer,model:t.model,userDisplayName:noUser?null:person,userUpn:noUser?null:`${person.toLowerCase().replace(/ /g,'.')}@dundermifflin.example`,compliance:compliant?'Compliant':grace?'InGracePeriod':'Noncompliant',ownership:i%37===0?'Personal':'Corporate',managedBy:'Intune',lastCheckIn:isoDaysAgo(age),raw};
 }
 
 export function createDemoInventory():ImportResult{
