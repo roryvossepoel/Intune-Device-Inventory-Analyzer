@@ -49,6 +49,7 @@ type DeviceLike={
 };
 
 type ExplorerColumn<T>=SmartColumn<T>&{rawField?:boolean;pickerLabel?:string;exportLabel?:string};
+type PlatformFilterDefinition={label:string;allLabel:string;value:(device:DeviceLike)=>string};
 
 const pageSizes=[25,50,100,250];
 const normalize=(value:string|number|null|undefined)=>value==null?'':value;
@@ -60,6 +61,10 @@ const ageDays=(value?:string|null)=>{if(!value)return null;const t=Date.parse(va
 const platformFamily=(value?:string)=>value==='ios'||value==='ipados'?'applemobile':value||'unknown';
 const platformName=(value:string)=>value==='windows'?'Windows':value==='android'?'Android':value==='applemobile'?'Apple Mobile':value==='macos'?'macOS':value==='linux'?'Linux':value==='unknown'?'Unknown':value;
 const deviceOf=<T,>(row:T)=>row as unknown as DeviceLike;
+const sku=(row:DeviceLike)=>rawValue(row,/^SkuFamily$|^OS SKU$|^SKU$/i)||'Unknown';
+const securityPatch=(row:DeviceLike)=>rawValue(row,/^Security patch level$/i)||'Unknown';
+const architecture=(row:DeviceLike)=>rawValue(row,/^ProcessorArchitecture$|^Architecture$/i)||'Unknown';
+const supervision=(row:DeviceLike)=>{const value=rawValue(row,/^Supervised$/i);return /^true$/i.test(value)?'Supervised':/^false$/i.test(value)?'Not supervised':'Unknown'};
 
 function SortIcon({active,direction}:{active:boolean;direction:SortDirection}){
   if(active)return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{direction==='asc'?<path d="m4.75 9.25 3.25-3.25 3.25 3.25"/>:<path d="m4.75 6.75 3.25 3.25 3.25-3.25"/>}</svg>;
@@ -70,7 +75,7 @@ function DropdownChevron({open}:{open:boolean}){
   return <svg className="multiFilterChevron" aria-hidden="true" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={open?'m4.5 9.5 3.5-3 3.5 3':'m4.5 6.5 3.5 3 3.5-3'}/></svg>;
 }
 
-function MultiSelect({label,values,selected,onChange,allLabel='All'}:{label:string;values:string[];selected:string[];onChange:(values:string[])=>void;allLabel?:string}){
+function MultiSelect({label,values,selected,onChange,allLabel='All',className=''}:{label:string;values:string[];selected:string[];onChange:(values:string[])=>void;allLabel?:string;className?:string}){
   const [open,setOpen]=useState(false);
   const root=useRef<HTMLDivElement>(null);
   const summary=selected.length===0?allLabel:selected.length===1?selected[0]:`${selected.length} selected`;
@@ -83,7 +88,7 @@ function MultiSelect({label,values,selected,onChange,allLabel='All'}:{label:stri
     document.addEventListener('keydown',escape);
     return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape)};
   },[open]);
-  return <div className="multiFilter" ref={root}>
+  return <div className={`multiFilter ${className}`} ref={root}>
     <span>{label}</span>
     <div className="multiFilterControl">
       <button type="button" className={`multiFilterTrigger ${open?'open':''} ${selected.length?'hasValue':''}`} aria-expanded={open} onClick={()=>setOpen(v=>!v)}><span>{summary}</span><DropdownChevron open={open}/></button>
@@ -109,6 +114,14 @@ function displayCell<T>(column:ExplorerColumn<T>,row:T){
   return text;
 }
 
+function platformFilterFor(platform:string|null):PlatformFilterDefinition|null{
+  if(platform==='Windows')return{label:'Windows SKU',allLabel:'All editions',value:sku};
+  if(platform==='Android')return{label:'Security patch level',allLabel:'All patch levels',value:securityPatch};
+  if(platform==='Apple Mobile')return{label:'Supervision',allLabel:'All supervision states',value:supervision};
+  if(platform==='macOS'||platform==='Linux')return{label:'Architecture',allLabel:'All architectures',value:architecture};
+  return null;
+}
+
 export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick,initialPageSize=50,initialFilters,onClearFilters}:Props<T>){
   const [page,setPage]=useState(1);
   const [pageSize,setPageSize]=useState(initialPageSize);
@@ -123,6 +136,7 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   const [encryptionsSelected,setEncryptionsSelected]=useState<string[]>([]);
   const [ownershipsSelected,setOwnershipsSelected]=useState<string[]>([]);
   const [userStatesSelected,setUserStatesSelected]=useState<string[]>([]);
+  const [platformSpecificSelected,setPlatformSpecificSelected]=useState<string[]>([]);
   const [maxAge,setMaxAge]=useState(180);
   const [columnsOpen,setColumnsOpen]=useState(false);
   const [visibleKeys,setVisibleKeys]=useState<string[]>(()=>columns.map(c=>c.key));
@@ -137,6 +151,7 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
     setEncryptionsSelected(initialFilters?.encryption?[initialFilters.encryption]:[]);
     setOwnershipsSelected([]);
     setUserStatesSelected([]);
+    setPlatformSpecificSelected([]);
     setMaxAge(180);
     setPage(1);
   },[isDevices,initialFilters]);
@@ -150,6 +165,9 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   const ownerships=useMemo(()=>unique(devices.map(d=>d.ownership)),[rows]);
   const encryptionValues=['Encrypted','Not encrypted','Unknown'];
   const userStateValues=['Has primary user','No primary user'];
+  const activePlatform=platformsSelected.length===1?platformsSelected[0]:null;
+  const platformSpecific=platformFilterFor(activePlatform);
+  const platformSpecificValues=useMemo(()=>platformSpecific?unique(devices.filter(d=>platformName(platformFamily(d.platform))===activePlatform).map(d=>platformSpecific.value(d))):[],[rows,activePlatform,platformSpecific]);
 
   const standardColumns=useMemo<ExplorerColumn<T>[]>(()=>{
     if(!isDevices)return columns;
@@ -185,7 +203,7 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   },[rows,isDevices]);
   const effectiveColumns=useMemo<ExplorerColumn<T>[]>(()=>[...standardColumns,...originalColumns],[standardColumns,originalColumns]);
 
-  const activeFilterCount=[platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected].filter(v=>v.length).length+(maxAge<180?1:0);
+  const activeFilterCount=[platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected,platformSpecificSelected].filter(v=>v.length).length+(maxAge<180?1:0);
 
   const filteredRows=useMemo(()=>!isDevices?rows:rows.filter(row=>{
     const d=deviceOf(row);
@@ -198,10 +216,11 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
     if(ownershipsSelected.length&&!ownershipsSelected.includes(d.ownership||''))return false;
     const hasUser=Boolean(d.userUpn||d.userDisplayName);const userState=hasUser?'Has primary user':'No primary user';
     if(userStatesSelected.length&&!userStatesSelected.includes(userState))return false;
+    if(platformSpecific&&platformSpecificSelected.length&&!platformSpecificSelected.includes(platformSpecific.value(d)))return false;
     const age=ageDays(d.lastCheckIn);
     if(maxAge<180&&(age===null||age>maxAge))return false;
     return true;
-  }),[rows,isDevices,platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected,maxAge]);
+  }),[rows,isDevices,platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected,platformSpecificSelected,platformSpecific,maxAge]);
 
   const shownColumns=effectiveColumns.filter(c=>visibleKeys.includes(c.key));
 
@@ -224,14 +243,14 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
 
   function sort(column:SmartColumn<T>){if(sortKey===column.key)setSortDirection(d=>d==='asc'?'desc':'asc');else{setSortKey(column.key);setSortDirection('asc')}setPage(1)}
   function exportCsv(){const csv=[shownColumns.map(c=>csvCell(c.exportLabel??c.label)).join(','),...sorted.map(row=>shownColumns.map(c=>csvCell(c.value(row))).join(','))].join('\r\n');const blob=new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`${exportName}.csv`;document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url)}
-  function clearFilters(){setPlatformsSelected([]);setManufacturersSelected([]);setModelsSelected([]);setOsVersionsSelected([]);setCompliancesSelected([]);setEncryptionsSelected([]);setOwnershipsSelected([]);setUserStatesSelected([]);setMaxAge(180);onClearFilters?.()}
+  function clearFilters(){setPlatformsSelected([]);setManufacturersSelected([]);setModelsSelected([]);setOsVersionsSelected([]);setCompliancesSelected([]);setEncryptionsSelected([]);setOwnershipsSelected([]);setUserStatesSelected([]);setPlatformSpecificSelected([]);setMaxAge(180);onClearFilters?.()}
   function toggleColumn(key:string){setVisibleKeys(keys=>keys.includes(key)?(keys.length>1?keys.filter(k=>k!==key):keys):[...keys,key])}
 
   return <>
     {isDevices&&<div className="deviceFilterShell">
       <div className="deviceFilterTop"><div><strong>Explore devices</strong><span>{sorted.length.toLocaleString()} of {rows.length.toLocaleString()} devices</span></div><div>{activeFilterCount>0&&<button className="clearExplorer" onClick={clearFilters}>Clear filters</button>}<button className="tableExport deviceTopExport" onClick={exportCsv}><span>↓</span> Export CSV</button></div></div>
       <div className="deviceFilterPanel">
-        <MultiSelect label="Platform" values={platformValues} selected={platformsSelected} onChange={setPlatformsSelected} allLabel="All platforms"/>
+        <MultiSelect label="Platform" values={platformValues} selected={platformsSelected} onChange={values=>{setPlatformsSelected(values);setPlatformSpecificSelected([])}} allLabel="All platforms"/>
         <MultiSelect label="Manufacturer" values={manufacturers} selected={manufacturersSelected} onChange={values=>{setManufacturersSelected(values);setModelsSelected([])}} allLabel="All manufacturers"/>
         <MultiSelect label="Model" values={models} selected={modelsSelected} onChange={setModelsSelected} allLabel="All models"/>
         <MultiSelect label="OS version" values={osVersions} selected={osVersionsSelected} onChange={setOsVersionsSelected} allLabel="All versions"/>
@@ -239,6 +258,7 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
         <MultiSelect label="Encryption" values={encryptionValues} selected={encryptionsSelected} onChange={setEncryptionsSelected} allLabel="All states"/>
         <MultiSelect label="Ownership" values={ownerships} selected={ownershipsSelected} onChange={setOwnershipsSelected} allLabel="All ownership"/>
         <MultiSelect label="Primary user" values={userStateValues} selected={userStatesSelected} onChange={setUserStatesSelected} allLabel="Any"/>
+        {platformSpecific&&<MultiSelect className="platformSpecificFilter" label={platformSpecific.label} values={platformSpecificValues} selected={platformSpecificSelected} onChange={setPlatformSpecificSelected} allLabel={platformSpecific.allLabel}/>} 
         <div className={`ageSlider ${maxAge<180?'hasValue':''}`}><span>Checked in within <b>{maxAge>=180?'180+':maxAge} days</b>{maxAge<180&&<button type="button" className="sliderFilterClear" onClick={()=>setMaxAge(180)} aria-label="Clear check-in filter" title="Clear check-in filter">×</button>}</span><input aria-label="Checked in within days" type="range" min="1" max="180" value={maxAge} onChange={e=>setMaxAge(Number(e.target.value))}/><div><small>1 day</small><small>30</small><small>90</small><small>180+</small></div></div>
       </div>
     </div>}
