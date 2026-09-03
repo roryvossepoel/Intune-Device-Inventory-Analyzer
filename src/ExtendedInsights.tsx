@@ -1,6 +1,6 @@
 import type { Device } from './types';
 
-const platformLabel:Record<string,string>={windows:'Windows',android:'Android',ios:'iOS',ipados:'iPadOS',applemobile:'Apple Mobile',iosipados:'iOS/iPadOS',macos:'macOS',linux:'Linux',unknown:'Unknown'};
+const platformLabel:Record<string,string>={windows:'Windows',android:'Android',ios:'iOS/iPadOS',ipados:'iOS/iPadOS',applemobile:'Apple Mobile',iosipados:'iOS/iPadOS',macos:'macOS',linux:'Linux',unknown:'Unknown'};
 const fmt=(n:number)=>n.toLocaleString();
 const clean=(v:string|null|undefined)=>v?.trim()||'Unknown';
 const pct=(n:number,total:number)=>total?`${(n/total*100).toFixed(1)}%`:'0.0%';
@@ -9,10 +9,9 @@ function countValues(values:string[]){return Object.entries(values.reduce<Record
 function rawValue(device:Device,patterns:RegExp[]){for(const [name,value] of Object.entries(device.raw)){if(patterns.some(p=>p.test(name))&&value?.trim())return value.trim()}return ''}
 function osFamily(platform:string){return platform==='ios'||platform==='ipados'?'iosipados':platform}
 function platformFamily(platform:string){return platform==='ios'||platform==='ipados'?'applemobile':platform}
-function skuFamily(device:Device){return rawValue(device,[/^sku\s*family$/i,/^skufamily$/i,/^os\s*sku$/i,/^sku$/i])||'Unknown'}
 
 function hardwareType(device:Device){
-  if(device.platform==='ios')return 'Smartphone';
+  if(device.platform==='ios')return /ipad/i.test(`${device.sourceOS||''} ${device.model||''}`)?'Tablet':'Smartphone';
   if(device.platform==='ipados')return 'Tablet';
   const explicit=rawValue(device,[/chassis/i,/form.?factor/i,/device.?type/i,/hardware.?type/i,/device.?category/i]).toLowerCase();
   const model=(device.model||'').toLowerCase();
@@ -40,13 +39,6 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
   const platformCounts=countValues(devices.map(d=>platformFamily(d.platform))).filter(([n])=>n!=='unknown');
   const byPlatform=Object.entries(devices.reduce<Record<string,Device[]>>((a,d)=>{const family=osFamily(d.platform);(a[family]??=[]).push(d);return a},{})).sort((a,b)=>b[1].length-a[1].length);
   const fragmentation=byPlatform.map(([platform,list])=>{const versions=countValues(list.map(d=>clean(d.osVersion))),top=versions[0];return{platform,devices:list.length,versions:versions.length,topVersion:top?.[0]||'Unknown',topCount:top?.[1]||0}});
-  const platformDetails=byPlatform.filter(([platform])=>platform!=='unknown').map(([platform,list])=>({
-    platform,
-    devices:list,
-    versions:countValues(list.map(d=>clean(d.osVersion))),
-    models:countValues(list.map(d=>clean(d.model)).filter(v=>v!=='Unknown')),
-    skus:platform==='windows'?countValues(list.map(skuFamily)):[] as [string,number][]
-  }));
   const userCounts=countValues(devices.map(d=>clean(d.userUpn||d.userDisplayName)).filter(v=>v!=='Unknown'));
   const userDistribution=[['1 device',userCounts.filter(([,n])=>n===1).length],['2 devices',userCounts.filter(([,n])=>n===2).length],['3+ devices',userCounts.filter(([,n])=>n>=3).length]] as [string,number][];
   const noUser=devices.filter(d=>!d.userUpn&&!d.userDisplayName).length;
@@ -79,14 +71,6 @@ export default function ExtendedInsights({devices}:{devices:Device[]}){
       </div>
     </InsightCategory>
 
-    {platformDetails.map(detail=><InsightCategory key={detail.platform} title={`${platformLabel[detail.platform]||detail.platform} inventory`} subtitle={`${fmt(detail.devices.length)} devices · platform-specific inventory details.`}>
-      <div className="extendedInsightGrid twoInsightGrid">
-        <InsightCard icon="versions" title={`${platformLabel[detail.platform]||detail.platform} OS versions`} subtitle="Reported operating system versions for this platform"><Distribution rows={detail.versions} total={detail.devices.length}/></InsightCard>
-        <InsightCard icon="models" title={`${platformLabel[detail.platform]||detail.platform} models`} subtitle="Most common hardware models for this platform"><Distribution rows={detail.models} total={detail.devices.length}/></InsightCard>
-        {detail.platform==='windows'&&<InsightCard icon="versions" title="Windows SKU / edition" subtitle="Windows SKU family reported by the Intune inventory export"><Distribution rows={detail.skus} total={detail.devices.length}/><p className="insightFootnote">Reads SkuFamily, OS SKU or SKU when present in the export. Unknown means the field was not populated.</p></InsightCard>}
-      </div>
-    </InsightCategory>)}
-
     <InsightCategory title="Users & ownership" subtitle="Primary-user coverage, device density and ownership state.">
       <div className="extendedInsightGrid twoInsightGrid">
         <InsightCard icon="users" title="Devices per user" subtitle="Managed-device density across identified users"><div className="metricTiles userTiles">{userDistribution.map(([label,n])=><Metric key={label} label={label} value={fmt(n)}/>)}</div><div className="inlineInsight"><span>No primary user</span><strong>{fmt(noUser)}</strong><small>{pct(noUser,total)} of devices</small></div></InsightCard>
@@ -113,5 +97,5 @@ function Anomaly({label,value}:{label:string;value:number}){return <div classNam
 function ManufacturerMark({name}:{name:string}){const n=name.toLowerCase(),key=n.includes('microsoft')?'MS':n.includes('apple')?'A':n.includes('samsung')?'S':n.includes('lenovo')?'L':n.includes('dell')?'D':n==='hp'||n.includes('hewlett')?'hp':n.includes('google')?'G':n.includes('motorola')?'M':n.includes('xiaomi')?'X':name.slice(0,2).toUpperCase();return <span className={`manufacturerMark manufacturer-${key.toLowerCase()}`} aria-hidden="true">{key}</span>}
 function MiniIcon({kind,label}:{kind:'hardware'|'ownership';label:string}){const l=label.toLowerCase();const name=kind==='ownership'?'shield':l.includes('laptop')?'laptop':l.includes('desktop')?'desktop':l.includes('tablet')?'tablet':l.includes('smartphone')?'phone':l.includes('virtual')?'virtual':l.includes('server')?'server':'unknown';return <span className="miniDataIcon"><SimpleIcon name={name}/></span>}
 function PlatformIcon({name}:{name:string}){return <span className={`platformMiniIcon platform-${name}`}><SimpleIcon name={name}/></span>}
-function SimpleIcon({name}:{name:string}){if(name==='windows')return <svg viewBox="0 0 24 24"><path d="M3 5.5 10.5 4v7H3V5.5Zm8.5-1.7L21 2v9h-9.5V3.8ZM3 12h7.5v8L3 18.5V12Zm8.5 0H21v10l-9.5-1.8V12Z" fill="currentColor" stroke="none"/></svg>;if(name==='android')return <svg viewBox="0 0 24 24"><path d="M7 9h10v8H7V9Zm2-3-1.5-2M15 6l1.5-2M5 10v5m14-5v5M9 17v3m6-3v3"/></svg>;if(name==='iosipados'||name==='applemobile'||name==='ipados'||name==='tablet')return <svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M11 18h2"/></svg>;if(name==='phone')return <svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>;if(name==='laptop')return <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="11" rx="1.5"/><path d="M3 19h18l-2-4H5l-2 4Z"/></svg>;if(name==='desktop')return <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M9 20h6m-3-4v4"/></svg>;if(name==='virtual')return <svg viewBox="0 0 24 24"><rect x="3" y="4" width="13" height="10" rx="1.5"/><rect x="8" y="10" width="13" height="10" rx="1.5"/></svg>;if(name==='server')return <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="7" rx="1.5"/><rect x="4" y="14" width="16" height="7" rx="1.5"/><path d="M7 6.5h.01M7 17.5h.01M10 6.5h7M10 17.5h7"/></svg>;if(name==='shield')return <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.9 7.3 7 9 4.1-1.7 7-4.5 7-9V6l-7-3Z"/></svg>;return <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M10 9a2.3 2.3 0 1 1 3.8 1.8c-1 .8-1.8 1.3-1.8 2.7M12 17h.01"/></svg>}
+function SimpleIcon({name}:{name:string}){if(name==='windows')return <svg viewBox="0 0 24 24"><path d="M3 5.5 10.5 4v7H3V5.5Zm8.5-1.7L21 2v9h-9.5V3.8ZM3 12h7.5v8L3 18.5V12Zm8.5 0H21v10l-9.5-1.8V12Z" fill="currentColor" stroke="none"/></svg>;if(name==='android')return <svg viewBox="0 0 24 24"><path d="M7 9h10v8H7V9Zm2-3-1.5-2M15 6l1.5-2M5 10v5m14-5v5M9 17v3m6-3v3"/></svg>;if(name==='iosipados'||name==='applemobile'||name==='ipados'||name==='ios'||name==='tablet')return <svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M11 18h2"/></svg>;if(name==='phone')return <svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>;if(name==='laptop')return <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="11" rx="1.5"/><path d="M3 19h18l-2-4H5l-2 4Z"/></svg>;if(name==='desktop')return <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M9 20h6m-3-4v4"/></svg>;if(name==='virtual')return <svg viewBox="0 0 24 24"><rect x="3" y="4" width="13" height="10" rx="1.5"/><rect x="8" y="10" width="13" height="10" rx="1.5"/></svg>;if(name==='server')return <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="7" rx="1.5"/><rect x="4" y="14" width="16" height="7" rx="1.5"/><path d="M7 6.5h.01M7 17.5h.01M10 6.5h7M10 17.5h7"/></svg>;if(name==='shield')return <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.9 7.3 7 9 4.1-1.7 7-4.5 7-9V6l-7-3Z"/></svg>;return <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M10 9a2.3 2.3 0 1 1 3.8 1.8c-1 .8-1.8 1.3-1.8 2.7M12 17h.01"/></svg>}
 function DashboardIcon({name}:{name:string}){switch(name){case'hardware':return <SimpleIcon name="desktop"/>;case'ownership':return <SimpleIcon name="shield"/>;case'platforms':return <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>;case'versions':return <svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h10M5 18h6"/><circle cx="18" cy="12" r="2"/><circle cx="14" cy="18" r="2"/></svg>;case'users':return <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.5-3.7 2.4-5.5 5.5-5.5s5 1.8 5.5 5.5"/><circle cx="17" cy="9" r="2.2"/><path d="M15.5 14.5c2.9-.4 4.6 1.1 5 4.5"/></svg>;case'alert':return <svg viewBox="0 0 24 24"><path d="M12 3.5 21 20H3L12 3.5Z"/><path d="M12 9v5m0 3h.01"/></svg>;case'activity':return <svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>;case'manufacturer':return <svg viewBox="0 0 24 24"><path d="M4 20V8l8-4v16M12 9l8-3v14M7 11h2m-2 4h2m6-3h2m-2 4h2"/></svg>;default:return <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>}}
