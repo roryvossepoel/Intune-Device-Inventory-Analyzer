@@ -1,0 +1,5 @@
+.deviceTablePager{display:grid;grid-template-columns:auto auto minmax(24px,1fr) auto auto auto auto;align-items:center;gap:8px}
+.deviceTablePager>.pagerActions{display:contents}
+.deviceTablePager>.pagerActions>button:first-of-type{margin-left:auto}
+.deviceTablePager .pagerRows{margin:0 0 0 10px}
+@media(max-width:760px){.deviceTablePager{display:flex;align-items:flex-start;flex-direction:column}.deviceTablePager>.pagerActions{display:flex;width:100%;justify-content:flex-end;flex-wrap:wrap}.deviceTablePager .pagerRows{margin-right:auto;margin-left:0}}
