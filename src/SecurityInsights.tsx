@@ -26,7 +26,7 @@ export function InventorySummary({devices}:{devices:Device[]}){
     if(!dashboard||!kpis)return;
     const node=document.createElement('div');
     node.className='inventorySummaryHost';
-    dashboard.insertBefore(node,kpis);
+    kpis.insertAdjacentElement('afterend',node);
     setHost(node);
     return()=>{node.remove();setHost(null)};
   },[]);
