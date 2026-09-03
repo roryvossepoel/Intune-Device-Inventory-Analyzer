@@ -1,0 +1,9 @@
+.dataCard:has(.deviceFilterShell)>.dataHead p{display:none}
+.dataCard:has(.deviceFilterShell)>.dataHead{padding-bottom:10px;border-bottom:0}
+.dataCard:has(.deviceFilterShell) .deviceFilterShell{border-top:0;background:transparent}
+.dataCard:has(.deviceFilterShell) .deviceFilterTop{padding:4px 18px 14px;border-bottom:1px solid #e6eef7}
+.dataCard:has(.deviceFilterShell) .deviceFilterTop>div:first-child{gap:0}
+.dataCard:has(.deviceFilterShell) .deviceFilterTop>div:first-child>strong{display:none}
+.dataCard:has(.deviceFilterShell) .deviceFilterTop>div:first-child>span{font-size:13px;color:#657b96}
+.dataCard:has(.deviceFilterShell) .deviceFilterTop>div:last-child{align-items:center}
+.dataCard:has(.deviceFilterShell) .deviceFilterTop .clearExplorer{padding-left:8px;padding-right:8px}
