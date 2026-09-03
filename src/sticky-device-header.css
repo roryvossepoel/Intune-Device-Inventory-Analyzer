@@ -1,0 +1,37 @@
+/* Device table header: float a synchronized copy directly below the sticky app navigation. */
+.dataCard:has(.deviceFilterShell) .smartTableWrap>.smartTable thead th{
+  position:static!important;
+  top:auto!important;
+}
+
+.deviceFloatingHeader{
+  position:fixed;
+  z-index:29;
+  overflow:hidden;
+  background:#f4f8fc;
+  border-left:1px solid #dce6f2;
+  border-right:1px solid #dce6f2;
+  border-bottom:1px solid #dfe7f2;
+  box-shadow:0 7px 16px rgba(17,56,101,.08);
+}
+.deviceFloatingHeader[hidden]{display:none}
+.deviceFloatingHeaderTrack{will-change:transform}
+.deviceFloatingTable{
+  min-width:0!important;
+  table-layout:fixed;
+  border-collapse:collapse;
+  background:#f4f8fc;
+}
+.deviceFloatingTable thead th{
+  position:static!important;
+  top:auto!important;
+  z-index:auto!important;
+  background:#f4f8fc!important;
+}
+.deviceFloatingTable thead th.sorted{background:#eef6ff!important}
+.deviceFloatingTable th button{overflow:hidden}
+.deviceFloatingTable th button>span{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
