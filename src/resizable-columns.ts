@@ -95,8 +95,6 @@ function applyAllWidths(table:HTMLTableElement,state:ResizeState){
 
   setTableWidth(table,total);
 
-  // Keep explicit cell widths as a fallback for browsers that momentarily
-  // recalculate a collapsed-border table while the pointer is moving.
   resolved.forEach(({index,width})=>{
     Array.from(table.rows).forEach(row=>{
       const rowCell=row.cells[index];
@@ -182,7 +180,7 @@ function finishResizeFeedback(feedback:ResizeFeedback){
   },160);
 }
 
-function startResize(event:PointerEvent,handle:HTMLElement,cell:HTMLTableCellElement,table:HTMLTableElement){
+function startResize(event:MouseEvent,handle:HTMLElement,cell:HTMLTableCellElement,table:HTMLTableElement){
   if(event.button!==0)return;
   event.preventDefault();
   event.stopPropagation();
@@ -194,61 +192,49 @@ function startResize(event:PointerEvent,handle:HTMLElement,cell:HTMLTableCellEle
   const startWidth=state.widths.get(entry.key)??cell.getBoundingClientRect().width??MIN_COLUMN_WIDTH;
   const startX=event.clientX;
   const label=columnLabel(cell);
-  let animationFrame=0;
-  let latestX=startX;
   let renderedWidth=startWidth;
   const feedback=createResizeFeedback(cell,table,label,startWidth);
 
   handle.classList.add('resizing');
   cell.classList.add('resizingColumn');
   document.body.classList.add('columnResizeActive');
-  handle.setPointerCapture?.(event.pointerId);
 
-  const render=()=>{
-    animationFrame=0;
-    renderedWidth=Math.max(MIN_COLUMN_WIDTH,startWidth+(latestX-startX));
+  const move=(moveEvent:MouseEvent)=>{
+    renderedWidth=Math.max(MIN_COLUMN_WIDTH,startWidth+(moveEvent.clientX-startX));
     applySingleWidth(table,state,entry.key,renderedWidth);
     updateResizeFeedback(feedback,cell,table,label,renderedWidth);
   };
 
-  const move=(moveEvent:PointerEvent)=>{
-    latestX=moveEvent.clientX;
-    if(!animationFrame)animationFrame=requestAnimationFrame(render);
-  };
-
   const stop=()=>{
-    if(animationFrame){cancelAnimationFrame(animationFrame);render()}
-    else applySingleWidth(table,state,entry.key,renderedWidth);
+    applySingleWidth(table,state,entry.key,renderedWidth);
     handle.classList.remove('resizing');
     cell.classList.remove('resizingColumn');
     cell.classList.add('resizeComplete');
     document.body.classList.remove('columnResizeActive');
     finishResizeFeedback(feedback);
     window.setTimeout(()=>cell.classList.remove('resizeComplete'),420);
-    window.removeEventListener('pointermove',move);
-    window.removeEventListener('pointerup',stop);
-    window.removeEventListener('pointercancel',stop);
+    document.removeEventListener('mousemove',move,true);
+    document.removeEventListener('mouseup',stop,true);
   };
 
-  window.addEventListener('pointermove',move,{passive:true});
-  window.addEventListener('pointerup',stop,{once:true});
-  window.addEventListener('pointercancel',stop,{once:true});
+  document.addEventListener('mousemove',move,true);
+  document.addEventListener('mouseup',stop,true);
 }
 
 function addHandle(table:HTMLTableElement,cell:HTMLTableCellElement){
   const existing=cell.querySelector<HTMLElement>(':scope > .columnResizeHandle');
-  if(existing?.dataset.resizeVersion==='5')return;
+  if(existing?.dataset.resizeVersion==='6')return;
   existing?.remove();
   cell.classList.add('resizableColumnHeader');
 
   const handle=document.createElement('span');
   handle.className='columnResizeHandle';
-  handle.dataset.resizeVersion='5';
+  handle.dataset.resizeVersion='6';
   handle.setAttribute('role','separator');
   handle.setAttribute('aria-orientation','vertical');
   handle.setAttribute('aria-label',`Resize ${columnLabel(cell)}`);
   handle.title='Drag this edge to resize the column. Double-click to reset all column widths.';
-  handle.addEventListener('pointerdown',event=>startResize(event,handle,cell,table));
+  handle.addEventListener('mousedown',event=>startResize(event,handle,cell,table));
   handle.addEventListener('dblclick',event=>{
     event.preventDefault();
     event.stopPropagation();
