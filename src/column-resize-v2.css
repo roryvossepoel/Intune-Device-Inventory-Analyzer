@@ -1,0 +1,12 @@
+/* Direct resize edge for each device-table header cell. */
+.smartTable th.columnResizeEdgeHover,
+.smartTable th.columnResizeEdgeHover>button{cursor:col-resize!important}
+.smartTable th.columnResizeEdgeHover{box-shadow:inset -2px 0 #4d8edb}
+.smartTable th.resizingColumn{background:#edf6ff!important;box-shadow:inset -2px 0 #1677e8}
+.smartTable th.resizeComplete{animation:columnResizeComplete .42s ease-out}
+@keyframes columnResizeComplete{0%{background:#e8f3ff;box-shadow:inset -2px 0 #1677e8}100%{background:#f4f8fc;box-shadow:inset -2px 0 rgba(22,119,232,0)}}
+body.columnResizeActive{cursor:col-resize!important;user-select:none!important}
+body.columnResizeActive *{cursor:col-resize!important}
+.smartTable.columnWidthsActive td{overflow:hidden;text-overflow:ellipsis}
+.smartTable.columnWidthsActive th button{overflow:hidden}
+.smartTable.columnWidthsActive th button>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
