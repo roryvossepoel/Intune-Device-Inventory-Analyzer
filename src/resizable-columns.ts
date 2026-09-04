@@ -42,28 +42,43 @@ function signature(table:HTMLTableElement){
 
 function setCellWidth(cell:HTMLTableCellElement,width:number){
   const value=`${Math.round(width)}px`;
-  cell.style.width=value;
-  cell.style.minWidth=value;
-  cell.style.maxWidth=value;
+  cell.style.setProperty('width',value,'important');
+  cell.style.setProperty('min-width',value,'important');
+  cell.style.setProperty('max-width',value,'important');
+}
+
+function setTableWidth(table:HTMLTableElement,width:number){
+  const value=`${Math.round(width)}px`;
+  table.style.setProperty('table-layout','fixed','important');
+  table.style.setProperty('width',value,'important');
+  table.style.setProperty('min-width',value,'important');
 }
 
 function applyAllWidths(table:HTMLTableElement,state:ResizeState){
   const entries=headerEntries(table);
-  table.classList.add('columnWidthsActive');
-  table.style.tableLayout='fixed';
-  table.style.minWidth='0';
+  if(!entries.length)return;
 
-  let total=0;
-  entries.forEach(({cell,key,index})=>{
+  table.classList.add('columnWidthsActive');
+
+  const resolved=entries.map(({cell,key,index})=>{
     const width=state.widths.get(key)??Math.round(cell.getBoundingClientRect().width);
     state.widths.set(key,width);
-    total+=width;
+    return {key,index,width};
+  });
+
+  const total=resolved.reduce((sum,item)=>sum+item.width,0);
+  setTableWidth(table,total);
+
+  resolved.forEach(({index,width})=>{
     Array.from(table.rows).forEach(row=>{
       const rowCell=row.cells[index];
       if(rowCell)setCellWidth(rowCell,width);
     });
   });
-  table.style.width=`${Math.round(total)}px`;
+
+  // Re-assert the total after cell widths are applied. Browsers can otherwise
+  // redistribute table columns when a global table { width:100% } rule exists.
+  setTableWidth(table,total);
 }
 
 function applySingleWidth(table:HTMLTableElement,state:ResizeState,key:string,width:number){
@@ -74,8 +89,8 @@ function applySingleWidth(table:HTMLTableElement,state:ResizeState,key:string,wi
 function clearWidths(table:HTMLTableElement){
   table.classList.remove('columnWidthsActive');
   table.style.removeProperty('table-layout');
-  table.style.removeProperty('min-width');
   table.style.removeProperty('width');
+  table.style.removeProperty('min-width');
   Array.from(table.rows).forEach(row=>{
     Array.from(row.cells).forEach(cell=>{
       cell.style.removeProperty('width');
@@ -144,8 +159,7 @@ function startResize(event:PointerEvent,handle:HTMLElement,cell:HTMLTableCellEle
   event.preventDefault();
   event.stopPropagation();
 
-  const entries=headerEntries(table);
-  const entry=entries.find(item=>item.cell===cell);
+  const entry=headerEntries(table).find(item=>item.cell===cell);
   if(!entry)return;
 
   const state=states.get(table)??freezeCurrentWidths(table);
@@ -176,6 +190,7 @@ function startResize(event:PointerEvent,handle:HTMLElement,cell:HTMLTableCellEle
 
   const stop=()=>{
     if(animationFrame){cancelAnimationFrame(animationFrame);render()}
+    else applySingleWidth(table,state,entry.key,renderedWidth);
     handle.classList.remove('resizing');
     cell.classList.remove('resizingColumn');
     cell.classList.add('resizeComplete');
@@ -194,13 +209,13 @@ function startResize(event:PointerEvent,handle:HTMLElement,cell:HTMLTableCellEle
 
 function addHandle(table:HTMLTableElement,cell:HTMLTableCellElement){
   const existing=cell.querySelector<HTMLElement>(':scope > .columnResizeHandle');
-  if(existing?.dataset.resizeVersion==='3')return;
+  if(existing?.dataset.resizeVersion==='4')return;
   existing?.remove();
   cell.classList.add('resizableColumnHeader');
 
   const handle=document.createElement('span');
   handle.className='columnResizeHandle';
-  handle.dataset.resizeVersion='3';
+  handle.dataset.resizeVersion='4';
   handle.setAttribute('role','separator');
   handle.setAttribute('aria-orientation','vertical');
   handle.setAttribute('aria-label',`Resize ${columnLabel(cell)}`);
