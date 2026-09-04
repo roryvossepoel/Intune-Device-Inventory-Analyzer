@@ -1,4 +1,5 @@
 import DashboardSection from './DashboardSection';
+import WindowsLifecycle from './WindowsLifecycle';
 import { getWindowsIntelligence } from './deviceIntelligence';
 import type { Device } from './types';
 
@@ -16,7 +17,10 @@ function daysUntil(value:string){const time=Date.parse(value);return Number.isFi
 function daysOld(value:string){const time=Date.parse(value);return Number.isFinite(time)?(Date.now()-time)/86400000:null}
 
 export default function PlatformInsights({devices,platform}:{devices:Device[];platform:string|null}){
-  if(!platform)return null;
+  if(!platform){
+    const windows=devices.filter(d=>d.platform==='windows');
+    return windows.length?<DashboardSection icon="updates" title="Operating system lifecycle" subtitle="Support lifecycle of Windows releases in the imported inventory."><WindowsLifecycle devices={windows} title="Windows lifecycle"/></DashboardSection>:null;
+  }
   if(platform==='windows')return <WindowsInsights devices={devices}/>;
   if(platform==='android')return <AndroidInsights devices={devices}/>;
   if(platform==='applemobile')return <AppleMobileInsights devices={devices}/>;
@@ -35,6 +39,7 @@ function WindowsInsights({devices}:{devices:Device[]}){
   const editionReview=devices.filter(d=>getWindowsIntelligence(d.osVersion)?.updateHealth==='edition-review').length;
   const unknownSku=devices.filter(d=>sku(d)==='Unknown').length;
   return <DashboardSection icon="updates" title="Windows intelligence" subtitle="Windows-specific edition, architecture, identity, servicing and firmware inventory signals.">
+    <WindowsLifecycle devices={devices}/>
     <div className="extendedInsightGrid hardwareInsightGrid">
       <InsightCard title="Windows SKU / edition" subtitle="SKU family reported by the Intune inventory export"><Distribution rows={skus} total={devices.length}/></InsightCard>
       <InsightCard title="Processor architecture" subtitle="Reported Windows processor architecture"><Distribution rows={architectures} total={devices.length}/></InsightCard>
