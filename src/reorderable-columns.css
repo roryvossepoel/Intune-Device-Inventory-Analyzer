@@ -1,0 +1,18 @@
+/* Drag-to-reorder affordance for the device table. */
+.smartTable thead th{position:relative}
+.smartTable th button{justify-content:flex-start}
+.smartTable th button>span:not(.columnDragHandle){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.smartTable th button>i{margin-left:auto}
+.columnDragHandle{display:inline-grid;place-items:center;width:18px;height:24px;flex:0 0 18px;margin-left:-4px;color:#9aadc1;cursor:grab;border-radius:5px;opacity:.55;transition:background .15s ease,color .15s ease,opacity .15s ease}
+.smartTable th:hover .columnDragHandle{opacity:1;color:#6482a5}
+.columnDragHandle:hover{background:#dfeeff;color:#1c68ba}
+.columnDragHandle:active{cursor:grabbing}
+.smartTable th.columnDragging{opacity:.52}
+.smartTable th.columnDropTarget::before{content:"";position:absolute;z-index:8;left:-1px;top:5px;bottom:5px;width:3px;border-radius:3px;background:#2f7ee6;box-shadow:0 0 0 2px rgba(47,126,230,.08)}
+body:has(.smartTable th.columnDragging){cursor:grabbing}
+.deviceFloatingHeader .columnDragHandle{display:none!important}
+.deviceFloatingHeader .smartTable th button{justify-content:space-between}
+
+@media(max-width:760px){
+  .columnDragHandle{width:16px;flex-basis:16px}
+}
