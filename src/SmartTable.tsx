@@ -29,6 +29,8 @@ type Props<T> = {
   initialPageSize?: number;
   initialFilters?: DeviceTableInitialFilters;
   onClearFilters?: ()=>void;
+  searchQuery?: string;
+  onClearSearch?: ()=>void;
 };
 
 type DeviceLike={
@@ -122,7 +124,7 @@ function platformFilterFor(platform:string|null):PlatformFilterDefinition|null{
   return null;
 }
 
-export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick,initialPageSize=50,initialFilters,onClearFilters}:Props<T>){
+export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick,initialPageSize=50,initialFilters,onClearFilters,searchQuery='',onClearSearch}:Props<T>){
   const [page,setPage]=useState(1);
   const [pageSize,setPageSize]=useState(initialPageSize);
   const [sortKey,setSortKey]=useState(columns[0]?.key??'');
@@ -204,6 +206,8 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   const effectiveColumns=useMemo<ExplorerColumn<T>[]>(()=>[...standardColumns,...originalColumns],[standardColumns,originalColumns]);
 
   const activeFilterCount=[platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected,platformSpecificSelected].filter(v=>v.length).length+(maxAge<180?1:0);
+  const trimmedSearch=searchQuery.trim();
+  const hasSearch=Boolean(trimmedSearch);
 
   const filteredRows=useMemo(()=>!isDevices?rows:rows.filter(row=>{
     const d=deviceOf(row);
@@ -240,6 +244,13 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   const visible=sorted.slice(start,start+pageSize);
   const first=sorted.length?start+1:0;
   const last=Math.min(start+pageSize,sorted.length);
+  const emptyMessage=hasSearch&&activeFilterCount
+    ?'No devices match the current search and filters. Try clearing one or both.'
+    :hasSearch
+      ?`No devices match “${trimmedSearch}”. Try a different search or clear it.`
+      :activeFilterCount
+        ?'No devices match the current filters.'
+        :'There are no devices available in the current inventory.';
 
   function sort(column:SmartColumn<T>){if(sortKey===column.key)setSortDirection(d=>d==='asc'?'desc':'asc');else{setSortKey(column.key);setSortDirection('asc')}setPage(1)}
   function exportCsv(){const csv=[shownColumns.map(c=>csvCell(c.exportLabel??c.label)).join(','),...sorted.map(row=>shownColumns.map(c=>csvCell(c.value(row))).join(','))].join('\r\n');const blob=new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`${exportName}.csv`;document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url)}
@@ -264,7 +275,7 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
     </div>}
     <div className={`tableToolbar ${isDevices?'deviceTableToolbar':''}`}><div className="tableResultCount"><strong>{sorted.length.toLocaleString()}</strong><span>{isDevices?`of ${rows.length.toLocaleString()} devices${activeFilterCount?` · ${activeFilterCount} filter${activeFilterCount===1?'':'s'} active`:''}`:'items'}</span></div><div className="tableToolbarActions">{isDevices?<>{activeFilterCount>0&&<button className="clearExplorer toolbarClearFilters" onClick={clearFilters}>Clear filters</button>}<button className={`tableExport tableColumns ${columnsOpen?'active':''}`} onClick={()=>setColumnsOpen(v=>!v)}><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="5" height="14" rx="1.2"/><rect x="9.5" y="5" width="5" height="14" rx="1.2"/><rect x="16" y="5" width="5" height="14" rx="1.2"/></svg><span>Columns</span><b>{shownColumns.length}</b></button></>:<><label><span>Rows</span><select value={pageSize} onChange={e=>setPageSize(Number(e.target.value))}>{pageSizes.map(size=><option key={size} value={size}>{size}</option>)}</select></label><button className="tableExport" onClick={exportCsv}><span>↓</span> Export CSV</button></>}</div></div>
     {isDevices&&columnsOpen&&<div className="columnPicker enhancedColumnPicker"><div className="columnPickerIntro"><strong>Columns & export fields</strong><span>Select normalized analyzer fields or original fields from the Intune export. CSV export uses exactly this selection.</span><div><button type="button" onClick={()=>setVisibleKeys(standardColumns.map(c=>c.key))}>Standard only</button><button type="button" onClick={()=>setVisibleKeys(effectiveColumns.map(c=>c.key))}>Select all</button></div></div><div className="columnGroups"><section><header>Standard fields <span>{standardColumns.length}</span></header><div>{standardColumns.map(c=><label key={c.key}><input type="checkbox" checked={visibleKeys.includes(c.key)} onChange={()=>toggleColumn(c.key)}/><span title={c.pickerLabel??c.label}>{c.pickerLabel??c.label}</span></label>)}</div></section><section><header>Original Intune fields <span>{originalColumns.length}</span></header><div className="rawColumnList">{originalColumns.map(c=><label key={c.key}><input type="checkbox" checked={visibleKeys.includes(c.key)} onChange={()=>toggleColumn(c.key)}/><span title={c.label}>{c.label}</span></label>)}</div></section></div></div>}
-    <div className="tableWrap smartTableWrap"><table className="smartTable"><thead><tr>{shownColumns.map(column=><th key={column.key} className={sortKey===column.key?'sorted':''}><button onClick={()=>sort(column)}><span>{column.label}</span><i><SortIcon active={sortKey===column.key} direction={sortDirection}/></i></button></th>)}</tr></thead><tbody>{visible.length?visible.map(row=><tr key={rowKey(row)} className={onRowClick?'clickRow':''} onClick={()=>onRowClick?.(row)}>{shownColumns.map(column=><td key={column.key}>{displayCell(column,row)}</td>)}</tr>):<tr className="emptyStateRow"><td colSpan={Math.max(1,shownColumns.length)}><div className="deviceEmptyState"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="18" cy="18" r="3"/><path d="m20.2 20.2 2 2"/></svg><strong>{activeFilterCount?'Nothing made it through the filters':'No devices found'}</strong><p>{activeFilterCount?'Those filters may have gone a little too far. Loosen one up and your devices should come wandering back.':'Nothing matches the current search. Apparently the devices are playing hide-and-seek.'}</p>{activeFilterCount>0&&<button type="button" onClick={clearFilters}>Clear filters</button>}</div></td></tr>}</tbody></table></div>
+    <div className="tableWrap smartTableWrap"><table className="smartTable"><thead><tr>{shownColumns.map(column=><th key={column.key} className={sortKey===column.key?'sorted':''}><button onClick={()=>sort(column)}><span>{column.label}</span><i><SortIcon active={sortKey===column.key} direction={sortDirection}/></i></button></th>)}</tr></thead><tbody>{visible.length?visible.map(row=><tr key={rowKey(row)} className={onRowClick?'clickRow':''} onClick={()=>onRowClick?.(row)}>{shownColumns.map(column=><td key={column.key}>{displayCell(column,row)}</td>)}</tr>):<tr className="emptyStateRow"><td colSpan={Math.max(1,shownColumns.length)}><div className="deviceEmptyState"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="18" cy="18" r="3"/><path d="m20.2 20.2 2 2"/></svg><strong>No devices found</strong><p>{emptyMessage}</p>{(activeFilterCount>0||hasSearch)&&<div className="deviceEmptyActions">{activeFilterCount>0&&<button type="button" onClick={clearFilters}>Clear filters</button>}{hasSearch&&onClearSearch&&<button type="button" onClick={onClearSearch}>Clear search</button>}</div>}</div></td></tr>}</tbody></table></div>
     <div className={`tablePager ${isDevices?'deviceTablePager':''}`}><span>{sorted.length?<>Showing <strong>{first.toLocaleString()}</strong>–<strong>{last.toLocaleString()}</strong> of <strong>{sorted.length.toLocaleString()}</strong></>:<>No matching devices</>}</span><div className="pagerActions">{isDevices&&<label className="pagerRows"><span>Rows</span><select value={pageSize} onChange={e=>setPageSize(Number(e.target.value))}>{pageSizes.map(size=><option key={size} value={size}>{size}</option>)}</select></label>}<button disabled={safePage<=1} onClick={()=>setPage(1)}>«</button><button disabled={safePage<=1} onClick={()=>setPage(p=>Math.max(1,p-1))}>‹</button><span>Page <strong>{safePage}</strong> of <strong>{pageCount}</strong></span><button disabled={safePage>=pageCount} onClick={()=>setPage(p=>Math.min(pageCount,p+1))}>›</button><button disabled={safePage>=pageCount} onClick={()=>setPage(pageCount)}>»</button></div></div>
   </>;
 }
