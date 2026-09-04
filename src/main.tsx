@@ -29,11 +29,11 @@ import './device-ux-polish.css';
 import './device-detail-v2.css';
 import './platform-intelligence-v2.css';
 import './sticky-device-header.css';
-import './resizable-columns.css';
 import './reorderable-columns.css';
 import './slider-scale.css';
+import './column-resize-v2.css';
 import './sticky-device-header';
-import './resizable-columns';
+import './column-resize-v2';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
