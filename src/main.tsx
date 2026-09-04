@@ -32,6 +32,7 @@ import './sticky-device-header.css';
 import './reorderable-columns.css';
 import './slider-scale.css';
 import './column-resize-v2.css';
+import './windows-lifecycle.css';
 import './sticky-device-header';
 import './column-resize-v2';
 
