@@ -1,4 +1,5 @@
-/* Keep the visible check-in scale aligned with the linear range input (min=1, max=180). */
+/* Keep the visible check-in scale aligned with the linear range input (min=1, max=180).
+   The slider remains precise to a single day, while the visible scale uses clear 30-day intervals. */
 .ageSlider>div{
   position:relative;
   display:block!important;
@@ -9,12 +10,37 @@
 .ageSlider>div small{
   position:absolute;
   top:0;
-  font-size:10px;
+  font-size:0;
   line-height:14px;
   white-space:nowrap;
   transform:translateX(-50%);
 }
-.ageSlider>div small:nth-child(1){left:0;transform:none}
-.ageSlider>div small:nth-child(2){left:16.2%}
+.ageSlider>div small::after,
+.ageSlider>div::before,
+.ageSlider>div::after{
+  font-size:10px;
+  line-height:14px;
+  color:#8294aa;
+  white-space:nowrap;
+}
+.ageSlider>div small:nth-child(1){left:16.2%}
+.ageSlider>div small:nth-child(1)::after{content:"30"}
+.ageSlider>div small:nth-child(2){left:33.0%}
+.ageSlider>div small:nth-child(2)::after{content:"60"}
 .ageSlider>div small:nth-child(3){left:49.7%}
-.ageSlider>div small:nth-child(4){right:0;left:auto;transform:none}
+.ageSlider>div small:nth-child(3)::after{content:"90"}
+.ageSlider>div small:nth-child(4){left:66.5%}
+.ageSlider>div small:nth-child(4)::after{content:"120"}
+.ageSlider>div::before{
+  content:"150";
+  position:absolute;
+  top:0;
+  left:83.2%;
+  transform:translateX(-50%);
+}
+.ageSlider>div::after{
+  content:"180";
+  position:absolute;
+  top:0;
+  right:0;
+}
