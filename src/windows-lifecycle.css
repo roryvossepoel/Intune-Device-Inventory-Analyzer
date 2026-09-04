@@ -9,7 +9,7 @@
 .windowsLifecycleTable td:first-child{border-radius:8px 0 0 8px}
 .windowsLifecycleTable td:last-child{border-radius:0 8px 8px 0}
 .windowsLifecycleTable td strong{display:block;color:#173655;font-size:12px;font-weight:750}
-.windowsLifecycleTable td small{display:block;margin-top:3px;color:#8b7850;font-size:9px;font-weight:650}
+.windowsLifecycleTable td small{display:block;margin-top:4px;color:#786a50;font-size:10.5px;line-height:1.35;font-weight:650}
 .windowsLifecycleRow.healthy td{background:#e4f4eb}
 .windowsLifecycleRow.warning td{background:#f6efd7}
 .windowsLifecycleRow.expired td{background:#f9e3e3}
@@ -17,5 +17,5 @@
 .windowsLifecycleRow.healthy td strong{color:#176548}
 .windowsLifecycleRow.warning td strong{color:#765d19}
 .windowsLifecycleRow.expired td strong{color:#9d3838}
-.windowsLifecycleFootnote{margin:7px 18px 17px;color:#8091a5;font-size:10px;line-height:1.5}
-@media(max-width:760px){.windowsLifecycleHead{align-items:flex-start}.windowsLifecycleTableWrap{padding:0 12px 2px}.windowsLifecycleFootnote{margin-left:12px;margin-right:12px}}
+.windowsLifecycleFootnote{margin:9px 18px 17px;color:#6f8197;font-size:11.5px;line-height:1.55}
+@media(max-width:760px){.windowsLifecycleHead{align-items:flex-start}.windowsLifecycleTableWrap{padding:0 12px 2px}.windowsLifecycleFootnote{margin-left:12px;margin-right:12px;font-size:11px}}
