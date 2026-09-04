@@ -1,3 +1,5 @@
+export {};
+
 type StickyEntry={
   wrap:HTMLElement;
   table:HTMLTableElement;
