@@ -62,6 +62,10 @@ export function describeOsVersion(platform:IntelligencePlatform,rawVersion:strin
   if(!rawVersion)return null;
   const value=rawVersion.trim();
   if(platform==='windows'){
+    // Device data may already have been enriched (for example demo or cached data).
+    // Keep an already formatted Windows release/build label intact instead of
+    // prepending the marketing name a second time.
+    if(/^Windows\s+\d+/i.test(value) && /(?:·\s*)?build\s+/i.test(value))return value;
     const info=getWindowsIntelligence(value);
     return info?.release ? `${info.release.displayName} · build ${value}` : value;
   }
