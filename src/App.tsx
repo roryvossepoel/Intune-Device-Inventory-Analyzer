@@ -21,7 +21,7 @@ const dashboardPlatformLabel=(platform:string)=>platform==='applemobile'?'iOS/iP
 const key=(v:string|null)=>v?.trim()||'Unknown';
 const countBy=(devices:Device[],selector:(d:Device)=>string)=>Object.entries(devices.reduce<Record<string,number>>((acc,d)=>{const k=selector(d);acc[k]=(acc[k]??0)+1;return acc},{})).sort((a,b)=>b[1]-a[1]);
 const formatNumber=(value:number)=>value.toLocaleString();
-const formatDateTime=(value:string|null)=>{if(!value)return '—';const date=new Date(value);if(Number.isNaN(date.getTime()))return value;return new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(date)};
+const formatDateTime=(value:string|null)=>{if(!value)return '—';const date=new Date(value);if(Number.isNaN(date.getTime()))return value;return new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(date)};
 const daysSince=(value:string|null)=>{if(!value)return null;const time=Date.parse(value);return Number.isFinite(time)?(Date.now()-time)/(24*60*60*1000):null};
 const rawValue=(d:Device,pattern:RegExp)=>Object.entries(d.raw).find(([name])=>pattern.test(name))?.[1]?.trim()||'';
 const intelligencePlatform=(value:string)=>platformKey(value) as 'windows'|'android'|'applemobile'|'macos'|'linux'|'unknown';
