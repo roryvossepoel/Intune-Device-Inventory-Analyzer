@@ -1,0 +1,12 @@
+/* Drag-to-resize device table columns. */
+.smartTable th.resizableColumnHeader{position:relative}
+.smartTable .columnResizeHandle{position:absolute;z-index:6;top:0;right:-5px;width:10px;height:100%;cursor:col-resize;touch-action:none}
+.smartTable .columnResizeHandle::after{content:"";position:absolute;top:22%;bottom:22%;left:4px;width:2px;border-radius:2px;background:#5f92cf;opacity:0;transition:opacity .12s ease,background .12s ease}
+.smartTable th.resizableColumnHeader:hover>.columnResizeHandle::after,.smartTable .columnResizeHandle:hover::after,.smartTable .columnResizeHandle.resizing::after{opacity:1}
+.smartTable .columnResizeHandle.resizing::after{background:#1677e8}
+body.columnResizeActive{cursor:col-resize!important;user-select:none!important}
+body.columnResizeActive *{cursor:col-resize!important}
+.smartTable.columnWidthsActive td{overflow:hidden;text-overflow:ellipsis}
+.smartTable.columnWidthsActive th button{overflow:hidden}
+.smartTable.columnWidthsActive th button>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.deviceFloatingTable .columnResizeHandle{display:none!important}
