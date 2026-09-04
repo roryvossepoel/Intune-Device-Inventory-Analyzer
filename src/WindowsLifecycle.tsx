@@ -147,6 +147,5 @@ export default function WindowsLifecycle({devices,title='Release lifecycle'}:{de
         </tr>)}</tbody>
       </table>
     </div>
-    <p className="windowsLifecycleFootnote">Green: at least 6 months remaining · Amber: less than 6 months · Red: support expired. For releases with multiple editions, the earliest applicable support date is shown.</p>
   </article>;
 }
