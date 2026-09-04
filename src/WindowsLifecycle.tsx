@@ -97,7 +97,7 @@ function lifecycleRows(devices:Device[]):LifecycleRow[]{
   }
 
   const total=devices.length;
-  const rows=[...grouped.entries()].map(([key,group])=>{
+  const rows:LifecycleRow[]=[...grouped.entries()].map(([key,group])=>{
     const dates=new Set(group.devices.map(device=>usesHomeProLifecycle(device)?group.homePro:group.enterpriseEducation));
     const applicable=[...dates].sort();
     const endDate=applicable[0]??null;
@@ -111,7 +111,7 @@ function lifecycleRows(devices:Device[]):LifecycleRow[]{
       remaining:describeRemaining(endDate),
       percentage:total?group.devices.length/total:0,
       tone:toneFor(endDate)
-    } satisfies LifecycleRow;
+    };
   }).sort((a,b)=>(a.build??Number.MAX_SAFE_INTEGER)-(b.build??Number.MAX_SAFE_INTEGER));
 
   if(unknown){
