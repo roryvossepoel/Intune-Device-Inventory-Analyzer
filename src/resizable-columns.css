@@ -1,10 +1,12 @@
 /* Drag-to-resize device table columns. */
 .smartTable th.resizableColumnHeader{position:relative}
-.smartTable .columnResizeHandle{position:absolute;z-index:8;top:0;right:-6px;width:12px;height:100%;cursor:col-resize;touch-action:none}
-.smartTable .columnResizeHandle::before{content:"";position:absolute;top:12px;bottom:12px;left:5px;width:2px;border-radius:2px;background:#8fb4df;opacity:0;transition:opacity .12s ease,background .12s ease,box-shadow .12s ease}
-.smartTable th.resizableColumnHeader:hover>.columnResizeHandle::before,.smartTable .columnResizeHandle:hover::before{opacity:.8}
-.smartTable .columnResizeHandle:hover::before{background:#4d8edb;box-shadow:0 0 0 3px rgba(77,142,219,.08)}
-.smartTable .columnResizeHandle.resizing::before,.smartTable th.resizingColumn>.columnResizeHandle::before{opacity:1;background:#1677e8;box-shadow:0 0 0 3px rgba(22,119,232,.12)}
+.smartTable th.resizableColumnHeader>button{padding-right:20px}
+/* Keep the resize hit area fully inside the header cell. Putting it outside the
+   cell caused the neighbouring sticky header to capture the pointer instead. */
+.smartTable .columnResizeHandle{position:absolute;z-index:20;top:0;right:0;width:10px;height:100%;cursor:col-resize;touch-action:none;pointer-events:auto}
+.smartTable .columnResizeHandle::before{content:"";position:absolute;top:9px;bottom:9px;right:1px;width:2px;border-radius:2px;background:#91afd2;opacity:.28;transition:opacity .12s ease,background .12s ease,box-shadow .12s ease}
+.smartTable .columnResizeHandle:hover::before{opacity:1;background:#4d8edb;box-shadow:0 0 0 3px rgba(77,142,219,.10)}
+.smartTable .columnResizeHandle.resizing::before,.smartTable th.resizingColumn>.columnResizeHandle::before{opacity:1;background:#1677e8;box-shadow:0 0 0 3px rgba(22,119,232,.14)}
 .smartTable th.resizingColumn{background:#edf6ff!important;box-shadow:inset -2px 0 #1677e8}
 .smartTable th.resizeComplete{animation:columnResizeComplete .42s ease-out}
 @keyframes columnResizeComplete{0%{background:#e8f3ff;box-shadow:inset -2px 0 #1677e8}100%{background:#f4f8fc;box-shadow:inset -2px 0 rgba(22,119,232,0)}}
