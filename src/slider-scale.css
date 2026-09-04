@@ -1,0 +1,20 @@
+/* Keep the visible check-in scale aligned with the linear range input (min=1, max=180). */
+.ageSlider>div{
+  position:relative;
+  display:block!important;
+  height:14px;
+  margin-top:2px;
+  color:#8294aa;
+}
+.ageSlider>div small{
+  position:absolute;
+  top:0;
+  font-size:10px;
+  line-height:14px;
+  white-space:nowrap;
+  transform:translateX(-50%);
+}
+.ageSlider>div small:nth-child(1){left:0;transform:none}
+.ageSlider>div small:nth-child(2){left:16.2%}
+.ageSlider>div small:nth-child(3){left:49.7%}
+.ageSlider>div small:nth-child(4){right:0;left:auto;transform:none}
