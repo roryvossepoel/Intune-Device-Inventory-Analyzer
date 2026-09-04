@@ -29,7 +29,9 @@ import './device-ux-polish.css';
 import './device-detail-v2.css';
 import './platform-intelligence-v2.css';
 import './sticky-device-header.css';
+import './resizable-columns.css';
 import './sticky-device-header';
+import './resizable-columns';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
