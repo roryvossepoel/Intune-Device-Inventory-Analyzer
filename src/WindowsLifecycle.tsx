@@ -139,7 +139,7 @@ export default function WindowsLifecycle({devices,title='Release lifecycle'}:{de
       <table className="windowsLifecycleTable">
         <thead><tr><th>Windows version</th><th>Devices</th><th>End of support</th><th>Support remaining</th><th>Percentage</th></tr></thead>
         <tbody>{rows.map(row=><tr key={row.key} className={`windowsLifecycleRow ${row.tone}`}>
-          <td><strong>{row.label}</strong>{row.mixedEditions&&<small title="Multiple edition families are present. The earliest applicable support date is shown.">Mixed edition lifecycle</small>}</td>
+          <td><strong>{row.label}</strong>{row.mixedEditions&&<small title="Multiple Windows edition families are present in this release. The earliest applicable support date is shown.">Multiple editions</small>}</td>
           <td>{formatCount(row.devices)}</td>
           <td title={row.mixedEditions?'Earliest applicable support date for the editions present in this release.':undefined}>{formatDate(row.endDate)}</td>
           <td>{row.remaining}</td>
@@ -147,6 +147,6 @@ export default function WindowsLifecycle({devices,title='Release lifecycle'}:{de
         </tr>)}</tbody>
       </table>
     </div>
-    <p className="windowsLifecycleFootnote">Green: at least 6 months remaining · Amber: less than 6 months · Red: support expired. For mixed editions, the earliest applicable support date is used.</p>
+    <p className="windowsLifecycleFootnote">Green: at least 6 months remaining · Amber: less than 6 months · Red: support expired. For releases with multiple editions, the earliest applicable support date is shown.</p>
   </article>;
 }
