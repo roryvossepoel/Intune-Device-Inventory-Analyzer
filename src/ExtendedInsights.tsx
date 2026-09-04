@@ -1,6 +1,6 @@
 import type { Device } from './types';
 
-const platformLabel:Record<string,string>={windows:'Windows',android:'Android',ios:'iOS/iPadOS',ipados:'iOS/iPadOS',applemobile:'Apple Mobile',iosipados:'iOS/iPadOS',macos:'macOS',linux:'Linux',unknown:'Unknown'};
+const platformLabel:Record<string,string>={windows:'Windows',android:'Android',ios:'iOS/iPadOS',ipados:'iOS/iPadOS',applemobile:'iOS/iPadOS',iosipados:'iOS/iPadOS',macos:'macOS',linux:'Linux',unknown:'Unknown'};
 const fmt=(n:number)=>n.toLocaleString();
 const clean=(v:string|null|undefined)=>v?.trim()||'Unknown';
 const pct=(n:number,total:number)=>total?`${(n/total*100).toFixed(1)}%`:'0.0%';
@@ -56,34 +56,35 @@ export default function ExtendedInsights({devices,showPlatformDistribution=true}
     ['Unknown',devices.filter(d=>daysSince(d.lastCheckIn)===null).length]
   ];
   const visibleActivity=activity.filter((r):r is [string,number]=>r[1]>0);
+  const hasAnomalies=duplicateSerials+duplicateNames+missingSerial+unknownPlatform>0;
 
   return <section className="insightCategoryStack">
-    <div className="extendedInsightGrid hardwareInsightGrid">
-      <InsightCard icon="hardware" title="Hardware type" subtitle="Form factor inferred from inventory and trusted model families"><Distribution rows={types} total={total} icons="hardware"/><p className="insightFootnote">Unknown means the export and current model rules do not provide enough evidence.</p></InsightCard>
-      <InsightCard icon="manufacturer" title="Hardware manufacturers" subtitle="Largest hardware vendors in the current view"><ManufacturerDistribution rows={manufacturerCounts.slice(0,7)} total={total}/></InsightCard>
-      <InsightCard icon="models" title="Hardware models" subtitle="Most common reported models in the current view"><Distribution rows={modelCounts.slice(0,7)} total={total}/></InsightCard>
-    </div>
-
-    <InsightCategory title="Operating systems" subtitle="Platform mix, OS families, version diversity and dominant releases.">
-      <div className="extendedInsightGrid twoInsightGrid operatingSystemsGrid" style={!showPlatformDistribution?{gridTemplateColumns:'1fr'}:undefined}>
-        {showPlatformDistribution&&<InsightCard icon="platforms" title="Platform distribution" subtitle="Device mix across the current inventory view"><PlatformDistribution rows={platformCounts} total={total}/></InsightCard>}
-        <InsightCard icon="versions" title="OS fragmentation" subtitle="Version diversity and dominant release per OS family"><div className="fragmentationList">{fragmentation.map(row=><div key={row.platform}><header><span className="labelWithIcon"><PlatformIcon name={row.platform}/><strong>{platformLabel[row.platform]||row.platform}</strong></span><span>{row.versions} version{row.versions===1?'':'s'}</span></header><div><span className="truncate">{row.topVersion}</span><b>{pct(row.topCount,row.devices)} on top version</b></div><i><b style={{width:pct(row.topCount,row.devices)}}/></i></div>)}</div></InsightCard>
-      </div>
-    </InsightCategory>
-
-    <InsightCategory title="Users & ownership" subtitle="Primary-user coverage, device density and ownership state.">
+    <InsightCategory title="Device composition" subtitle="Device types, ownership, manufacturers and models in the current inventory view.">
       <div className="extendedInsightGrid twoInsightGrid">
-        <InsightCard icon="users" title="Devices per user" subtitle="Managed-device density across identified users"><div className="metricTiles userTiles">{userDistribution.map(([label,n])=><Metric key={label} label={label} value={fmt(n)}/>)}</div><div className="inlineInsight"><span>No primary user</span><strong>{fmt(noUser)}</strong><small>{pct(noUser,total)} of devices</small></div></InsightCard>
+        <InsightCard icon="hardware" title="Device types" subtitle="Form factor inferred from inventory and trusted model families"><Distribution rows={types} total={total} icons="hardware"/><p className="insightFootnote">Unknown means the export and current model rules do not provide enough evidence.</p></InsightCard>
         <InsightCard icon="ownership" title="Ownership" subtitle="Corporate, personal and other ownership states"><Distribution rows={ownership} total={total} icons="ownership"/></InsightCard>
+        <InsightCard icon="manufacturer" title="Manufacturers" subtitle="Largest device vendors in the current view"><ManufacturerDistribution rows={manufacturerCounts.slice(0,7)} total={total}/></InsightCard>
+        <InsightCard icon="models" title="Models" subtitle="Most common reported models in the current view"><Distribution rows={modelCounts.slice(0,7)} total={total}/></InsightCard>
       </div>
     </InsightCategory>
 
-    <InsightCategory title="Inventory & activity" subtitle="Inventory quality signals and recent device activity.">
-      <div className="extendedInsightGrid twoInsightGrid">
-        <InsightCard icon="activity" title="Activity distribution" subtitle="Recency of the most recent reported Intune check-in"><div className="activityBars">{visibleActivity.map(([label,n])=><div key={label}><div><span>{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small></div><i><b style={{width:pct(n,total)}}/></i></div>)}</div></InsightCard>
+    <InsightCategory title="Users" subtitle="Primary-user coverage and managed-device density for identified users.">
+      <div className="extendedInsightGrid" style={{gridTemplateColumns:'1fr'}}>
+        <InsightCard icon="users" title="User assignment" subtitle="Devices per identified primary user"><div className="metricTiles userTiles">{userDistribution.map(([label,n])=><Metric key={label} label={label} value={fmt(n)}/>)}</div><div className="inlineInsight"><span>No primary user</span><strong>{fmt(noUser)}</strong><small>{pct(noUser,total)} of devices</small></div></InsightCard>
+      </div>
+    </InsightCategory>
+
+    <InsightCategory title="Operating-system adoption" subtitle="Release diversity and dominant version per operating-system family.">
+      <div className="extendedInsightGrid" style={{gridTemplateColumns:'1fr'}}>
+        <InsightCard icon="versions" title="OS release adoption" subtitle="Version diversity and dominant release per operating-system family"><div className="fragmentationList">{fragmentation.map(row=><div key={row.platform}><header><span className="labelWithIcon"><PlatformIcon name={row.platform}/><strong>{platformLabel[row.platform]||row.platform}</strong></span><span>{row.versions} version{row.versions===1?'':'s'}</span></header><div><span className="truncate">{row.topVersion}</span><b>{pct(row.topCount,row.devices)} on top version</b></div><i><b style={{width:pct(row.topCount,row.devices)}}/></i></div>)}</div></InsightCard>
+      </div>
+    </InsightCategory>
+
+    {hasAnomalies&&<InsightCategory title="Inventory quality" subtitle="Duplicates and incomplete inventory fields that require review.">
+      <div className="extendedInsightGrid" style={{gridTemplateColumns:'1fr'}}>
         <InsightCard icon="alert" title="Inventory anomalies" subtitle="Potential duplicates and inconsistent inventory signals"><div className="anomalyList"><Anomaly label="Duplicate serial entries" value={duplicateSerials}/><Anomaly label="Duplicate device names" value={duplicateNames}/><Anomaly label="Missing serial number" value={missingSerial}/><Anomaly label="Unknown platform" value={unknownPlatform}/></div></InsightCard>
       </div>
-    </InsightCategory>
+    </InsightCategory>}
   </section>
 }
 
