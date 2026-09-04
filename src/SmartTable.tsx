@@ -73,6 +73,10 @@ function SortIcon({active,direction}:{active:boolean;direction:SortDirection}){
   return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round"><path d="m5.25 6.5 2.75-2.75 2.75 2.75"/><path d="m5.25 9.5 2.75 2.75 2.75-2.75"/></svg>;
 }
 
+function DragIcon(){
+  return <svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg>;
+}
+
 function DropdownChevron({open}:{open:boolean}){
   return <svg className="multiFilterChevron" aria-hidden="true" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={open?'m4.5 9.5 3.5-3 3.5 3':'m4.5 6.5 3.5 3 3.5-3'}/></svg>;
 }
@@ -142,6 +146,9 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   const [maxAge,setMaxAge]=useState(180);
   const [columnsOpen,setColumnsOpen]=useState(false);
   const [visibleKeys,setVisibleKeys]=useState<string[]>(()=>columns.map(c=>c.key));
+  const [columnOrder,setColumnOrder]=useState<string[]>(()=>columns.map(c=>c.key));
+  const [draggedColumn,setDraggedColumn]=useState<string|null>(null);
+  const [dropColumn,setDropColumn]=useState<string|null>(null);
 
   useEffect(()=>{
     if(!isDevices)return;
@@ -226,7 +233,16 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
     return true;
   }),[rows,isDevices,platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected,platformSpecificSelected,platformSpecific,maxAge]);
 
-  const shownColumns=effectiveColumns.filter(c=>visibleKeys.includes(c.key));
+  useEffect(()=>{
+    setColumnOrder(order=>{
+      const valid=order.filter(key=>effectiveColumns.some(column=>column.key===key));
+      const missing=effectiveColumns.map(column=>column.key).filter(key=>!valid.includes(key));
+      return [...valid,...missing];
+    });
+  },[effectiveColumns]);
+
+  const orderedColumns=useMemo(()=>columnOrder.map(key=>effectiveColumns.find(column=>column.key===key)).filter((column):column is ExplorerColumn<T>=>Boolean(column)),[columnOrder,effectiveColumns]);
+  const shownColumns=orderedColumns.filter(c=>visibleKeys.includes(c.key));
 
   useEffect(()=>setPage(1),[filteredRows,pageSize]);
   useEffect(()=>setVisibleKeys(keys=>{const valid=keys.filter(k=>effectiveColumns.some(c=>c.key===k));return valid.length?valid:columns.map(c=>c.key)}),[effectiveColumns,columns]);
@@ -256,6 +272,18 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   function exportCsv(){const csv=[shownColumns.map(c=>csvCell(c.exportLabel??c.label)).join(','),...sorted.map(row=>shownColumns.map(c=>csvCell(c.value(row))).join(','))].join('\r\n');const blob=new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`${exportName}.csv`;document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url)}
   function clearFilters(){setPlatformsSelected([]);setManufacturersSelected([]);setModelsSelected([]);setOsVersionsSelected([]);setCompliancesSelected([]);setEncryptionsSelected([]);setOwnershipsSelected([]);setUserStatesSelected([]);setPlatformSpecificSelected([]);setMaxAge(180);onClearFilters?.()}
   function toggleColumn(key:string){setVisibleKeys(keys=>keys.includes(key)?(keys.length>1?keys.filter(k=>k!==key):keys):[...keys,key])}
+  function moveColumn(sourceKey:string,targetKey:string){
+    if(sourceKey===targetKey)return;
+    setColumnOrder(order=>{
+      const sourceIndex=order.indexOf(sourceKey);
+      const targetIndex=order.indexOf(targetKey);
+      if(sourceIndex<0||targetIndex<0)return order;
+      const next=[...order];
+      next.splice(sourceIndex,1);
+      next.splice(targetIndex,0,sourceKey);
+      return next;
+    });
+  }
 
   return <>
     {isDevices&&<div className="deviceFilterShell">
@@ -275,7 +303,7 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
     </div>}
     <div className={`tableToolbar ${isDevices?'deviceTableToolbar':''}`}><div className="tableResultCount"><strong>{sorted.length.toLocaleString()}</strong><span>{isDevices?`of ${rows.length.toLocaleString()} devices${activeFilterCount?` · ${activeFilterCount} filter${activeFilterCount===1?'':'s'} active`:''}`:'items'}</span></div><div className="tableToolbarActions">{isDevices?<>{activeFilterCount>0&&<button className="clearExplorer toolbarClearFilters" onClick={clearFilters}>Clear filters</button>}<button className={`tableExport tableColumns ${columnsOpen?'active':''}`} onClick={()=>setColumnsOpen(v=>!v)}><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="5" height="14" rx="1.2"/><rect x="9.5" y="5" width="5" height="14" rx="1.2"/><rect x="16" y="5" width="5" height="14" rx="1.2"/></svg><span>Columns</span><b>{shownColumns.length}</b></button></>:<><label><span>Rows</span><select value={pageSize} onChange={e=>setPageSize(Number(e.target.value))}>{pageSizes.map(size=><option key={size} value={size}>{size}</option>)}</select></label><button className="tableExport" onClick={exportCsv}><span>↓</span> Export CSV</button></>}</div></div>
     {isDevices&&columnsOpen&&<div className="columnPicker enhancedColumnPicker"><div className="columnPickerIntro"><strong>Columns & export fields</strong><span>Select normalized analyzer fields or original fields from the Intune export. CSV export uses exactly this selection.</span><div><button type="button" onClick={()=>setVisibleKeys(standardColumns.map(c=>c.key))}>Standard only</button><button type="button" onClick={()=>setVisibleKeys(effectiveColumns.map(c=>c.key))}>Select all</button></div></div><div className="columnGroups"><section><header>Standard fields <span>{standardColumns.length}</span></header><div>{standardColumns.map(c=><label key={c.key}><input type="checkbox" checked={visibleKeys.includes(c.key)} onChange={()=>toggleColumn(c.key)}/><span title={c.pickerLabel??c.label}>{c.pickerLabel??c.label}</span></label>)}</div></section><section><header>Original Intune fields <span>{originalColumns.length}</span></header><div className="rawColumnList">{originalColumns.map(c=><label key={c.key}><input type="checkbox" checked={visibleKeys.includes(c.key)} onChange={()=>toggleColumn(c.key)}/><span title={c.label}>{c.label}</span></label>)}</div></section></div></div>}
-    <div className="tableWrap smartTableWrap"><table className="smartTable"><thead><tr>{shownColumns.map(column=><th key={column.key} className={sortKey===column.key?'sorted':''}><button onClick={()=>sort(column)}><span>{column.label}</span><i><SortIcon active={sortKey===column.key} direction={sortDirection}/></i></button></th>)}</tr></thead><tbody>{visible.length?visible.map(row=><tr key={rowKey(row)} className={onRowClick?'clickRow':''} onClick={()=>onRowClick?.(row)}>{shownColumns.map(column=><td key={column.key}>{displayCell(column,row)}</td>)}</tr>):<tr className="emptyStateRow"><td colSpan={Math.max(1,shownColumns.length)}><div className="deviceEmptyState"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="18" cy="18" r="3"/><path d="m20.2 20.2 2 2"/></svg><strong>No devices found</strong><p>{emptyMessage}</p>{(activeFilterCount>0||hasSearch)&&<div className="deviceEmptyActions">{activeFilterCount>0&&<button type="button" onClick={clearFilters}>Clear filters</button>}{hasSearch&&onClearSearch&&<button type="button" onClick={onClearSearch}>Clear search</button>}</div>}</div></td></tr>}</tbody></table></div>
+    <div className="tableWrap smartTableWrap"><table className="smartTable"><thead><tr>{shownColumns.map(column=><th key={column.key} data-column-key={column.key} className={`${sortKey===column.key?'sorted':''} ${draggedColumn===column.key?'columnDragging':''} ${dropColumn===column.key&&draggedColumn!==column.key?'columnDropTarget':''}`} onDragOver={event=>{if(!isDevices||!draggedColumn||draggedColumn===column.key)return;event.preventDefault();event.dataTransfer.dropEffect='move';setDropColumn(column.key)}} onDragLeave={()=>dropColumn===column.key&&setDropColumn(null)} onDrop={event=>{if(!isDevices||!draggedColumn)return;event.preventDefault();moveColumn(draggedColumn,column.key);setDraggedColumn(null);setDropColumn(null)}}><button onClick={()=>sort(column)}>{isDevices&&<span className="columnDragHandle" draggable onMouseDown={event=>event.stopPropagation()} onClick={event=>event.stopPropagation()} onDragStart={event=>{event.stopPropagation();setDraggedColumn(column.key);setDropColumn(null);event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',column.key)}} onDragEnd={()=>{setDraggedColumn(null);setDropColumn(null)}} title={`Drag to move ${column.label}`} aria-label={`Drag to move ${column.label}`}><DragIcon/></span>}<span>{column.label}</span><i><SortIcon active={sortKey===column.key} direction={sortDirection}/></i></button></th>)}</tr></thead><tbody>{visible.length?visible.map(row=><tr key={rowKey(row)} className={onRowClick?'clickRow':''} onClick={()=>onRowClick?.(row)}>{shownColumns.map(column=><td key={column.key}>{displayCell(column,row)}</td>)}</tr>):<tr className="emptyStateRow"><td colSpan={Math.max(1,shownColumns.length)}><div className="deviceEmptyState"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="18" cy="18" r="3"/><path d="m20.2 20.2 2 2"/></svg><strong>No devices found</strong><p>{emptyMessage}</p>{(activeFilterCount>0||hasSearch)&&<div className="deviceEmptyActions">{activeFilterCount>0&&<button type="button" onClick={clearFilters}>Clear filters</button>}{hasSearch&&onClearSearch&&<button type="button" onClick={onClearSearch}>Clear search</button>}</div>}</div></td></tr>}</tbody></table></div>
     <div className={`tablePager ${isDevices?'deviceTablePager':''}`}><span>{sorted.length?<>Showing <strong>{first.toLocaleString()}</strong>–<strong>{last.toLocaleString()}</strong> of <strong>{sorted.length.toLocaleString()}</strong></>:<>No matching devices</>}</span><div className="pagerActions">{isDevices&&<label className="pagerRows"><span>Rows</span><select value={pageSize} onChange={e=>setPageSize(Number(e.target.value))}>{pageSizes.map(size=><option key={size} value={size}>{size}</option>)}</select></label>}<button disabled={safePage<=1} onClick={()=>setPage(1)}>«</button><button disabled={safePage<=1} onClick={()=>setPage(p=>Math.max(1,p-1))}>‹</button><span>Page <strong>{safePage}</strong> of <strong>{pageCount}</strong></span><button disabled={safePage>=pageCount} onClick={()=>setPage(p=>Math.min(pageCount,p+1))}>›</button><button disabled={safePage>=pageCount} onClick={()=>setPage(pageCount)}>»</button></div></div>
   </>;
 }
