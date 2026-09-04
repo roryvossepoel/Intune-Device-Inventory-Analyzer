@@ -1,10 +1,17 @@
 /* Direct resize edge for each device-table header cell. */
 .smartTable th.columnResizeEdgeHover,
 .smartTable th.columnResizeEdgeHover>button{cursor:col-resize!important}
-.smartTable th.columnResizeEdgeHover{box-shadow:inset -2px 0 #4d8edb}
-.smartTable th.resizingColumn{background:#edf6ff!important;box-shadow:inset -2px 0 #1677e8}
+/* Draw the resize edge on the button as well as the th. Sorted headers give
+   the button an opaque background, which otherwise hides the th box-shadow. */
+.smartTable th.columnResizeEdgeHover,
+.smartTable th.columnResizeEdgeHover>button{box-shadow:inset -2px 0 #4d8edb}
+.smartTable th.resizingColumn{background:#edf6ff!important}
+.smartTable th.resizingColumn,
+.smartTable th.resizingColumn>button{box-shadow:inset -2px 0 #1677e8}
 .smartTable th.resizeComplete{animation:columnResizeComplete .42s ease-out}
+.smartTable th.resizeComplete>button{animation:columnResizeButtonComplete .42s ease-out}
 @keyframes columnResizeComplete{0%{background:#e8f3ff;box-shadow:inset -2px 0 #1677e8}100%{background:#f4f8fc;box-shadow:inset -2px 0 rgba(22,119,232,0)}}
+@keyframes columnResizeButtonComplete{0%{box-shadow:inset -2px 0 #1677e8}100%{box-shadow:inset -2px 0 rgba(22,119,232,0)}}
 body.columnResizeActive{cursor:col-resize!important;user-select:none!important}
 body.columnResizeActive *{cursor:col-resize!important}
 .smartTable.columnWidthsActive td{overflow:hidden;text-overflow:ellipsis}
