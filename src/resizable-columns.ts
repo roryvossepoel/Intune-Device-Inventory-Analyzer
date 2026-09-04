@@ -12,6 +12,7 @@ type ResizeFeedback={
 
 const states=new WeakMap<HTMLTableElement,ResizeState>();
 const MIN_COLUMN_WIDTH=84;
+const COLGROUP_CLASS='resizableColumnGroup';
 let scanFrame=0;
 
 function isDeviceTable(table:HTMLTableElement){
@@ -52,6 +53,25 @@ function setTableWidth(table:HTMLTableElement,width:number){
   table.style.setProperty('table-layout','fixed','important');
   table.style.setProperty('width',value,'important');
   table.style.setProperty('min-width',value,'important');
+  table.style.setProperty('max-width','none','important');
+}
+
+function ensureColumnGroup(table:HTMLTableElement,count:number){
+  let group=table.querySelector<HTMLTableColElement>(`:scope > colgroup.${COLGROUP_CLASS}`);
+  if(!group){
+    group=document.createElement('colgroup');
+    group.className=COLGROUP_CLASS;
+    table.insertBefore(group,table.firstChild);
+  }
+
+  while(group.children.length<count)group.appendChild(document.createElement('col'));
+  while(group.children.length>count)group.lastElementChild?.remove();
+  return Array.from(group.querySelectorAll<HTMLTableColElement>('col'));
+}
+
+function setColumnWidth(col:HTMLTableColElement,width:number){
+  const value=`${Math.round(width)}px`;
+  col.style.setProperty('width',value,'important');
 }
 
 function applyAllWidths(table:HTMLTableElement,state:ResizeState){
@@ -67,8 +87,16 @@ function applyAllWidths(table:HTMLTableElement,state:ResizeState){
   });
 
   const total=resolved.reduce((sum,item)=>sum+item.width,0);
+  const cols=ensureColumnGroup(table,resolved.length);
+  resolved.forEach(({index,width})=>{
+    const col=cols[index];
+    if(col)setColumnWidth(col,width);
+  });
+
   setTableWidth(table,total);
 
+  // Keep explicit cell widths as a fallback for browsers that momentarily
+  // recalculate a collapsed-border table while the pointer is moving.
   resolved.forEach(({index,width})=>{
     Array.from(table.rows).forEach(row=>{
       const rowCell=row.cells[index];
@@ -76,8 +104,6 @@ function applyAllWidths(table:HTMLTableElement,state:ResizeState){
     });
   });
 
-  // Re-assert the total after cell widths are applied. Browsers can otherwise
-  // redistribute table columns when a global table { width:100% } rule exists.
   setTableWidth(table,total);
 }
 
@@ -91,6 +117,8 @@ function clearWidths(table:HTMLTableElement){
   table.style.removeProperty('table-layout');
   table.style.removeProperty('width');
   table.style.removeProperty('min-width');
+  table.style.removeProperty('max-width');
+  table.querySelector(`:scope > colgroup.${COLGROUP_CLASS}`)?.remove();
   Array.from(table.rows).forEach(row=>{
     Array.from(row.cells).forEach(cell=>{
       cell.style.removeProperty('width');
@@ -209,13 +237,13 @@ function startResize(event:PointerEvent,handle:HTMLElement,cell:HTMLTableCellEle
 
 function addHandle(table:HTMLTableElement,cell:HTMLTableCellElement){
   const existing=cell.querySelector<HTMLElement>(':scope > .columnResizeHandle');
-  if(existing?.dataset.resizeVersion==='4')return;
+  if(existing?.dataset.resizeVersion==='5')return;
   existing?.remove();
   cell.classList.add('resizableColumnHeader');
 
   const handle=document.createElement('span');
   handle.className='columnResizeHandle';
-  handle.dataset.resizeVersion='4';
+  handle.dataset.resizeVersion='5';
   handle.setAttribute('role','separator');
   handle.setAttribute('aria-orientation','vertical');
   handle.setAttribute('aria-label',`Resize ${columnLabel(cell)}`);
