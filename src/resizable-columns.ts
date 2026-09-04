@@ -1,5 +1,5 @@
 type ResizeState={
-  widths:number[];
+  widths:Map<string,number>;
   signature:string;
 };
 
@@ -17,8 +17,20 @@ function headerCells(table:HTMLTableElement){
   return Array.from(table.tHead?.querySelectorAll<HTMLTableCellElement>('tr:first-child > th')??[]);
 }
 
+function columnLabel(cell:HTMLTableCellElement){
+  return cell.querySelector<HTMLSpanElement>('button > span:not(.columnDragHandle)')?.textContent?.trim()||'column';
+}
+
+function columnKey(cell:HTMLTableCellElement,index:number){
+  return cell.dataset.columnKey||columnLabel(cell)||`column-${index}`;
+}
+
+function headerEntries(table:HTMLTableElement){
+  return headerCells(table).map((cell,index)=>({cell,key:columnKey(cell,index),index}));
+}
+
 function signature(table:HTMLTableElement){
-  return headerCells(table).map(cell=>cell.querySelector('button > span')?.textContent?.trim()??'').join('\u0001');
+  return headerEntries(table).map(entry=>entry.key).sort().join('\u0001');
 }
 
 function setCellWidth(cell:HTMLTableCellElement,width:number){
@@ -29,25 +41,27 @@ function setCellWidth(cell:HTMLTableCellElement,width:number){
 }
 
 function applyAllWidths(table:HTMLTableElement,state:ResizeState){
+  const entries=headerEntries(table);
   table.classList.add('columnWidthsActive');
   table.style.tableLayout='fixed';
   table.style.minWidth='0';
-  table.style.width=`${Math.round(state.widths.reduce((sum,width)=>sum+width,0))}px`;
-  Array.from(table.rows).forEach(row=>{
-    Array.from(row.cells).forEach((cell,index)=>{
-      const width=state.widths[index];
-      if(width!==undefined)setCellWidth(cell,width);
+
+  let total=0;
+  entries.forEach(({cell,key,index})=>{
+    const width=state.widths.get(key)??Math.round(cell.getBoundingClientRect().width);
+    state.widths.set(key,width);
+    total+=width;
+    Array.from(table.rows).forEach(row=>{
+      const rowCell=row.cells[index];
+      if(rowCell)setCellWidth(rowCell,width);
     });
   });
+  table.style.width=`${Math.round(total)}px`;
 }
 
-function applySingleWidth(table:HTMLTableElement,state:ResizeState,index:number,width:number){
-  state.widths[index]=width;
-  table.style.width=`${Math.round(state.widths.reduce((sum,value)=>sum+value,0))}px`;
-  Array.from(table.rows).forEach(row=>{
-    const cell=row.cells[index];
-    if(cell)setCellWidth(cell,width);
-  });
+function applySingleWidth(table:HTMLTableElement,state:ResizeState,key:string,width:number){
+  state.widths.set(key,width);
+  applyAllWidths(table,state);
 }
 
 function clearWidths(table:HTMLTableElement){
@@ -66,20 +80,25 @@ function clearWidths(table:HTMLTableElement){
 }
 
 function freezeCurrentWidths(table:HTMLTableElement){
-  const widths=headerCells(table).map(cell=>Math.round(cell.getBoundingClientRect().width));
+  const widths=new Map<string,number>();
+  headerEntries(table).forEach(({cell,key})=>widths.set(key,Math.round(cell.getBoundingClientRect().width)));
   const state:ResizeState={widths,signature:signature(table)};
   states.set(table,state);
   applyAllWidths(table,state);
   return state;
 }
 
-function startResize(event:PointerEvent,handle:HTMLElement,index:number,table:HTMLTableElement){
+function startResize(event:PointerEvent,handle:HTMLElement,cell:HTMLTableCellElement,table:HTMLTableElement){
   if(event.button!==0)return;
   event.preventDefault();
   event.stopPropagation();
 
+  const entries=headerEntries(table);
+  const entry=entries.find(item=>item.cell===cell);
+  if(!entry)return;
+
   const state=states.get(table)??freezeCurrentWidths(table);
-  const startWidth=state.widths[index]??headerCells(table)[index]?.getBoundingClientRect().width??MIN_COLUMN_WIDTH;
+  const startWidth=state.widths.get(entry.key)??cell.getBoundingClientRect().width??MIN_COLUMN_WIDTH;
   const startX=event.clientX;
   let animationFrame=0;
   let latestX=startX;
@@ -91,7 +110,7 @@ function startResize(event:PointerEvent,handle:HTMLElement,index:number,table:HT
   const render=()=>{
     animationFrame=0;
     const nextWidth=Math.max(MIN_COLUMN_WIDTH,startWidth+(latestX-startX));
-    applySingleWidth(table,state,index,nextWidth);
+    applySingleWidth(table,state,entry.key,nextWidth);
   };
 
   const move=(moveEvent:PointerEvent)=>{
@@ -113,17 +132,20 @@ function startResize(event:PointerEvent,handle:HTMLElement,index:number,table:HT
   window.addEventListener('pointercancel',stop,{once:true});
 }
 
-function addHandle(table:HTMLTableElement,cell:HTMLTableCellElement,index:number){
-  if(cell.querySelector(':scope > .columnResizeHandle'))return;
+function addHandle(table:HTMLTableElement,cell:HTMLTableCellElement){
+  const existing=cell.querySelector<HTMLElement>(':scope > .columnResizeHandle');
+  if(existing?.dataset.resizeVersion==='2')return;
+  existing?.remove();
   cell.classList.add('resizableColumnHeader');
 
   const handle=document.createElement('span');
   handle.className='columnResizeHandle';
+  handle.dataset.resizeVersion='2';
   handle.setAttribute('role','separator');
   handle.setAttribute('aria-orientation','vertical');
-  handle.setAttribute('aria-label',`Resize ${cell.querySelector('button > span')?.textContent?.trim()||'column'}`);
+  handle.setAttribute('aria-label',`Resize ${columnLabel(cell)}`);
   handle.title='Drag to resize column. Double-click to reset column widths.';
-  handle.addEventListener('pointerdown',event=>startResize(event,handle,index,table));
+  handle.addEventListener('pointerdown',event=>startResize(event,handle,cell,table));
   handle.addEventListener('dblclick',event=>{
     event.preventDefault();
     event.stopPropagation();
@@ -158,7 +180,7 @@ function enhanceTable(table:HTMLTableElement){
   const state=states.get(table);
   if(state&&state.signature!==currentSignature)clearWidths(table);
 
-  cells.forEach((cell,index)=>addHandle(table,cell,index));
+  cells.forEach(cell=>addHandle(table,cell));
   addOverflowTitles(table);
 
   const currentState=states.get(table);
