@@ -17,10 +17,7 @@ function daysUntil(value:string){const time=Date.parse(value);return Number.isFi
 function daysOld(value:string){const time=Date.parse(value);return Number.isFinite(time)?(Date.now()-time)/86400000:null}
 
 export default function PlatformInsights({devices,platform}:{devices:Device[];platform:string|null}){
-  if(!platform){
-    const windows=devices.filter(d=>d.platform==='windows');
-    return windows.length?<DashboardSection icon="updates" title="Operating system lifecycle" subtitle="Support lifecycle of Windows releases in the imported inventory."><WindowsLifecycle devices={windows} title="Windows lifecycle"/></DashboardSection>:null;
-  }
+  if(!platform)return null;
   if(platform==='windows')return <WindowsInsights devices={devices}/>;
   if(platform==='android')return <AndroidInsights devices={devices}/>;
   if(platform==='applemobile')return <AppleMobileInsights devices={devices}/>;
