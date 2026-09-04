@@ -18,10 +18,10 @@
 .deviceTableToolbar{justify-content:flex-start}
 .deviceTableToolbar .tableToolbarActions{display:contents}
 .deviceTableToolbar .tableColumns{margin-left:auto}
-.deviceTableToolbar .toolbarClearFilters{height:38px;margin:0;padding:0 12px!important;border:1px solid transparent!important;background:transparent!important;color:#617a96!important;display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;box-shadow:none;white-space:nowrap;cursor:pointer;border-radius:9px}
+.deviceTableToolbar .toolbarClearFilters{height:36px;margin:0;padding:0 13px!important;border:1px solid #c6dcf4!important;background:#eef6ff!important;color:#1769c2!important;display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:750;box-shadow:0 1px 3px rgba(32,96,160,.08);white-space:nowrap;cursor:pointer;border-radius:9px}
 .deviceTableToolbar .toolbarClearFilters:before{content:"";width:14px;height:14px;flex:0 0 14px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4v6h6M20 20v-6h-6'/%3E%3Cpath d='M5.5 15a7.5 7.5 0 0 0 12.6 2.6L20 14M4 10l1.9-3.6A7.5 7.5 0 0 1 18.5 9'/%3E%3C/svg%3E") center/14px 14px no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4v6h6M20 20v-6h-6'/%3E%3Cpath d='M5.5 15a7.5 7.5 0 0 0 12.6 2.6L20 14M4 10l1.9-3.6A7.5 7.5 0 0 1 18.5 9'/%3E%3C/svg%3E") center/14px 14px no-repeat}
-.deviceTableToolbar .toolbarClearFilters:hover{background:#eef6ff!important;border-color:#d4e4f4!important;color:#1769c2!important}
-.deviceTableToolbar .toolbarClearFilters:focus-visible{outline:2px solid #79afe8;outline-offset:1px}
+.deviceTableToolbar .toolbarClearFilters:hover{background:#e2f0ff!important;border-color:#9fc4ee!important;color:#0d5eae!important;box-shadow:0 2px 6px rgba(32,96,160,.11)}
+.deviceTableToolbar .toolbarClearFilters:focus-visible{outline:2px solid #79afe8;outline-offset:2px}
 
 /* Use crisp, font-independent chevrons for pagination controls. */
 .pagerActions>button{position:relative;font-size:0;display:inline-grid;place-items:center}
