@@ -3,7 +3,9 @@
 .deviceTablePager>.pagerActions>button:first-of-type{margin-left:auto}
 .deviceTablePager .pagerRows{margin:0 0 0 10px}
 
-/* Keep the device header clean: Export stays in the header; Clear filters sits with result actions. */
+/* Keep the device header clean: Export stays in the header. In the result bar,
+   Clear filters belongs with the result summary on the left while Columns
+   remains the table action on the right. */
 .dataCard:has(.deviceFilterShell) .deviceFilterShell{position:relative;display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:14px;padding:17px 18px 20px;border-top:1px solid #e6eef7;background:rgba(244,249,255,.82)}
 .dataCard:has(.deviceFilterShell) .deviceFilterTop{display:contents;position:static;padding:0;border:0}
 .dataCard:has(.deviceFilterShell) .deviceFilterTop>div:first-child{display:none}
@@ -11,6 +13,11 @@
 .dataCard:has(.deviceFilterShell) .deviceFilterPanel{display:contents;padding:0;border:0;background:transparent}
 .dataCard:has(.deviceFilterShell) .deviceTopExport{position:absolute;top:-51px;right:18px;z-index:6}
 
+/* Flatten the right action wrapper so Clear filters becomes the second item
+   in the toolbar, directly after the result count. Push Columns to the far right. */
+.deviceTableToolbar{justify-content:flex-start}
+.deviceTableToolbar .tableToolbarActions{display:contents}
+.deviceTableToolbar .tableColumns{margin-left:auto}
 .deviceTableToolbar .toolbarClearFilters{height:38px;margin:0;padding:0 12px!important;border:1px solid transparent!important;background:transparent!important;color:#617a96!important;display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;box-shadow:none;white-space:nowrap;cursor:pointer;border-radius:9px}
 .deviceTableToolbar .toolbarClearFilters:before{content:"";width:14px;height:14px;flex:0 0 14px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4v6h6M20 20v-6h-6'/%3E%3Cpath d='M5.5 15a7.5 7.5 0 0 0 12.6 2.6L20 14M4 10l1.9-3.6A7.5 7.5 0 0 1 18.5 9'/%3E%3C/svg%3E") center/14px 14px no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4v6h6M20 20v-6h-6'/%3E%3Cpath d='M5.5 15a7.5 7.5 0 0 0 12.6 2.6L20 14M4 10l1.9-3.6A7.5 7.5 0 0 1 18.5 9'/%3E%3C/svg%3E") center/14px 14px no-repeat}
 .deviceTableToolbar .toolbarClearFilters:hover{background:#eef6ff!important;border-color:#d4e4f4!important;color:#1769c2!important}
@@ -41,5 +48,7 @@
   .deviceTablePager .pagerRows{margin-right:auto;margin-left:0}
   .dataCard:has(.deviceFilterShell) .deviceFilterShell{grid-template-columns:1fr}
   .dataCard:has(.deviceFilterShell) .deviceTopExport{position:static;grid-column:1;justify-self:end;order:-2}
-  .deviceTableToolbar .tableToolbarActions{width:100%;justify-content:flex-end;flex-wrap:wrap}
+  .deviceTableToolbar{align-items:flex-start;flex-direction:column}
+  .deviceTableToolbar .tableToolbarActions{display:flex;width:100%;justify-content:flex-end;flex-wrap:wrap}
+  .deviceTableToolbar .tableColumns{margin-left:0}
 }
