@@ -74,11 +74,39 @@
 .securityMainGrid .securityLegend i{width:9px;height:9px}
 .securityMainGrid .securityLegend button:not(:disabled):hover{background:#f7faff}
 
-/* Security attention carries the same typographic weight as both donut legends. */
-.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList{gap:8px}
+/* Compliance and attention headers use the same icon treatment as Encryption. */
+.securityMainGrid>.dashboardCard:first-child>.dashboardCardHead,
+.securityMainGrid>.dashboardCard:nth-child(3)>.dashboardCardHead{display:flex;align-items:flex-start;gap:12px}
+.securityMainGrid>.dashboardCard:first-child>.dashboardCardHead:before,
+.securityMainGrid>.dashboardCard:nth-child(3)>.dashboardCardHead:before{content:"";width:38px;height:38px;flex:0 0 38px;border-radius:11px;background-repeat:no-repeat;background-position:center;background-size:20px 20px}
+.securityMainGrid>.dashboardCard:first-child>.dashboardCardHead:before{background-color:#ecfaf4;border:1px solid #ccebdd;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315966a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 5 6v5c0 4.5 2.9 7.3 7 9 4.1-1.7 7-4.5 7-9V6l-7-3Z'/%3E%3Cpath d='m8.4 11.8 2.2 2.2 5-5'/%3E%3C/svg%3E")}
+.securityMainGrid>.dashboardCard:nth-child(3)>.dashboardCardHead:before{background-color:#fff5df;border:1px solid #efcf91;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a66b08' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 5 6v5c0 4.5 2.9 7.3 7 9 4.1-1.7 7-4.5 7-9V6l-7-3Z'/%3E%3Cpath d='M12 8v5'/%3E%3Cpath d='M12 16.5h.01'/%3E%3C/svg%3E")}
+
+/* Human-friendly display labels for raw Intune status enums. Raw values remain untouched for filtering. */
+.distributionList .truncate[title="InGracePeriod" i]{font-size:0!important}
+.distributionList .truncate[title="InGracePeriod" i]:after{content:"In grace period";font-size:14px;font-weight:500;line-height:20px;color:inherit}
+.distributionList .truncate[title="NotApplicable" i]{font-size:0!important}
+.distributionList .truncate[title="NotApplicable" i]:after{content:"Not applicable";font-size:inherit;font-weight:inherit;line-height:inherit;color:inherit}
+.distributionList .truncate[title="NotEvaluated" i]{font-size:0!important}
+.distributionList .truncate[title="NotEvaluated" i]:after{content:"Not evaluated";font-size:inherit;font-weight:inherit;line-height:inherit;color:inherit}
+.distributionList .truncate[title="WipePending" i]{font-size:0!important}
+.distributionList .truncate[title="WipePending" i]:after{content:"Wipe pending";font-size:inherit;font-weight:inherit;line-height:inherit;color:inherit}
+.distributionList .truncate[title="ApprovalPending" i]{font-size:0!important}
+.distributionList .truncate[title="ApprovalPending" i]:after{content:"Approval pending";font-size:inherit;font-weight:inherit;line-height:inherit;color:inherit}
+
+/* Security attention is intentionally more assertive than passive inventory cards. */
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList{gap:9px}
 .securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>button.signalAction,
-.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>div{min-height:44px;padding:11px 13px;border-radius:9px}
-.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList span{font-size:14px;font-weight:500;line-height:20px}
-.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList strong{font-size:14px;font-weight:700;line-height:20px}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>div{min-height:46px;padding:12px 14px;border-radius:10px}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList span{font-size:14px;font-weight:560;line-height:20px}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList strong{font-size:14px;font-weight:750;line-height:20px}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .warn{background:#fff5df;border-color:#efcf91}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .warn span{color:#6f4b05}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .warn strong{color:#996000}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .bad{background:#fff0f0;border-color:#efbcbc}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .bad span{color:#8f3030}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .bad strong{color:#b12626}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>button.signalAction.warn:hover{background:#ffefd0;filter:none}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>button.signalAction.bad:hover{background:#ffe8e8;filter:none}
 
 @media(max-width:760px){.platformCardLogo{width:28px;height:28px;flex-basis:28px}.platformCardLogo svg{width:17px;height:17px}.dashboardPlatformFilter{width:100%;grid-template-columns:auto minmax(0,1fr)}.dashboardPlatformFilter .multiFilterMenu{width:100%}.healthIcon{width:50px;height:50px;flex-basis:50px}.healthIcon svg{width:24px;height:24px}.securityMainGrid>.dashboardCard:first-child{grid-template-columns:1fr;grid-template-rows:auto auto auto;row-gap:14px}.securityMainGrid>.dashboardCard:first-child>.dashboardCardHead{grid-column:1;grid-row:1}.securityMainGrid>.dashboardCard:first-child>.donut{grid-column:1;grid-row:2}.securityMainGrid>.dashboardCard:first-child>.distributionList{grid-column:1;grid-row:3;width:100%}.securityMainGrid .encryptionBody{grid-template-columns:1fr;row-gap:14px}.securityMainGrid .securityLegend{width:100%}}
