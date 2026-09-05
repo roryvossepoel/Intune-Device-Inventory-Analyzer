@@ -1,3 +1,5 @@
+export {};
+
 function ensureHeaderGithub(){
   const actions=document.querySelector<HTMLElement>('.topbar .topActions');
   if(!actions||actions.querySelector('.githubHeaderButton'))return;
