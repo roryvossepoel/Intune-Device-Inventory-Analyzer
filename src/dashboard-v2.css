@@ -42,4 +42,43 @@
 .healthKpi.warn .healthIcon{color:#b87912;background:#fff7e8;border-color:#f0dfb8}
 .healthKpi.bad .healthIcon{color:#b23e3e;background:#fff1f1;border-color:#efcece}
 
-@media(max-width:760px){.platformCardLogo{width:28px;height:28px;flex-basis:28px}.platformCardLogo svg{width:17px;height:17px}.dashboardPlatformFilter{width:100%;grid-template-columns:auto minmax(0,1fr)}.dashboardPlatformFilter .multiFilterMenu{width:100%}.healthIcon{width:50px;height:50px;flex-basis:50px}.healthIcon svg{width:24px;height:24px}}
+/* Health & Security: compliance and encryption use one visual language. */
+.securityMainGrid{align-items:stretch}
+.securityMainGrid>.dashboardCard{min-height:330px}
+.securityMainGrid>.dashboardCard .dashboardCardHead{min-height:44px;margin-bottom:12px}
+.securityMainGrid>.dashboardCard:first-child{--chart-0:#18a873;--chart-1:#d4a72c;--chart-2:#e45d61;--chart-3:#9aa9ba;display:grid;grid-template-columns:160px minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:28px;align-items:center}
+.securityMainGrid>.dashboardCard:first-child>.dashboardCardHead{grid-column:1/-1;grid-row:1}
+.securityMainGrid>.dashboardCard:first-child>.donut{grid-column:1;grid-row:2}
+.securityMainGrid>.dashboardCard:first-child>.distributionList{grid-column:2;grid-row:2;align-self:center}
+.securityMainGrid .donut,.securityMainGrid .securityDonut{width:150px;height:150px;margin:auto}
+.securityMainGrid .donut:after,.securityMainGrid .securityDonut:after{inset:auto;width:104px;height:104px}
+.securityMainGrid .donut strong,.securityMainGrid .securityDonut strong{font-size:25px;line-height:1;color:#0b1f44}
+.securityMainGrid .donut span,.securityMainGrid .securityDonut span{font-size:12px;line-height:1.25;color:#73869d;margin-top:5px}
+.securityMainGrid .encryptionCard{min-height:330px}
+.securityMainGrid .encryptionBody{grid-template-columns:160px minmax(0,1fr);gap:28px;padding:0;align-content:center}
+.securityMainGrid .securityCardHead{min-height:44px}
+
+/* Legends are readable and consistent; the compliance bars are redundant beside the donut. */
+.securityMainGrid>.dashboardCard:first-child .distributionList>button.distributionAction{grid-template-columns:10px minmax(0,1fr) auto 52px;gap:10px;padding:8px 4px}
+.securityMainGrid>.dashboardCard:first-child .distributionList>button.distributionAction>i{display:none}
+.securityMainGrid>.dashboardCard:first-child .distributionList>button.distributionAction span{font-size:14px;font-weight:500;line-height:20px;color:#2c4665}
+.securityMainGrid>.dashboardCard:first-child .distributionList>button.distributionAction strong{font-size:14px;font-weight:650;line-height:20px;color:#0b1f44}
+.securityMainGrid>.dashboardCard:first-child .distributionList>button.distributionAction small{font-size:13px;font-weight:500;line-height:20px;color:#75889f;min-width:52px}
+.securityMainGrid>.dashboardCard:first-child .distributionDot{width:9px;height:9px}
+.securityMainGrid>.dashboardCard:first-child .distributionList>button.distributionAction:hover{background:#f7faff;box-shadow:none}
+.securityMainGrid .securityLegend{gap:6px}
+.securityMainGrid .securityLegend button{grid-template-columns:10px minmax(0,1fr) auto 52px;gap:10px;padding:8px 4px;border-radius:8px}
+.securityMainGrid .securityLegend span{font-size:14px;font-weight:500;line-height:20px;color:#2c4665}
+.securityMainGrid .securityLegend strong{font-size:14px;font-weight:650;line-height:20px;color:#0b1f44}
+.securityMainGrid .securityLegend small{font-size:13px;font-weight:500;line-height:20px;color:#75889f;min-width:52px}
+.securityMainGrid .securityLegend i{width:9px;height:9px}
+.securityMainGrid .securityLegend button:not(:disabled):hover{background:#f7faff}
+
+/* Security attention carries the same typographic weight as both donut legends. */
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList{gap:8px}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>button.signalAction,
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>div{min-height:44px;padding:11px 13px;border-radius:9px}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList span{font-size:14px;font-weight:500;line-height:20px}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList strong{font-size:14px;font-weight:700;line-height:20px}
+
+@media(max-width:760px){.platformCardLogo{width:28px;height:28px;flex-basis:28px}.platformCardLogo svg{width:17px;height:17px}.dashboardPlatformFilter{width:100%;grid-template-columns:auto minmax(0,1fr)}.dashboardPlatformFilter .multiFilterMenu{width:100%}.healthIcon{width:50px;height:50px;flex-basis:50px}.healthIcon svg{width:24px;height:24px}.securityMainGrid>.dashboardCard:first-child{grid-template-columns:1fr;grid-template-rows:auto auto auto;row-gap:14px}.securityMainGrid>.dashboardCard:first-child>.dashboardCardHead{grid-column:1;grid-row:1}.securityMainGrid>.dashboardCard:first-child>.donut{grid-column:1;grid-row:2}.securityMainGrid>.dashboardCard:first-child>.distributionList{grid-column:1;grid-row:3;width:100%}.securityMainGrid .encryptionBody{grid-template-columns:1fr;row-gap:14px}.securityMainGrid .securityLegend{width:100%}}
