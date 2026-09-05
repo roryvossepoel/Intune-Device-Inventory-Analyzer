@@ -1,7 +1,10 @@
 .windowsLifecycleCard{overflow:hidden}
 .windowsLifecycleHead{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.windowsLifecycleTitle{display:flex;align-items:flex-start;gap:11px;min-width:0}
+.windowsLifecycleLogo{width:30px;height:30px;flex:0 0 30px;border-radius:9px;display:grid;place-items:center;background:#f5f8fc;border:1px solid #e2eaf3;color:#365f89}
+.windowsLifecycleLogo svg{width:18px;height:18px;fill:currentColor}
 .windowsLifecycleHead>span{flex:0 0 auto;border:1px solid #d8e5f2;background:#f6f9fd;color:#69809a;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:750}
-.windowsLifecycleTableWrap{overflow-x:auto;padding:0 18px 2px}
+.windowsLifecycleTableWrap{overflow-x:auto;padding:0 18px 12px}
 .windowsLifecycleTable{width:100%;min-width:760px;border-collapse:separate;border-spacing:0 6px;table-layout:auto;white-space:nowrap}
 .windowsLifecycleTable thead th{padding:0 12px 7px;background:transparent;color:#60758f;font-size:10px;font-weight:750;letter-spacing:.45px;text-transform:uppercase}
 .windowsLifecycleTable thead th:first-child{padding-left:12px}
@@ -9,7 +12,6 @@
 .windowsLifecycleTable td:first-child{border-radius:8px 0 0 8px}
 .windowsLifecycleTable td:last-child{border-radius:0 8px 8px 0}
 .windowsLifecycleTable td strong{display:block;color:#173655;font-size:12px;font-weight:750}
-.windowsLifecycleTable td small{display:block;margin-top:4px;color:#786a50;font-size:10.5px;line-height:1.35;font-weight:650}
 .windowsLifecycleRow.healthy td{background:#e4f4eb}
 .windowsLifecycleRow.warning td{background:#f6efd7}
 .windowsLifecycleRow.expired td{background:#f9e3e3}
@@ -17,5 +19,4 @@
 .windowsLifecycleRow.healthy td strong{color:#176548}
 .windowsLifecycleRow.warning td strong{color:#765d19}
 .windowsLifecycleRow.expired td strong{color:#9d3838}
-.windowsLifecycleFootnote{margin:9px 18px 17px;color:#6f8197;font-size:11.5px;line-height:1.55}
-@media(max-width:760px){.windowsLifecycleHead{align-items:flex-start}.windowsLifecycleTableWrap{padding:0 12px 2px}.windowsLifecycleFootnote{margin-left:12px;margin-right:12px;font-size:11px}}
+@media(max-width:760px){.windowsLifecycleHead{align-items:flex-start}.windowsLifecycleTableWrap{padding:0 12px 10px}.windowsLifecycleLogo{width:28px;height:28px;flex-basis:28px}.windowsLifecycleLogo svg{width:17px;height:17px}}
