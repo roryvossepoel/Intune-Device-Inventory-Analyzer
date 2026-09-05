@@ -40,6 +40,8 @@ import './sticky-device-header';
 import './column-resize-v2';
 import './inventory-activity-polish';
 import './health-security-final-polish.css';
+import './header-reference.css';
+import './header-reference';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
