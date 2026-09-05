@@ -89,7 +89,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const manufacturers=countValues(devices.map(d=>clean(d.manufacturer))).filter(([label])=>label!=='Unknown').slice(0,8);
   const models=countValues(devices.map(d=>clean(d.model))).filter(([label])=>label!=='Unknown').slice(0,8);
   const types=countValues(devices.map(hardwareType));
-  const ownership=countValues(devices.map(d=>clean(d.ownership));
+  const ownership=countValues(devices.map(d=>clean(d.ownership)));
   const userCounts=countValues(devices.map(d=>clean(d.userUpn||d.userDisplayName)).filter(v=>v!=='Unknown'));
   const userDistribution:Row[]=[['1 device',userCounts.filter(([,n])=>n===1).length],['2 devices',userCounts.filter(([,n])=>n===2).length],['3+ devices',userCounts.filter(([,n])=>n>=3).length],['No primary user',devices.filter(d=>!d.userUpn&&!d.userDisplayName).length]];
 
@@ -130,7 +130,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
     <DashboardSection icon="activity" title="Inventory & Activity" subtitle="Inventory freshness, device activity and data-quality signals.">
       <div className="extendedInsightGrid twoInsightGrid">
         <Card title="Check-in age" subtitle="Time since the most recent Intune check-in"><Distribution rows={staleBuckets} total={total}/><div className="inlineInsight"><span>Inactive over 30 days</span><strong>{fmt(stale)}</strong><small>{pct(stale,total)} of inventory</small></div></Card>
-        <Card title="Inventory quality" subtitle="Duplicate and incomplete inventory signals"><SignalList rows={inventoryQuality.map(([n,v])=>[v,n,v?'warn':'neutral',undefined])}/></Card>
+        <Card title="Inventory quality" subtitle="Duplicate and incomplete inventory signals"><SignalList rows={inventoryQuality.map(([label,value])=>[value,label,value?'warn':'neutral',undefined])}/></Card>
       </div>
     </DashboardSection>
 
