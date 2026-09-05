@@ -120,9 +120,9 @@
   content:""!important;
   display:block!important;
   position:absolute!important;
-  left:10px!important;
-  right:10px!important;
-  bottom:6px!important;
+  left:15px!important;
+  right:15px!important;
+  bottom:10px!important;
   height:2px!important;
   border-radius:999px!important;
   background:#2b7de9!important;
@@ -203,7 +203,7 @@
   .topbar .brandMark{width:32px!important;height:32px!important;flex-basis:32px!important;background-size:32px 32px!important}
   .topbar .mainNav,.topbar.publicTopbar .mainNav,.topbar:not(.publicTopbar) .mainNav{height:56px!important;overflow:auto!important;justify-self:stretch!important}
   .topbar .mainNav button,.topbar.publicTopbar .mainNav button,.topbar:not(.publicTopbar) .mainNav button{height:56px!important;min-height:56px!important;padding:0 6px!important;font-size:11px!important}
-  .topbar .mainNav button.active:after{left:6px!important;right:6px!important;bottom:4px!important}
+  .topbar .mainNav button.active:after{left:9px!important;right:9px!important;bottom:8px!important}
   .topbar .primarySmall{font-size:0!important;width:34px!important;padding:0!important;display:grid!important;place-items:center!important}
   .topbar .primarySmall:before{margin:0!important;width:16px!important;height:16px!important;background-size:16px 16px!important}
   .githubHeaderButton{width:32px!important;height:32px!important;flex-basis:32px!important}
