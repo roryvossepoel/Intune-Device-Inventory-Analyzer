@@ -31,4 +31,14 @@
 .dashboardPlatformFilter .multiFilterTrigger.hasValue .multiFilterChevron{color:#2769b4}
 .dashboardPlatformFilter:has(.multiFilterTrigger.hasValue)>span{color:#2769b4}
 
+/* Crisp, consistent KPI iconography. */
+.healthIcon:after{content:none!important;display:none!important}
+.healthIcon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+.healthIcon.devices{color:#2563eb;background:#eef5ff;border-color:#d7e6fa}
+.healthIcon.compliance{color:#13845f;background:#eef8f4;border-color:#d3ece2}
+.healthIcon.lifecycle{color:#b87912;background:#fff7e8;border-color:#f0dfb8}
+.healthIcon.inactive{color:#60758d;background:#f2f5f8;border-color:#dfe7ef}
+.healthKpi.bad .healthIcon.lifecycle{color:#b23e3e;background:#fff1f1;border-color:#efcece}
+.healthKpi.warn .healthIcon.inactive{color:#b87912;background:#fff7e8;border-color:#f0dfb8}
+
 @media(max-width:760px){.platformCardLogo{width:28px;height:28px;flex-basis:28px}.platformCardLogo svg{width:17px;height:17px}.dashboardPlatformFilter{width:100%;grid-template-columns:auto minmax(0,1fr)}.dashboardPlatformFilter .multiFilterMenu{width:100%}}
