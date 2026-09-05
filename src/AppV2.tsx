@@ -3,6 +3,7 @@ import { importInventory } from './importer';
 import { createDemoInventory } from './demoData';
 import SmartTable from './SmartTable';
 import DashboardSections from './DashboardSections';
+import DashboardPlatformFilter from './DashboardPlatformFilter';
 import LandingContent from './LandingContent';
 import FaqPage from './FaqPage';
 import DeviceDetailPanel from './DeviceDetail';
@@ -32,7 +33,7 @@ export default function AppV2(){
   const [error,setError]=useState<string|null>(null);
   const [view,setView]=useState<View>('overview');
   const [query,setQuery]=useState('');
-  const [platform,setPlatform]=useState<string|null>(null);
+  const [platformsSelected,setPlatformsSelected]=useState<string[]>([]);
   const [filter,setFilter]=useState<Filter>(null);
   const [selected,setSelected]=useState<Device|null>(null);
   const [demoMode,setDemoMode]=useState(false);
@@ -41,13 +42,13 @@ export default function AppV2(){
   async function open(file?:File){
     if(!file)return;
     setBusy(true);setError(null);
-    try{setData(await importInventory(file));setDemoMode(false);setView('overview');setPlatform(null);setFilter(null);setQuery('')}
+    try{setData(await importInventory(file));setDemoMode(false);setView('overview');setPlatformsSelected([]);setFilter(null);setQuery('')}
     catch(error){setError(error instanceof Error?error.message:'The export could not be read.')}
     finally{setBusy(false)}
   }
 
   function openDemo(target:View='overview'){
-    setData(createDemoInventory());setDemoMode(true);setView(target);setPlatform(null);setFilter(null);setQuery('');window.scrollTo({top:0,behavior:'smooth'});
+    setData(createDemoInventory());setDemoMode(true);setView(target);setPlatformsSelected([]);setFilter(null);setQuery('');window.scrollTo({top:0,behavior:'smooth'});
   }
 
   function navigate(target:View){
@@ -60,8 +61,9 @@ export default function AppV2(){
     setFilter({field,label,value});setView('devices');setQuery('');window.scrollTo({top:0,behavior:'smooth'});
   }
 
-  const base=useMemo(()=>data?.devices.filter(device=>!platform||platformKey(device.platform)===platform)??[],[data,platform]);
+  const base=useMemo(()=>data?.devices.filter(device=>!platformsSelected.length||platformsSelected.includes(platformKey(device.platform)))??[],[data,platformsSelected]);
   const platforms=useMemo(()=>data?countBy(data.devices,device=>platformKey(device.platform)):[],[data]);
+  const activePlatform=platformsSelected.length===1?platformsSelected[0]:null;
   const compliance=useMemo(()=>countBy(base,device=>key(device.compliance)),[base]);
   const compliant=compliance.find(([value])=>value.toLowerCase()==='compliant')?.[1]??0;
   const noncompliant=compliance.find(([value])=>value.toLowerCase()==='noncompliant')?.[1]??0;
@@ -73,7 +75,7 @@ export default function AppV2(){
 
   const deviceInitialFilters=useMemo<DeviceTableInitialFilters>(()=>{
     const initial:DeviceTableInitialFilters={};
-    if(platform)initial.platform=platformLabel[platform]||platform;
+    if(activePlatform)initial.platform=platformLabel[activePlatform]||activePlatform;
     if(!filter)return initial;
     if(filter.field==='compliance')initial.compliance=filter.value;
     if(filter.field==='osVersion')initial.osVersion=filter.value;
@@ -84,7 +86,7 @@ export default function AppV2(){
       initial.encryption=['false','no','0','not encrypted','unencrypted'].includes(value)?'Not encrypted':['true','yes','1','encrypted'].includes(value)?'Encrypted':'Unknown';
     }
     return initial;
-  },[platform,filter]);
+  },[activePlatform,filter]);
 
   const deviceColumns:SmartColumn<Device>[]=[
     {key:'device',label:'Device',value:d=>d.deviceName||'',render:d=><><strong>{d.deviceName||'—'}</strong><small>{d.serialNumber}</small></>},
@@ -98,8 +100,12 @@ export default function AppV2(){
   ];
 
   const nav:[View,string][]=[['overview','Overview'],['devices','Devices'],['reports','Reports'],['faq','FAQ']];
-  const overviewTitle=platform?`${dashboardPlatformLabel(platform)} dashboard`:'Inventory dashboard';
-  const overviewDescription=platform?`Health, composition and lifecycle insights for ${formatNumber(base.length)} ${dashboardPlatformLabel(platform)} devices.`:`Health, composition, lifecycle and management insights across ${formatNumber(data?.devices.length??0)} managed devices.`;
+  const overviewTitle=activePlatform?`${dashboardPlatformLabel(activePlatform)} dashboard`:'Inventory dashboard';
+  const overviewDescription=platformsSelected.length===0
+    ?`Health, composition, lifecycle and management insights across ${formatNumber(data?.devices.length??0)} managed devices.`
+    :platformsSelected.length===1
+      ?`Health, composition, lifecycle and management insights across ${formatNumber(base.length)} ${dashboardPlatformLabel(activePlatform!)} devices.`
+      :`Health, composition, lifecycle and management insights across ${formatNumber(base.length)} managed devices in ${platformsSelected.length} selected platforms.`;
   const pageTitle=view==='overview'?overviewTitle:view==='devices'?'Devices':view==='reports'?'Reports':'FAQ';
   const pageDescription=view==='overview'?overviewDescription:view==='devices'?'Search and inspect every device in the imported inventory.':'Prepare management-ready exports and summaries from the current inventory.';
 
@@ -118,9 +124,9 @@ export default function AppV2(){
       <LandingContent/>
     </main>:<main className="workspace dashboardWorkspace">
       {demoMode&&<div className="demoBanner"><span>Demo inventory</span><strong>You're exploring fictional data.</strong><button onClick={()=>input.current?.click()}>Open your own export</button></div>}
-      <section className="pageHead dashboardHead"><div><span className="eyebrow">{view.toUpperCase()}</span><h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view==='overview'?<PlatformSelect value={platform} platforms={platforms} onChange={value=>{setPlatform(value);setFilter(null)}}/>:view==='devices'?<Search value={query} setValue={setQuery}/>:null}</section>
-      {view==='overview'&&<Overview devices={base} allDevices={data.devices} total={base.length} users={users.length} compliant={compliant} noncompliant={noncompliant} grace={grace} stale={stale} compliance={compliance} platform={platform} drill={drill}/>} 
-      {view==='devices'&&<DataCard title="Device inventory" subtitle=""><SmartTable rows={deviceRows} columns={deviceColumns} rowKey={device=>device.id} exportName="intune-devices" onRowClick={setSelected} initialFilters={deviceInitialFilters} onClearFilters={()=>{setPlatform(null);setFilter(null)}} searchQuery={query} onClearSearch={()=>setQuery('')}/></DataCard>}
+      <section className="pageHead dashboardHead"><div><span className="eyebrow">{view.toUpperCase()}</span><h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view==='overview'?<DashboardPlatformFilter platforms={platforms} selected={platformsSelected} onChange={values=>{setPlatformsSelected(values);setFilter(null)}}/>:view==='devices'?<Search value={query} setValue={setQuery}/>:null}</section>
+      {view==='overview'&&<Overview devices={base} allDevices={platformsSelected.length?base:data.devices} total={base.length} users={users.length} compliant={compliant} noncompliant={noncompliant} grace={grace} stale={stale} compliance={compliance} platformsSelected={platformsSelected} activePlatform={activePlatform} drill={drill}/>} 
+      {view==='devices'&&<DataCard title="Device inventory" subtitle=""><SmartTable rows={deviceRows} columns={deviceColumns} rowKey={device=>device.id} exportName="intune-devices" onRowClick={setSelected} initialFilters={deviceInitialFilters} onClearFilters={()=>{setPlatformsSelected([]);setFilter(null)}} searchQuery={query} onClearSearch={()=>setQuery('')}/></DataCard>}
       {view==='reports'&&<section className="reportsPlaceholder"><div className="reportsIcon">▤</div><h2>Management reports</h2><p>PDF and PowerPoint reporting will be built here using the currently loaded inventory. The report engine will remain fully local in the browser.</p><span>Planned: executive summary · platform overview · compliance · lifecycle · hardware</span></section>}
     </main>}
 
@@ -129,17 +135,17 @@ export default function AppV2(){
   </div>;
 }
 
-function Overview({devices,allDevices,total,users,compliant,noncompliant,grace,stale,compliance,platform,drill}:{devices:Device[];allDevices:Device[];total:number;users:number;compliant:number;noncompliant:number;grace:number;stale:number;compliance:[string,number][];platform:string|null;drill:(field:NonNullable<Filter>['field'],label:string,value:string)=>void}){
+function Overview({devices,allDevices,total,users,compliant,noncompliant,grace,stale,compliance,platformsSelected,activePlatform,drill}:{devices:Device[];allDevices:Device[];total:number;users:number;compliant:number;noncompliant:number;grace:number;stale:number;compliance:[string,number][];platformsSelected:string[];activePlatform:string|null;drill:(field:NonNullable<Filter>['field'],label:string,value:string)=>void}){
   const compliancePct=total?compliant/total*100:0;
+  const inventoryNote=platformsSelected.length===0?'Current inventory':platformsSelected.length===1?`${dashboardPlatformLabel(activePlatform!)} inventory`:`${platformsSelected.length} platforms selected`;
   return <div className="inventoryDashboard">
-    <section className="healthKpis"><HealthKpi icon="devices" label="Managed devices" value={formatNumber(total)} note={platform?`${dashboardPlatformLabel(platform)} inventory`:'Current inventory'} tone="blue"/><HealthKpi icon="users" label="Assigned users" value={formatNumber(users)} note={users?`${(total/users).toFixed(1)} devices per assigned user`:'No assigned users'} tone="neutral"/><HealthKpi icon="shield" label="Compliant devices" value={`${compliancePct.toFixed(1)}%`} note={`${formatNumber(compliant)} compliant`} tone={compliancePct>=90?'good':compliancePct>=75?'warn':'bad'}/><HealthKpi icon="clock" label="Inactive over 30 days" value={formatNumber(stale)} note={stale?'Needs review':'All devices recently active'} tone={stale?'warn':'good'}/></section>
-    <DashboardSections devices={devices} allDevices={allDevices} total={total} compliance={compliance} compliant={compliant} noncompliant={noncompliant} grace={grace} stale={stale} platform={platform} drill={drill}/>
+    <section className="healthKpis"><HealthKpi icon="devices" label="Managed devices" value={formatNumber(total)} note={inventoryNote} tone="blue"/><HealthKpi icon="users" label="Assigned users" value={formatNumber(users)} note={users?`${(total/users).toFixed(1)} devices per assigned user`:'No assigned users'} tone="neutral"/><HealthKpi icon="shield" label="Compliant devices" value={`${compliancePct.toFixed(1)}%`} note={`${formatNumber(compliant)} compliant`} tone={compliancePct>=90?'good':compliancePct>=75?'warn':'bad'}/><HealthKpi icon="clock" label="Inactive over 30 days" value={formatNumber(stale)} note={stale?'Needs review':'All devices recently active'} tone={stale?'warn':'good'}/></section>
+    <DashboardSections devices={devices} allDevices={allDevices} total={total} compliance={compliance} compliant={compliant} noncompliant={noncompliant} grace={grace} stale={stale} platform={activePlatform} drill={drill}/>
   </div>;
 }
 
 function Feature({icon,title,text}:{icon:string;title:string;text:string}){return <article className="feature"><span>{icon}</span><div><strong>{title}</strong><small>{text}</small></div></article>}
 function Trust({icon,title,text}:{icon:string;title:string;text:string}){return <article className="trustItem"><span>{icon}</span><div><strong>{title}</strong><small>{text}</small></div></article>}
-function PlatformSelect({value,platforms,onChange}:{value:string|null;platforms:[string,number][];onChange:(value:string|null)=>void}){return <label className="platformSelect"><span>Platform</span><select value={value||''} onChange={event=>onChange(event.target.value||null)}><option value="">All platforms</option>{platforms.map(([platform,count])=><option key={platform} value={platform}>{platformLabel[platform]||platform} · {formatNumber(count)}</option>)}</select></label>}
 function HealthKpi({icon,label,value,note,tone}:{icon:string;label:string;value:string;note:string;tone:string}){return <article className={`healthKpi ${tone}`}><span className={`healthIcon ${icon}`}/><div><span>{label}</span><strong>{value}</strong><small>{note}</small></div></article>}
 function Search({value,setValue}:{value:string;setValue:(value:string)=>void}){return <div className="search"><span className="searchIcon" aria-hidden="true">⌕</span><input value={value} onChange={event=>setValue(event.target.value)} placeholder="Search…"/>{value&&<button type="button" className="searchClear" onClick={()=>setValue('')} aria-label="Clear search"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="m4.5 4.5 7 7M11.5 4.5l-7 7"/></svg></button>}</div>}
 function DataCard({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}){return <section className="dataCard"><div className="dataHead"><div><h2>{title}</h2><p>{subtitle}</p></div></div>{children}</section>}
