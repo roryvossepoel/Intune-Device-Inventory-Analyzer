@@ -122,8 +122,8 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
     <DashboardSection icon="security" title="Health & Security" subtitle="Compliance, protection and security signals across the managed inventory.">
       <div className="dashboardMainGrid securityMainGrid">
         <Card title="Compliance status" subtitle="Current device compliance state"><Donut total={total} items={compliance} center={`${compliancePct.toFixed(1)}%`} label="compliant"/><Distribution rows={compliance} total={total} onClick={label=>drill('compliance','Compliance',label)}/></Card>
-        <EncryptionCard devices={devices} onNotEncrypted={()=>security.notEncrypted&&drill('encryption','Encryption','false')}/>
-        <Card title="Security attention" subtitle="Explicit security signals requiring review"><SignalList rows={[[security.notEncrypted,'Not encrypted','warn',()=>security.notEncrypted&&drill('encryption','Encryption','false')],[security.rooted,'Jailbroken / rooted','bad',undefined]]}/></Card>
+        <EncryptionCard devices={devices} onNotEncrypted={()=>security.notEncrypted&&drill('encryption','Encryption','false')} onUnknown={()=>security.unknownEncryption&&drill('encryption','Encryption','Unknown')}/>
+        <Card title="Security attention" subtitle="Explicit security signals requiring review"><SignalList rows={[[security.notEncrypted,'Not encrypted','warn',()=>security.notEncrypted&&drill('encryption','Encryption','false')],[security.unknownEncryption,'Encryption status unknown','warn',()=>security.unknownEncryption&&drill('encryption','Encryption','Unknown')],[security.rooted,'Jailbroken / rooted','bad',undefined]]}/></Card>
       </div>
     </DashboardSection>
 
