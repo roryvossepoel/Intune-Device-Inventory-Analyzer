@@ -37,6 +37,7 @@ import './column-resize-v2.css';
 import './windows-lifecycle.css';
 import './sticky-device-header';
 import './column-resize-v2';
+import './inventory-activity-polish';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
