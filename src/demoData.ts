@@ -65,6 +65,7 @@ function futureIntuneDate(days:number){return new Date(now+days*86400000).toISOS
 function compactHex(value:number,length:number){let s='';for(let i=0;i<length;i++)s+=((value*37+i*17)%16).toString(16).toUpperCase();return s}
 function fakeGuid(i:number,salt:number){const a=(0x10000000+((i+1)*(salt+17)*7919)%0xefffffff).toString(16).padStart(8,'0').slice(-8);const b=((i+salt)*97%0xffff).toString(16).padStart(4,'0');const c=((i+salt*3)*131%0xffff).toString(16).padStart(4,'0');const d=((i+salt*5)*173%0xffff).toString(16).padStart(4,'0');const e=((BigInt(i+1)*BigInt(salt+29)*BigInt(104729))%BigInt('0xffffffffffff')).toString(16).padStart(12,'0');return `${a}-${b}-${c}-${d}-${e}`}
 function rawManufacturer(name:string){return name==='Dell'?'Dell Inc.':name==='Microsoft'?'Microsoft Corporation':name==='Lenovo'?'LENOVO':name==='Samsung'?'samsung':name==='HP'?'HP':name}
+function enrollmentAgeDays(i:number){if(i<20)return 5+(i%26);if(i<55)return 31+(i%60);if(i<135)return 91+((i*7)%260);if(i<175)return 366+((i*11)%500);return null}
 
 function device(i:number,t:Template):Device{
   const isWindows=t.platform==='windows';
@@ -81,6 +82,7 @@ function device(i:number,t:Template):Device{
   const person=people[i%people.length];
   const userUpn=noUser?'':`${person.toLowerCase().replace(/ /g,'.')}@dundermifflin.example`;
   const age=i%19===0?112:i%11===0?68:i%7===0?36:i%5===0?14:i%3===0?6:2;
+  const enrollmentAge=enrollmentAgeDays(i);
   const version=t.versions[i%t.versions.length];
   const name=`DEMO-${t.platform.toUpperCase()}-${String(i+1).padStart(3,'0')}`;
   const deviceId=fakeGuid(i,11);
@@ -97,7 +99,7 @@ function device(i:number,t:Template):Device{
   const raw:Record<string,string>={
     'Device ID':deviceId,
     'Device name':name,
-    'Enrollment date':intuneDateDaysAgo(120+(i%700)),
+    'Enrollment date':enrollmentAge===null?'':intuneDateDaysAgo(enrollmentAge),
     'Last check-in':intuneDateDaysAgo(age),
     'Azure AD Device ID':aadDeviceId,
     'OS version':version,
@@ -172,6 +174,15 @@ function device(i:number,t:Template):Device{
 export function createDemoInventory():ImportResult{
   const devices:Device[]=[];
   for(let i=0;i<total;i++)devices.push(device(i,allocated[i%allocated.length]));
+
+  // Small, intentional data-quality imperfections make the demo representative without dominating it.
+  for(const index of [2,3,4]){devices[index].serialNumber=null;devices[index].raw['Serial number']=''}
+  devices[10].serialNumber=devices[9].serialNumber;devices[10].raw['Serial number']=devices[9].raw['Serial number'];
+  devices[20].deviceName=devices[19].deviceName;devices[20].raw['Device name']=devices[19].raw['Device name'];
+  for(const index of [30,31]){devices[index].model=null;devices[index].raw['Model']=''}
+  for(const index of [40,41]){devices[index].manufacturer=null;devices[index].raw['Manufacturer']=''}
+  for(const index of [50,51]){devices[index].lastCheckIn=null;devices[index].raw['Last check-in']=''}
+
   const columns=[...demoSourceColumns];
   return {sourceFileName:'Intune-Analyzer-Demo.csv',sourceFileNames:['Intune-Analyzer-Demo.csv'],csvFileName:'Intune-Analyzer-Demo.csv',csvFileNames:['Intune-Analyzer-Demo.csv'],devices,columns,duplicateCount:0};
 }
