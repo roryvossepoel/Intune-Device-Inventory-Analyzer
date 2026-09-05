@@ -136,16 +136,12 @@ export default function AppV2(){
 
 function Overview({devices,allDevices,total,lifecycle,compliant,noncompliant,grace,stale,compliance,platformsSelected,activePlatform,drill}:{devices:Device[];allDevices:Device[];total:number;lifecycle:ReturnType<typeof lifecycleRiskSummary>;compliant:number;noncompliant:number;grace:number;stale:number;compliance:[string,number][];platformsSelected:string[];activePlatform:string|null;drill:(field:NonNullable<Filter>['field'],label:string,value:string)=>void}){
   const compliancePct=total?compliant/total*100:0;
-  const inventoryNote=platformsSelected.length===0?'Current inventory':platformsSelected.length===1?`${dashboardPlatformLabel(activePlatform!)} inventory`:`${platformsSelected.length} platforms selected`;
-  const lifecyclePct=lifecycle.assessed?lifecycle.risk/lifecycle.assessed*100:0;
   const lifecycleNote=lifecycle.assessed===0
     ?'No lifecycle data for this scope'
-    :lifecycle.risk===0
-      ?`${formatNumber(lifecycle.assessed)} assessed · no known risk`
-      :`${lifecyclePct.toFixed(1)}% of ${formatNumber(lifecycle.assessed)} assessed devices`;
+    :`${formatNumber(lifecycle.risk)} of ${formatNumber(lifecycle.assessed)} ${lifecycle.assessed===total?'devices':'assessed devices'} at risk`;
   const lifecycleTone=lifecycle.assessed===0?'neutral':lifecycle.expired>0?'bad':lifecycle.risk>0?'warn':'good';
   return <div className="inventoryDashboard">
-    <section className="healthKpis"><HealthKpi icon="devices" label="Managed devices" value={formatNumber(total)} note={inventoryNote} tone="blue"/><HealthKpi icon="compliance" label="Compliant devices" value={`${compliancePct.toFixed(1)}%`} note={`${formatNumber(compliant)} compliant`} tone={compliancePct>=90?'good':compliancePct>=75?'warn':'bad'}/><HealthKpi icon="lifecycle" label="Lifecycle risk" value={lifecycle.assessed?formatNumber(lifecycle.risk):'—'} note={lifecycleNote} tone={lifecycleTone}/><HealthKpi icon="inactive" label="Inactive over 30 days" value={formatNumber(stale)} note={stale?'Needs review':'All devices recently active'} tone={stale?'warn':'good'}/></section>
+    <section className="healthKpis"><HealthKpi icon="devices" label="Managed devices" value={formatNumber(total)} note="Current scope" tone="blue"/><HealthKpi icon="compliance" label="Compliant devices" value={`${compliancePct.toFixed(1)}%`} note={`${formatNumber(compliant)} of ${formatNumber(total)} compliant`} tone={compliancePct>=90?'good':compliancePct>=75?'warn':'bad'}/><HealthKpi icon="lifecycle" label="Lifecycle risk" value={lifecycle.assessed?formatNumber(lifecycle.risk):'—'} note={lifecycleNote} tone={lifecycleTone}/><HealthKpi icon="inactive" label="Inactive over 30 days" value={formatNumber(stale)} note={`${formatNumber(stale)} of ${formatNumber(total)} devices inactive`} tone={stale?'warn':'good'}/></section>
     <DashboardSections devices={devices} allDevices={allDevices} total={total} compliance={compliance} compliant={compliant} noncompliant={noncompliant} grace={grace} stale={stale} platform={activePlatform} drill={drill}/>
   </div>;
 }
