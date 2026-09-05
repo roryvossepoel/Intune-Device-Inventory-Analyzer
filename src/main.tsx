@@ -6,6 +6,7 @@ import './landing.css';
 import './dashboard.css';
 import './workspace.css';
 import './header.css';
+import './branding-logo.css';
 import './insights.css';
 import './table.css';
 import './typography.css';
