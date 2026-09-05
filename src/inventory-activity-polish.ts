@@ -1,3 +1,5 @@
+export {};
+
 function applyInventoryActivityPolish(){
   const cards=[...document.querySelectorAll<HTMLElement>('.inventoryActivityGrid > .dashboardCard')];
   if(!cards.length)return;
