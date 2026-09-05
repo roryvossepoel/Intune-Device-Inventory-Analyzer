@@ -1,0 +1,30 @@
+/* Inventory & Activity keeps activity risk semantic, while enrollment age remains informational. */
+.inventoryActivityGrid{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
+.inventoryActivityGrid>.dashboardCard{min-height:330px}
+
+/* Check-in age: freshness is meaningful, so older buckets become progressively more urgent. */
+.inventoryActivityGrid>.dashboardCard:first-child .distributionList>div:has(.truncate[title="0–7 days"]) .distributionDot,
+.inventoryActivityGrid>.dashboardCard:first-child .distributionList>div:has(.truncate[title="0–7 days"])>i>b{background:#18a873!important}
+.inventoryActivityGrid>.dashboardCard:first-child .distributionList>div:has(.truncate[title="8–30 days"]) .distributionDot,
+.inventoryActivityGrid>.dashboardCard:first-child .distributionList>div:has(.truncate[title="8–30 days"])>i>b{background:#2563eb!important}
+.inventoryActivityGrid>.dashboardCard:first-child .distributionList>div:has(.truncate[title="31–90 days"]) .distributionDot,
+.inventoryActivityGrid>.dashboardCard:first-child .distributionList>div:has(.truncate[title="31–90 days"])>i>b{background:#d4a72c!important}
+.inventoryActivityGrid>.dashboardCard:first-child .distributionList>div:has(.truncate[title="> 90 days"]) .distributionDot,
+.inventoryActivityGrid>.dashboardCard:first-child .distributionList>div:has(.truncate[title="> 90 days"])>i>b{background:#e45d61!important}
+.inventoryActivityGrid>.dashboardCard:first-child .distributionList>div:has(.truncate[title="Unknown"]) .distributionDot,
+.inventoryActivityGrid>.dashboardCard:first-child .distributionList>div:has(.truncate[title="Unknown"])>i>b{background:#9aa9ba!important}
+
+/* Enrollment age is descriptive rather than a health score, so it deliberately stays in neutral blue tones. */
+.inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="0–30 days"]) .distributionDot,
+.inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="0–30 days"])>i>b{background:#2563eb!important}
+.inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="31–90 days"]) .distributionDot,
+.inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="31–90 days"])>i>b{background:#0ea5c6!important}
+.inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="91–365 days"]) .distributionDot,
+.inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="91–365 days"])>i>b{background:#557baa!important}
+.inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="> 1 year"]) .distributionDot,
+.inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="> 1 year"])>i>b{background:#7890aa!important}
+.inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="Unknown"]) .distributionDot,
+.inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="Unknown"])>i>b{background:#9aa9ba!important}
+
+@media(max-width:1200px){.inventoryActivityGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.inventoryActivityGrid{grid-template-columns:1fr}.inventoryActivityGrid>.dashboardCard{min-height:0}}
