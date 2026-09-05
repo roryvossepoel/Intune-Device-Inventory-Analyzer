@@ -14,7 +14,7 @@ const templates:Template[]=[
   {platform:'windows',manufacturer:'Lenovo',model:'ThinkCentre M75q Gen 5',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:4},
   {platform:'windows',manufacturer:'Microsoft',model:'Surface Laptop 7',os:'Windows',versions:['10.0.26200.9106','10.0.26200.8893'],weight:7},
   {platform:'windows',manufacturer:'Microsoft',model:'Surface Pro 11',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:5},
-  {platform:'windows',manufacturer:'Microsoft',model:'Surface Laptop 5',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:3},
+  {platform:'windows',manufacturer:'Microsoft',model:'Surface Laptop 5',os:'Windows',versions:['10.0.22631.7517'],weight:3},
 
   {platform:'macos',manufacturer:'Apple',model:'MacBook Air 13-inch (M3)',os:'macOS',versions:['26.6.1','26.6'],weight:5},
   {platform:'macos',manufacturer:'Apple',model:'MacBook Air 15-inch (M4)',os:'macOS',versions:['26.6.1','26.5'],weight:4},
@@ -110,7 +110,7 @@ function device(i:number,t:Template):Device{
     'EAS reason':'',
     'EAS status':'',
     'Compliance grace period expiration':grace?futureIntuneDate(3+(i%10)):'9999-12-31 23:59:59.9999999',
-    'Security patch level':isAndroid?(i%5===0?'2026-07-01':i%3===0?'2026-08-01':'2026-08-05'):'',
+    'Security patch level':isAndroid?(i%5===0?'2026-05-01':i%3===0?'2026-08-01':'2026-08-05'):'',
     'Wi-Fi MAC':compactHex(i+17,12),
     'MEID':cellular&&i%17===0?String(35000000000000+i*37):'',
     'Subscriber carrier':cellular?(i%5===0?'KPN NL':'Odido NL'):'',
