@@ -1,0 +1,13 @@
+/* Final Health & Security polish: keep attention clear, but less visually heavy than a KPI-level alert. */
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>button.signalAction,
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>div{min-height:44px;padding:11px 13px;border-radius:10px}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList span{font-size:13px;font-weight:520;line-height:19px}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList strong{font-size:13px;font-weight:700;line-height:19px}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .warn{background:#fff8ea;border-color:#efd9ac}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .warn span{color:#76571d}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .warn strong{color:#9a6c15}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .bad{background:#fff4f4;border-color:#efc7c7}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .bad span{color:#944141}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList .bad strong{color:#b33b3b}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>button.signalAction.warn:hover{background:#fff3dc;filter:none}
+.securityMainGrid>.dashboardCard:nth-child(3) .platformSignalList>button.signalAction.bad:hover{background:#ffeded;filter:none}
