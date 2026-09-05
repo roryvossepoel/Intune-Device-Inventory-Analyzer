@@ -7,6 +7,7 @@ import type { Device } from './types';
 type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption';
 type Drill=(field:DrillField,label:string,value:string)=>void;
 type Row=[string,number];
+type SecurityTone='good'|'warn'|'bad';
 
 const platformLabel:Record<string,string>={windows:'Windows',android:'Android',applemobile:'iOS/iPadOS',macos:'macOS',linux:'Linux',unknown:'Unknown'};
 const fmt=(n:number)=>n.toLocaleString();
@@ -67,6 +68,8 @@ function platformDevices(allDevices:Device[],selectedPlatform:string|null,target
 export default function DashboardSections({devices,allDevices,total,compliance,compliant,noncompliant,grace,stale,platform,drill}:{devices:Device[];allDevices:Device[];total:number;compliance:Row[];compliant:number;noncompliant:number;grace:number;stale:number;platform:string|null;drill:Drill}){
   const security=securityAttention(devices);
   const compliancePct=total?compliant/total*100:0;
+  const complianceTone:SecurityTone=compliancePct>=90?'good':compliancePct>=75?'warn':'bad';
+  const securityTone:SecurityTone=security.rooted>0?'bad':security.notEncrypted>0||security.unknownEncryption>0?'warn':'good';
   const windows=platformDevices(allDevices,platform,'windows',devices);
   const android=platformDevices(allDevices,platform,'android',devices);
   const apple=platformDevices(allDevices,platform,'applemobile',devices);
@@ -121,9 +124,9 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   return <>
     <DashboardSection icon="security" title="Health & Security" subtitle="Compliance, protection and security signals across the managed inventory.">
       <div className="dashboardMainGrid securityMainGrid">
-        <Card title="Compliance status" subtitle="Current device compliance state"><Donut total={total} items={compliance} center={`${compliancePct.toFixed(1)}%`} label="compliant"/><Distribution rows={compliance} total={total} onClick={label=>drill('compliance','Compliance',label)}/></Card>
+        <Card title="Compliance status" subtitle="Current device compliance state" tone={complianceTone}><Donut total={total} items={compliance} center={`${compliancePct.toFixed(1)}%`} label="compliant"/><Distribution rows={compliance} total={total} onClick={label=>drill('compliance','Compliance',label)}/></Card>
         <EncryptionCard devices={devices} onNotEncrypted={()=>security.notEncrypted&&drill('encryption','Encryption','false')} onUnknown={()=>security.unknownEncryption&&drill('encryption','Encryption','Unknown')}/>
-        <Card title="Security attention" subtitle="Explicit security signals requiring review"><SignalList rows={[[security.notEncrypted,'Not encrypted','warn',()=>security.notEncrypted&&drill('encryption','Encryption','false')],[security.unknownEncryption,'Encryption status unknown','warn',()=>security.unknownEncryption&&drill('encryption','Encryption','Unknown')],[security.rooted,'Jailbroken / rooted','bad',undefined]]}/></Card>
+        <Card title="Security attention" subtitle="Explicit security signals requiring review" tone={securityTone}><SignalList rows={[[security.notEncrypted,'Not encrypted','warn',()=>security.notEncrypted&&drill('encryption','Encryption','false')],[security.unknownEncryption,'Encryption status unknown','warn',()=>security.unknownEncryption&&drill('encryption','Encryption','Unknown')],[security.rooted,'Jailbroken / rooted','bad',undefined]]}/></Card>
       </div>
     </DashboardSection>
 
@@ -184,7 +187,7 @@ function certificateBuckets(devices:Device[]):Row[]{
   return rows;
 }
 
-function Card({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}){return <article className="dashboardCard extendedInsightCard"><header className="dashboardCardHead insightCardHead"><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
+function Card({title,subtitle,children,tone}:{title:string;subtitle:string;children:React.ReactNode;tone?:SecurityTone}){return <article className={`dashboardCard extendedInsightCard${tone?` tone-${tone}`:''}`}><header className="dashboardCardHead insightCardHead"><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
 function PlatformCard({platform,title,subtitle,children}:{platform:string;title:string;subtitle:string;children:React.ReactNode}){return <article className="dashboardCard extendedInsightCard platformSpecificCard"><header className="dashboardCardHead insightCardHead"><PlatformLogo platform={platform}/><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
 function Distribution({rows,total,onClick}:{rows:Row[];total:number;onClick?:(label:string)=>void}){return <div className="distributionList">{rows.filter(([,n])=>n>0).slice(0,8).map(([label,n],i)=>{const body=<><span className={`distributionDot dot${i%6}`}/><span className="truncate" title={label}>{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small><i><b style={{width:pct(n,total)}}/></i></>;return onClick?<button type="button" className="distributionAction" key={label} onClick={()=>onClick(label)}>{body}</button>:<div key={label}>{body}</div>})}</div>}
 function Metric({label,value}:{label:string;value:string}){return <div className="metricTile"><span>{label}</span><strong>{value}</strong></div>}
