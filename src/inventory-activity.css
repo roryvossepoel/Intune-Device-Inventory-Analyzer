@@ -36,17 +36,17 @@
 .inventoryCard-quality.quality-tone-warn>.dashboardCardHead:before{background-color:#fff5df;border-color:#efcf91;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a66b08' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='5' rx='7' ry='3'/%3E%3Cpath d='M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v5c0 1.7 3.1 3 7 3 1.1 0 2.2-.1 3.1-.3'/%3E%3Cpath d='M18 15v3m0 3h.01'/%3E%3C/svg%3E")}
 .inventoryCard-quality.quality-tone-bad>.dashboardCardHead:before{background-color:#fff1f1;border-color:#efc2c2;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b23e3e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='5' rx='7' ry='3'/%3E%3Cpath d='M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v5c0 1.7 3.1 3 7 3 1.1 0 2.2-.1 3.1-.3'/%3E%3Cpath d='m16 16 4 4m0-4-4 4'/%3E%3C/svg%3E")}
 
-/* Inventory quality: duplicate serials are critical; other completeness issues are warnings. */
+/* Inventory quality: same lighter signal language as Security attention. */
 .inventoryCard-quality .platformSignalList{gap:9px}
-.inventoryCard-quality .platformSignalList>div,.inventoryCard-quality .platformSignalList>button{min-height:46px;padding:12px 14px;border-radius:10px}
-.inventoryCard-quality .platformSignalList span{font-size:14px;font-weight:560;line-height:20px}
-.inventoryCard-quality .platformSignalList strong{font-size:14px;font-weight:750;line-height:20px}
-.inventoryCard-quality .inventorySignalWarn{background:#fff5df!important;border-color:#efcf91!important}
-.inventoryCard-quality .inventorySignalWarn span{color:#6f4b05!important}
-.inventoryCard-quality .inventorySignalWarn strong{color:#996000!important}
-.inventoryCard-quality .inventorySignalBad{background:#fff0f0!important;border-color:#efbcbc!important}
-.inventoryCard-quality .inventorySignalBad span{color:#8f3030!important}
-.inventoryCard-quality .inventorySignalBad strong{color:#b12626!important}
+.inventoryCard-quality .platformSignalList>div,.inventoryCard-quality .platformSignalList>button{min-height:44px;padding:11px 13px;border-radius:10px}
+.inventoryCard-quality .platformSignalList span{font-size:13px;font-weight:520;line-height:19px}
+.inventoryCard-quality .platformSignalList strong{font-size:13px;font-weight:700;line-height:19px}
+.inventoryCard-quality .inventorySignalWarn{background:#fff8ea!important;border-color:#efd9ac!important}
+.inventoryCard-quality .inventorySignalWarn span{color:#76571d!important}
+.inventoryCard-quality .inventorySignalWarn strong{color:#9a6c15!important}
+.inventoryCard-quality .inventorySignalBad{background:#fff4f4!important;border-color:#efc7c7!important}
+.inventoryCard-quality .inventorySignalBad span{color:#944141!important}
+.inventoryCard-quality .inventorySignalBad strong{color:#b33b3b!important}
 .inventoryCard-quality .inventorySignalClear{background:#f0faf5!important;border-color:#d1eadc!important}
 .inventoryCard-quality .inventorySignalClear span,.inventoryCard-quality .inventorySignalClear strong{color:#237454!important}
 
