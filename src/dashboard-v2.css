@@ -1,0 +1,17 @@
+.platformSpecificCard .insightCardHead{display:flex;align-items:flex-start;gap:11px}
+.platformCardLogo{width:30px;height:30px;flex:0 0 30px;border-radius:9px;display:grid;place-items:center;background:#f5f8fc;border:1px solid #e2eaf3;color:#365f89}
+.platformCardLogo svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}
+.platformCardLogo-windows svg{fill:currentColor;stroke:none}
+.platformCardLogo-applemobile svg{fill:currentColor;stroke:none}
+.platformCardLogo-android{color:#3f7458}
+.platformCardLogo-linux{color:#4f6074}
+.distributionList>button.distributionAction{display:grid;width:100%;grid-template-columns:10px minmax(0,1fr) auto 48px;align-items:center;gap:9px;position:relative;padding:0 0 7px;border:0;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;border-radius:7px}
+.distributionList>button.distributionAction:hover{background:#f7faff;box-shadow:0 0 0 6px #f7faff}
+.distributionList>button.distributionAction>i{grid-column:2/-1;height:5px;background:#e9eff6;border-radius:999px;overflow:hidden}
+.distributionList>button.distributionAction>i>b{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
+.distributionList>button.distributionAction span,.distributionList>button.distributionAction strong,.distributionList>button.distributionAction small{font-size:12px}
+.distributionList>button.distributionAction small{text-align:right;color:#7b8da4}
+.platformSignalList>button.signalAction{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;border-radius:9px;padding:10px 11px;font:inherit;cursor:pointer;text-align:left}
+.platformSignalList>button.signalAction:hover{filter:brightness(.985)}
+.dashboardCategoryContent>.extendedInsightGrid+.extendedInsightGrid{margin-top:0}
+@media(max-width:760px){.platformCardLogo{width:28px;height:28px;flex-basis:28px}.platformCardLogo svg{width:17px;height:17px}}
