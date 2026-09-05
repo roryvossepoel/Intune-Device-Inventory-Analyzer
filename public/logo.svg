@@ -1,10 +1,50 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-<title>Intune Device Inventory Analyzer</title><desc>Inventory cube with analysis lens</desc>
-<defs><linearGradient id="g" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#3b82f6"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient></defs>
-<rect width="64" height="64" rx="16" fill="#eef4ff"/>
-<path d="M18 20.5 32 13l14 7.5v16L32 44l-14-7.5z" fill="url(#g)"/>
-<path d="M32 13v31M18 20.5l14 7.7 14-7.7" fill="none" stroke="#dbeafe" stroke-width="2" stroke-linejoin="round" opacity=".8"/>
-<circle cx="43.5" cy="42.5" r="8.5" fill="#fff" stroke="#173e9f" stroke-width="3"/>
-<path d="m50 49 6 6" stroke="#173e9f" stroke-width="4" stroke-linecap="round"/>
-<circle cx="43.5" cy="42.5" r="3" fill="#60a5fa"/>
+  <title>Intune Device Inventory Analyzer</title>
+  <desc>Device Radar logo with managed devices and radar rings</desc>
+  <defs>
+    <linearGradient id="bg" x1="8" y1="6" x2="57" y2="59" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1F44"/>
+      <stop offset=".58" stop-color="#0F3D91"/>
+      <stop offset="1" stop-color="#075B92"/>
+    </linearGradient>
+    <linearGradient id="radar" x1="16" y1="14" x2="50" y2="47" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#06D6D4"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="23" y1="32" x2="44" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#DFF6FF"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#bg)"/>
+  <rect x="2.5" y="2.5" width="59" height="59" rx="14.5" fill="none" stroke="#2A75C7" stroke-opacity=".5"/>
+
+  <g fill="none" stroke="url(#radar)" stroke-linecap="round" filter="url(#glow)">
+    <circle cx="34" cy="29" r="20" stroke-width="2.5" opacity=".95"/>
+    <circle cx="34" cy="29" r="14" stroke-width="2.1" opacity=".9"/>
+    <circle cx="34" cy="29" r="8" stroke-width="1.8" opacity=".85"/>
+    <path d="M34 29 45.5 17.5" stroke-width="2.2"/>
+  </g>
+  <circle cx="45.5" cy="17.5" r="2.3" fill="#20E0D0" filter="url(#glow)"/>
+  <path d="M34 29 50 24A17 17 0 0 0 45.5 17.5Z" fill="#16D7CE" opacity=".13"/>
+
+  <g stroke="#DDF7FF" stroke-width="1.7" stroke-linejoin="round">
+    <rect x="24.5" y="28.5" width="20" height="14" rx="2.2" fill="url(#screen)"/>
+    <path d="M32 45h5M29.5 47h10" fill="none" stroke-linecap="round"/>
+    <rect x="11.5" y="37" width="18" height="11.5" rx="2" fill="#0B78D0"/>
+    <path d="M9.5 51h22" fill="none" stroke-linecap="round"/>
+    <rect x="45" y="34.5" width="8.5" height="16" rx="2" fill="#10BCE5"/>
+  </g>
+
+  <g fill="#35D4F4" opacity=".9">
+    <rect x="29" y="35" width="2.2" height="4" rx=".6"/>
+    <rect x="33" y="32.5" width="2.2" height="6.5" rx=".6"/>
+    <rect x="37" y="30.5" width="2.2" height="8.5" rx=".6"/>
+    <rect x="41" y="27.5" width="2.2" height="11.5" rx=".6"/>
+  </g>
 </svg>
