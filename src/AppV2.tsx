@@ -98,7 +98,7 @@ export default function AppV2(){
     {key:'checkin',label:'Last check-in',value:d=>d.lastCheckIn||'',render:d=><time dateTime={d.lastCheckIn||undefined} title={d.lastCheckIn||undefined}>{formatDateTime(d.lastCheckIn)}</time>}
   ];
 
-  const nav:[View,string][]=[['overview','Overview'],['devices','Devices'],['reports','Reports'],['faq','FAQ']];
+  const nav:[View,string][]=[['overview','Dashboard'],['devices','Devices'],['reports','Reports'],['faq','FAQ']];
   const overviewTitle=activePlatform?`${dashboardPlatformLabel(activePlatform)} dashboard`:'Inventory dashboard';
   const overviewDescription=platformsSelected.length===0
     ?`Health, composition, lifecycle and management insights across ${formatNumber(data?.devices.length??0)} managed devices.`
