@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './AppV2';
 import './base.css';
 import './landing.css';
 import './dashboard.css';
@@ -18,6 +18,7 @@ import './platform-context.css';
 import './device-explorer.css';
 import './security-insights.css';
 import './dashboard-sections.css';
+import './dashboard-v2.css';
 import './landing-story.css';
 import './faq.css';
 import './homepage-polish.css';
