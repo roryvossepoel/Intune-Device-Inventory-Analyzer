@@ -121,9 +121,9 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   return <>
     <DashboardSection icon="security" title="Health & Security" subtitle="Compliance, protection and security signals across the managed inventory.">
       <div className="dashboardMainGrid securityMainGrid">
-        <Card title="Needs attention" subtitle="Signals worth investigating first"><SignalList rows={[[noncompliant,'Noncompliant devices','bad',()=>noncompliant&&drill('compliance','Compliance','Noncompliant')],[security.notEncrypted,'Not encrypted','warn',()=>security.notEncrypted&&drill('encryption','Encryption','false')],[grace,'In grace period','warn',()=>grace&&drill('compliance','Compliance','InGracePeriod')],[security.rooted,'Jailbroken / rooted','bad',undefined],[security.wipePending,'Wipe pending','bad',undefined],[security.approvalPending,'Approval pending','warn',undefined]]}/></Card>
         <Card title="Compliance status" subtitle="Current device compliance state"><Donut total={total} items={compliance} center={`${compliancePct.toFixed(1)}%`} label="compliant"/><Distribution rows={compliance} total={total} onClick={label=>drill('compliance','Compliance',label)}/></Card>
         <EncryptionCard devices={devices} onNotEncrypted={()=>security.notEncrypted&&drill('encryption','Encryption','false')}/>
+        <Card title="Security attention" subtitle="Explicit security signals requiring review"><SignalList rows={[[security.notEncrypted,'Not encrypted','warn',()=>security.notEncrypted&&drill('encryption','Encryption','false')],[security.rooted,'Jailbroken / rooted','bad',undefined]]}/></Card>
       </div>
     </DashboardSection>
 
