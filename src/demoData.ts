@@ -75,6 +75,8 @@ function device(i:number,t:Template):Device{
   const compliant=i%9!==0&&i%17!==0;
   const grace=!compliant&&i%2===0;
   const encrypted=i%31!==0;
+  const encryptionReported=i%53!==0;
+  const securityCompromised=(isAppleMobile||isAndroid)&&(i%43===0||i%61===0);
   const noUser=i%13===0;
   const person=people[i%people.length];
   const userUpn=noUser?'':`${person.toLowerCase().replace(/ /g,'.')}@dundermifflin.example`;
@@ -130,12 +132,12 @@ function device(i:number,t:Template):Device{
     'Device state':i===44?'WipePending':'Managed',
     'Intune registered':i===57?'ApprovalPending':'Registered',
     'Supervised':String(isAppleMobile),
-    'Encrypted':String(encrypted),
+    'Encrypted':encryptionReported?String(encrypted):'',
     'OS':t.os,
     'SkuFamily':isWindows?(i%8===0?'Pro':'Enterprise'):'',
     'JoinType':join,
     'Phone number':cellular?`+316${String(10000000+(i*7919)%89999999).padStart(8,'0')}`:'',
-    'Jailbroken':isAppleMobile?'False':isAndroid?'Unknown':'Unknown',
+    'Jailbroken':(isAppleMobile||isAndroid)?String(securityCompromised):'Unknown',
     'ICCID':cellular?`8931 1632 ${String(10000000000+i*3571).slice(-11).replace(/(.{4})(.{4})(.*)/,'$1 $2 $3')}`:'',
     'EthernetMAC':isWindows||isMac||isLinux?compactHex(i+31,12):'',
     'CellularTechnology':cellular?'GSM':isAppleMobile||isAndroid?'None':'',
