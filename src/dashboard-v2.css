@@ -31,14 +31,15 @@
 .dashboardPlatformFilter .multiFilterTrigger.hasValue .multiFilterChevron{color:#2769b4}
 .dashboardPlatformFilter:has(.multiFilterTrigger.hasValue)>span{color:#2769b4}
 
-/* Crisp, consistent KPI iconography. */
+/* KPI icons are a stronger visual anchor and always inherit the card's semantic tone. */
+.healthKpi{gap:16px}
+.healthIcon{width:54px;height:54px;flex:0 0 54px;border-radius:15px}
 .healthIcon:after{content:none!important;display:none!important}
-.healthIcon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
-.healthIcon.devices{color:#2563eb;background:#eef5ff;border-color:#d7e6fa}
-.healthIcon.compliance{color:#13845f;background:#eef8f4;border-color:#d3ece2}
-.healthIcon.lifecycle{color:#b87912;background:#fff7e8;border-color:#f0dfb8}
-.healthIcon.inactive{color:#60758d;background:#f2f5f8;border-color:#dfe7ef}
-.healthKpi.bad .healthIcon.lifecycle{color:#b23e3e;background:#fff1f1;border-color:#efcece}
-.healthKpi.warn .healthIcon.inactive{color:#b87912;background:#fff7e8;border-color:#f0dfb8}
+.healthIcon svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+.healthKpi.blue .healthIcon{color:#2563eb;background:#eef5ff;border-color:#d7e6fa}
+.healthKpi.neutral .healthIcon{color:#60758d;background:#f2f5f8;border-color:#dfe7ef}
+.healthKpi.good .healthIcon{color:#13845f;background:#eef8f4;border-color:#d3ece2}
+.healthKpi.warn .healthIcon{color:#b87912;background:#fff7e8;border-color:#f0dfb8}
+.healthKpi.bad .healthIcon{color:#b23e3e;background:#fff1f1;border-color:#efcece}
 
-@media(max-width:760px){.platformCardLogo{width:28px;height:28px;flex-basis:28px}.platformCardLogo svg{width:17px;height:17px}.dashboardPlatformFilter{width:100%;grid-template-columns:auto minmax(0,1fr)}.dashboardPlatformFilter .multiFilterMenu{width:100%}}
+@media(max-width:760px){.platformCardLogo{width:28px;height:28px;flex-basis:28px}.platformCardLogo svg{width:17px;height:17px}.dashboardPlatformFilter{width:100%;grid-template-columns:auto minmax(0,1fr)}.dashboardPlatformFilter .multiFilterMenu{width:100%}.healthIcon{width:50px;height:50px;flex-basis:50px}.healthIcon svg{width:24px;height:24px}}
