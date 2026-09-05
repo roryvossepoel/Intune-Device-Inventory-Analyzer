@@ -1,120 +1,155 @@
-/* Flat app header: compact, aligned and visually connected to the workspace. */
-.topbar{
-  height:58px;
-  padding:0 24px;
-  background:rgba(255,255,255,.985);
-  border:0;
-  border-bottom:1px solid #e2eaf3;
-  box-shadow:0 3px 12px rgba(23,57,96,.035);
-  backdrop-filter:blur(8px);
-}
-.topbarInner{
-  width:min(1540px,100%);
-  height:58px;
-  max-width:none;
-  margin:0 auto;
-  padding:0 2px;
-  display:flex;
-  align-items:center;
-  gap:0;
-  background:transparent;
-  border:0;
-  border-radius:0;
-  box-shadow:none;
-  backdrop-filter:none;
+/* Single authoritative product header. Intentionally overrides older navigation-v2 rules. */
+.topbar,
+.topbar.publicTopbar,
+.topbar:not(.publicTopbar){
+  height:62px!important;
+  padding:0!important;
+  background:rgba(255,255,255,.985)!important;
+  border:0!important;
+  border-bottom:1px solid #e3eaf2!important;
+  box-shadow:0 2px 10px rgba(24,58,99,.035)!important;
+  backdrop-filter:blur(8px)!important;
 }
 
-.brand{
-  min-width:0;
-  width:max-content;
-  flex:0 0 auto;
-  gap:9px;
-  color:#0b1f44;
-  justify-self:auto;
+.topbar .topbarInner,
+.topbar.publicTopbar .topbarInner,
+.topbar:not(.publicTopbar) .topbarInner{
+  width:min(1450px,calc(100% - 56px))!important;
+  max-width:1450px!important;
+  height:62px!important;
+  margin:0 auto!important;
+  padding:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
 }
-.brandMark{
-  width:31px;
-  height:31px;
-  flex:0 0 31px;
-  border-radius:8px;
-  background-color:transparent;
-  background-size:31px 31px;
-  box-shadow:none;
-}
-.brand>span:last-child{
-  display:flex;
-  align-items:baseline;
-  gap:5px;
-  min-width:0;
-  white-space:nowrap;
-}
-.brand strong,
-.brand small{display:inline;margin:0;line-height:1}
-.brand strong{font-size:13px;color:#0b1f44;font-weight:750;letter-spacing:-.15px}
-.brand small{font-size:13px;color:#1679ee;font-weight:750}
 
-.mainNav{
-  height:58px;
-  display:flex;
-  align-items:stretch;
-  justify-content:flex-start;
-  gap:10px;
-  margin-left:44px;
-  padding:0;
-  border:0;
-  border-radius:0;
-  background:transparent;
-  backdrop-filter:none;
+.topbar .brand,
+.topbar.publicTopbar .brand,
+.topbar:not(.publicTopbar) .brand{
+  min-width:0!important;
+  width:auto!important;
+  flex:0 0 auto!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:0!important;
+  color:#0b1f44!important;
 }
-.mainNav button,
-.mainNav button:first-child,
-.mainNav button.active{
-  height:58px;
-  padding:0 8px;
+
+.topbar .brandMark{
+  width:34px!important;
+  height:34px!important;
+  flex:0 0 34px!important;
+  border-radius:9px!important;
+  background-color:transparent!important;
+  background-size:34px 34px!important;
+  box-shadow:none!important;
+}
+
+.topbar .brand>span:last-child{
+  display:flex!important;
+  align-items:baseline!important;
+  gap:5px!important;
+  white-space:nowrap!important;
+}
+.topbar .brand strong,
+.topbar .brand small{
+  display:inline!important;
+  margin:0!important;
+  line-height:1!important;
+  font-size:13px!important;
+  font-weight:750!important;
+  letter-spacing:-.12px!important;
+}
+.topbar .brand strong{color:#0b1f44!important}
+.topbar .brand small{color:#1679ee!important}
+
+.topbar .mainNav,
+.topbar.publicTopbar .mainNav,
+.topbar:not(.publicTopbar) .mainNav,
+.topbar .publicNav{
+  height:62px!important;
+  flex:0 0 auto!important;
+  display:flex!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
+  margin:0 0 0 64px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  overflow:visible!important;
+}
+
+.topbar .mainNav button,
+.topbar.publicTopbar .mainNav button,
+.topbar:not(.publicTopbar) .mainNav button,
+.topbar .mainNav button:first-child,
+.topbar .mainNav button.active{
+  position:relative!important;
+  height:62px!important;
+  min-height:62px!important;
+  padding:0 9px!important;
   border:0!important;
   border-radius:0!important;
   background:transparent!important;
   box-shadow:none!important;
   transform:none!important;
-  font-size:12px!important;
-  line-height:1!important;
+  color:#415a77!important;
   font-family:inherit!important;
+  font-size:12.5px!important;
+  line-height:1!important;
+  font-weight:650!important;
   letter-spacing:0!important;
 }
-.mainNav button{color:#415a77;font-weight:620}
-.mainNav button:first-child:before{content:none!important;display:none!important}
-.mainNav button:hover{color:#176ee2;background:transparent!important}
-.mainNav button.active{color:#0b2d59!important;font-weight:700}
-.mainNav button.active:after{
-  content:"";
+.topbar .mainNav button:first-child:before{content:none!important;display:none!important}
+.topbar .mainNav button:hover{color:#176ee2!important;background:transparent!important}
+.topbar .mainNav button.active{color:#0b2d59!important;font-weight:720!important}
+.topbar .mainNav button.active:after{
+  content:""!important;
   display:block!important;
-  position:absolute;
-  left:8px;
-  right:8px;
-  bottom:5px;
-  height:2px;
-  border-radius:999px;
-  background:#2b7de9;
-  box-shadow:none;
+  position:absolute!important;
+  left:9px!important;
+  right:9px!important;
+  bottom:6px!important;
+  height:2px!important;
+  border-radius:999px!important;
+  background:#2b7de9!important;
+  box-shadow:none!important;
 }
 
-.topActions{
-  margin-left:auto;
-  display:flex;
-  align-items:center;
-  gap:7px;
+.topbar .topActions,
+.topbar.publicTopbar .topActions,
+.topbar:not(.publicTopbar) .topActions{
+  min-width:0!important;
+  margin-left:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
 }
-.topbar .primarySmall{
-  min-height:33px;
-  height:33px;
-  padding:0 11px;
-  border:1px solid #d2dfed;
-  border-radius:8px;
-  background:#fff;
-  color:#174f91;
-  box-shadow:none;
-  font-size:11.5px;
-  font-weight:700;
+
+.topbar .primarySmall,
+.topbar.publicTopbar .primarySmall,
+.topbar:not(.publicTopbar) .primarySmall{
+  min-height:34px!important;
+  height:34px!important;
+  padding:0 12px!important;
+  border:1px solid #d2dfed!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  color:#174f91!important;
+  box-shadow:none!important;
+  font-size:11.5px!important;
+  font-weight:700!important;
 }
 .topbar .primarySmall:before{
   content:"";
@@ -125,47 +160,38 @@
   vertical-align:-3px;
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f7197' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 7.5h6l1.7 2H20.5v8.7a1.8 1.8 0 0 1-1.8 1.8H5.3a1.8 1.8 0 0 1-1.8-1.8V7.5Z'/%3E%3Cpath d='M3.5 10h17'/%3E%3C/svg%3E") center/15px 15px no-repeat;
 }
-.topbar .primarySmall:hover{
-  color:#176ee2;
-  border-color:#abc5e1;
-  background:#f8fbff;
-  transform:none;
-  filter:none;
-  box-shadow:none;
-}
-.githubHeaderButton{
-  width:33px;
-  height:33px;
-  flex:0 0 33px;
-  display:grid;
-  place-items:center;
-  border:0;
-  border-radius:8px;
-  color:#0b1f44;
-  text-decoration:none;
-  transition:background .15s ease,color .15s ease;
-}
-.githubHeaderButton svg{width:19px;height:19px;display:block;fill:currentColor}
-.githubHeaderButton:hover{background:#f2f6fb;color:#176ee2;transform:none}
-.githubHeaderButton:focus-visible{outline:3px solid rgba(37,99,235,.14);outline-offset:1px}
+.topbar .primarySmall:hover{color:#176ee2!important;border-color:#abc5e1!important;background:#f8fbff!important;filter:none!important;transform:none!important}
 
-/* Keep the workspace close to the navigation; the page header provides its own breathing room. */
-.dashboardWorkspace{padding-top:14px}
+.githubHeaderButton{
+  width:34px!important;
+  height:34px!important;
+  flex:0 0 34px!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
+  border-radius:8px!important;
+  color:#0b1f44!important;
+  text-decoration:none!important;
+}
+.githubHeaderButton svg{width:19px!important;height:19px!important;display:block!important;fill:currentColor!important}
+.githubHeaderButton:hover{background:#f2f6fb!important;color:#176ee2!important}
+
+.dashboardWorkspace{padding-top:14px!important}
 
 @media(max-width:1120px){
-  .topbar{padding-left:14px;padding-right:14px}
-  .brand>span:last-child{display:none}
-  .mainNav{margin-left:18px;gap:4px}
-  .mainNav button,.mainNav button:first-child,.mainNav button.active{padding:0 7px;font-size:11.5px!important}
+  .topbar .topbarInner,.topbar.publicTopbar .topbarInner,.topbar:not(.publicTopbar) .topbarInner{width:calc(100% - 28px)!important}
+  .topbar .brand>span:last-child{display:none!important}
+  .topbar .mainNav,.topbar.publicTopbar .mainNav,.topbar:not(.publicTopbar) .mainNav{margin-left:18px!important;gap:4px!important}
+  .topbar .mainNav button,.topbar.publicTopbar .mainNav button,.topbar:not(.publicTopbar) .mainNav button{padding:0 7px!important;font-size:11.5px!important}
 }
+
 @media(max-width:820px){
-  .topbar{height:56px;padding:0 8px}
-  .topbarInner{height:56px}
-  .brandMark{width:31px;height:31px;flex-basis:31px;background-size:31px 31px}
-  .mainNav{height:56px;max-width:none;overflow:auto;margin-left:8px;gap:1px}
-  .mainNav button,.mainNav button:first-child,.mainNav button.active{height:56px;padding:0 6px;font-size:11px!important}
-  .mainNav button.active:after{left:6px;right:6px;bottom:4px}
-  .topbar .primarySmall{font-size:0;width:33px;padding:0;display:grid;place-items:center}
-  .topbar .primarySmall:before{margin:0;width:16px;height:16px;background-size:16px 16px}
-  .githubHeaderButton{width:31px;height:31px;flex-basis:31px}
+  .topbar,.topbar.publicTopbar,.topbar:not(.publicTopbar){height:56px!important}
+  .topbar .topbarInner,.topbar.publicTopbar .topbarInner,.topbar:not(.publicTopbar) .topbarInner{height:56px!important;width:calc(100% - 16px)!important}
+  .topbar .mainNav,.topbar.publicTopbar .mainNav,.topbar:not(.publicTopbar) .mainNav{height:56px!important;margin-left:8px!important;overflow:auto!important}
+  .topbar .mainNav button,.topbar.publicTopbar .mainNav button,.topbar:not(.publicTopbar) .mainNav button{height:56px!important;min-height:56px!important;padding:0 6px!important;font-size:11px!important}
+  .topbar .mainNav button.active:after{left:6px!important;right:6px!important;bottom:4px!important}
+  .topbar .primarySmall{font-size:0!important;width:34px!important;padding:0!important;display:grid!important;place-items:center!important}
+  .topbar .primarySmall:before{margin:0!important;width:16px!important;height:16px!important;background-size:16px 16px!important}
+  .githubHeaderButton{width:32px!important;height:32px!important;flex-basis:32px!important}
 }
