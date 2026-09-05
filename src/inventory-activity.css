@@ -26,5 +26,29 @@
 .inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="Unknown"]) .distributionDot,
 .inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="Unknown"])>i>b{background:#9aa9ba!important}
 
+/* Card headers use the same visual language as Health & Security. */
+.inventoryActivityGrid>.dashboardCard>.dashboardCardHead{display:flex;align-items:flex-start;gap:12px;min-height:44px}
+.inventoryActivityGrid>.dashboardCard>.dashboardCardHead:before{content:"";width:38px;height:38px;flex:0 0 38px;border-radius:11px;background-repeat:no-repeat;background-position:center;background-size:20px 20px;background-color:#eef5ff;border:1px solid #d7e6fa}
+.inventoryCard-checkin>.dashboardCardHead:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='7'/%3E%3Cpath d='M12 8v4l2.5 1.5'/%3E%3Cpath d='M5.5 5.5 4 4m14.5 1.5L20 4'/%3E%3C/svg%3E")}
+.inventoryCard-enrollment>.dashboardCardHead:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5' width='16' height='15' rx='2'/%3E%3Cpath d='M8 3v4m8-4v4M4 9h16m-8 3v5m-2.5-2.5h5'/%3E%3C/svg%3E")}
+.inventoryCard-quality>.dashboardCardHead:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='5' rx='7' ry='3'/%3E%3Cpath d='M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v5c0 1.7 3.1 3 7 3 1.1 0 2.2-.1 3.1-.3'/%3E%3Cpath d='m16.5 17.5 1.5 1.5 3-3'/%3E%3C/svg%3E")}
+.inventoryCard-quality.quality-tone-good>.dashboardCardHead:before{background-color:#ecfaf4;border-color:#ccebdd;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315966a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='5' rx='7' ry='3'/%3E%3Cpath d='M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v5c0 1.7 3.1 3 7 3 1.1 0 2.2-.1 3.1-.3'/%3E%3Cpath d='m16.5 17.5 1.5 1.5 3-3'/%3E%3C/svg%3E")}
+.inventoryCard-quality.quality-tone-warn>.dashboardCardHead:before{background-color:#fff5df;border-color:#efcf91;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a66b08' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='5' rx='7' ry='3'/%3E%3Cpath d='M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v5c0 1.7 3.1 3 7 3 1.1 0 2.2-.1 3.1-.3'/%3E%3Cpath d='M18 15v3m0 3h.01'/%3E%3C/svg%3E")}
+.inventoryCard-quality.quality-tone-bad>.dashboardCardHead:before{background-color:#fff1f1;border-color:#efc2c2;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b23e3e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='5' rx='7' ry='3'/%3E%3Cpath d='M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v5c0 1.7 3.1 3 7 3 1.1 0 2.2-.1 3.1-.3'/%3E%3Cpath d='m16 16 4 4m0-4-4 4'/%3E%3C/svg%3E")}
+
+/* Inventory quality: duplicate serials are critical; other completeness issues are warnings. */
+.inventoryCard-quality .platformSignalList{gap:9px}
+.inventoryCard-quality .platformSignalList>div,.inventoryCard-quality .platformSignalList>button{min-height:46px;padding:12px 14px;border-radius:10px}
+.inventoryCard-quality .platformSignalList span{font-size:14px;font-weight:560;line-height:20px}
+.inventoryCard-quality .platformSignalList strong{font-size:14px;font-weight:750;line-height:20px}
+.inventoryCard-quality .inventorySignalWarn{background:#fff5df!important;border-color:#efcf91!important}
+.inventoryCard-quality .inventorySignalWarn span{color:#6f4b05!important}
+.inventoryCard-quality .inventorySignalWarn strong{color:#996000!important}
+.inventoryCard-quality .inventorySignalBad{background:#fff0f0!important;border-color:#efbcbc!important}
+.inventoryCard-quality .inventorySignalBad span{color:#8f3030!important}
+.inventoryCard-quality .inventorySignalBad strong{color:#b12626!important}
+.inventoryCard-quality .inventorySignalClear{background:#f0faf5!important;border-color:#d1eadc!important}
+.inventoryCard-quality .inventorySignalClear span,.inventoryCard-quality .inventorySignalClear strong{color:#237454!important}
+
 @media(max-width:1200px){.inventoryActivityGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.inventoryActivityGrid{grid-template-columns:1fr}.inventoryActivityGrid>.dashboardCard{min-height:0}}
