@@ -81,20 +81,24 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
     ['0–7 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age<=7}).length],
     ['8–30 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>7&&age<=30}).length],
     ['31–90 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>30&&age<=90}).length],
-    ['> 90 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>90}).length],
+    ['90+ days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age>90}).length],
     ['Unknown',devices.filter(d=>daysSince(d.lastCheckIn)===null).length]
   ];
   const enrollmentBuckets:Row[]=[
     ['0–30 days',devices.filter(d=>{const age=daysOld(enrollmentDate(d));return age!==null&&age<=30}).length],
     ['31–90 days',devices.filter(d=>{const age=daysOld(enrollmentDate(d));return age!==null&&age>30&&age<=90}).length],
     ['91–365 days',devices.filter(d=>{const age=daysOld(enrollmentDate(d));return age!==null&&age>90&&age<=365}).length],
-    ['> 1 year',devices.filter(d=>{const age=daysOld(enrollmentDate(d));return age!==null&&age>365}).length],
+    ['1+ year',devices.filter(d=>{const age=daysOld(enrollmentDate(d));return age!==null&&age>365}).length],
     ['Unknown',devices.filter(d=>daysOld(enrollmentDate(d))===null).length]
   ];
   const serials=devices.map(d=>d.serialNumber?.trim()).filter((v):v is string=>!!v);
   const names=devices.map(d=>d.deviceName?.trim()).filter((v):v is string=>!!v);
-  const duplicateSerials=countValues(serials).filter(([,n])=>n>1).reduce((sum,[,n])=>sum+n,0);
-  const duplicateNames=countValues(names).filter(([,n])=>n>1).reduce((sum,[,n])=>sum+n,0);
+  const serialCounts=countValues(serials);
+  const nameCounts=countValues(names);
+  const duplicateSerialValues=new Set(serialCounts.filter(([,n])=>n>1).map(([value])=>value));
+  const duplicateNameValues=new Set(nameCounts.filter(([,n])=>n>1).map(([value])=>value));
+  const duplicateSerials=serialCounts.filter(([,n])=>n>1).reduce((sum,[,n])=>sum+n,0);
+  const duplicateNames=nameCounts.filter(([,n])=>n>1).reduce((sum,[,n])=>sum+n,0);
   const inventoryQuality:Row[]=[
     ['Duplicate serial entries',duplicateSerials],
     ['Duplicate device names',duplicateNames],
@@ -104,6 +108,17 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
     ['Unknown platform',devices.filter(d=>d.platform==='unknown').length],
     ['Missing / invalid last check-in',devices.filter(d=>daysSince(d.lastCheckIn)===null).length]
   ];
+  const inventoryQualityAffected=devices.filter(device=>{
+    const serial=device.serialNumber?.trim();
+    const name=device.deviceName?.trim();
+    return (!!serial&&duplicateSerialValues.has(serial))||
+      (!!name&&duplicateNameValues.has(name))||
+      !serial||
+      !device.manufacturer?.trim()||
+      !device.model?.trim()||
+      device.platform==='unknown'||
+      daysSince(device.lastCheckIn)===null;
+  }).length;
 
   const manufacturers=countValues(devices.map(d=>clean(d.manufacturer))).filter(([label])=>label!=='Unknown').slice(0,8);
   const models=countValues(devices.map(d=>clean(d.model))).filter(([label])=>label!=='Unknown').slice(0,8);
@@ -148,9 +163,9 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
 
     <DashboardSection icon="activity" title="Inventory & Activity" subtitle="Inventory freshness, device activity and data-quality signals.">
       <div className="extendedInsightGrid inventoryActivityGrid">
-        <Card title="Check-in age" subtitle="Time since the most recent Intune check-in"><Distribution rows={staleBuckets} total={total}/></Card>
-        <Card title="Enrollment age" subtitle="Time since the device was enrolled in Intune"><Distribution rows={enrollmentBuckets} total={total}/></Card>
-        <Card title="Inventory quality" subtitle="Duplicate and incomplete inventory signals"><SignalList rows={inventoryQuality.map(([label,value])=>[value,label,value?'warn':'neutral',undefined])}/></Card>
+        <Card title="Check-in age" subtitle="Time since last Intune check-in"><Distribution rows={staleBuckets} total={total}/></Card>
+        <Card title="Enrollment age" subtitle="Time since enrollment in Intune"><Distribution rows={enrollmentBuckets} total={total}/></Card>
+        <Card title="Inventory quality" subtitle="Duplicate and incomplete inventory signals"><div className="inventoryQualitySummary"><strong>{fmt(inventoryQualityAffected)}</strong><span>{inventoryQualityAffected===1?'device needs':'devices need'} data-quality review</span></div><SignalList rows={inventoryQuality.map(([label,value])=>[value,label,value?'warn':'neutral',undefined])}/></Card>
       </div>
     </DashboardSection>
 
