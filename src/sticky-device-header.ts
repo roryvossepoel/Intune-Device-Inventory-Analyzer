@@ -7,7 +7,7 @@ type StickyEntry={
   floating:HTMLDivElement;
   track:HTMLDivElement;
   cloneTable:HTMLTableElement;
-  dragging:boolean;
+  draggingKey:string|null;
 };
 
 const entries=new Map<HTMLElement,StickyEntry>();
@@ -18,29 +18,40 @@ function isDeviceTable(wrap:HTMLElement){
   return Boolean(card?.querySelector('.deviceFilterShell'));
 }
 
-function headerIndex(cell:Element|null){
-  const row=cell?.parentElement;
-  return row&&cell?Array.from(row.children).indexOf(cell):-1;
+function columnKey(target:Element|null){
+  return target?.closest<HTMLTableCellElement>('th[data-column-key]')?.dataset.columnKey??null;
 }
 
-function originalCell(entry:StickyEntry,index:number):HTMLTableCellElement|null{
-  if(index<0)return null;
-  const cells=entry.head.querySelectorAll<HTMLTableCellElement>('tr:first-child > th');
-  return cells.item(index);
+function originalCell(entry:StickyEntry,key:string|null){
+  if(!key)return null;
+  return Array.from(entry.head.querySelectorAll<HTMLTableCellElement>('tr:first-child > th[data-column-key]')).find(cell=>cell.dataset.columnKey===key)??null;
 }
 
-function originalDragHandle(entry:StickyEntry,index:number){
-  return originalCell(entry,index)?.querySelector<HTMLElement>('.columnDragHandle')??null;
+function originalDragHandle(entry:StickyEntry,key:string|null){
+  return originalCell(entry,key)?.querySelector<HTMLElement>('.columnDragHandle')??null;
 }
 
-function proxyDragEvent(type:'dragstart'|'dragover'|'drop'|'dragend',target:Element|null,entry:StickyEntry,sourceEvent:DragEvent){
-  const cell=target?.closest('th')??null;
-  const index=headerIndex(cell);
-  const original=type==='dragstart'||type==='dragend'?originalDragHandle(entry,index):originalCell(entry,index);
-  if(!original)return;
-  const event=new DragEvent(type,{bubbles:true,cancelable:true,dataTransfer:sourceEvent.dataTransfer});
-  original.dispatchEvent(event);
-  if(event.defaultPrevented)sourceEvent.preventDefault();
+function dispatchDrag(target:Element|null,type:'dragstart'|'dragover'|'drop'|'dragend',sourceEvent:DragEvent){
+  if(!target)return false;
+  const proxy=new DragEvent(type,{bubbles:true,cancelable:true,dataTransfer:sourceEvent.dataTransfer});
+  const accepted=!target.dispatchEvent(proxy)||proxy.defaultPrevented;
+  if(proxy.defaultPrevented)sourceEvent.preventDefault();
+  return accepted;
+}
+
+function clearDragVisuals(entry:StickyEntry){
+  entry.head.querySelectorAll('.columnDragging,.columnDropTarget').forEach(node=>node.classList.remove('columnDragging','columnDropTarget'));
+  entry.cloneTable.querySelectorAll('.columnDragging,.columnDropTarget').forEach(node=>node.classList.remove('columnDragging','columnDropTarget'));
+}
+
+function finishDrag(entry:StickyEntry,sourceEvent:DragEvent){
+  const sourceKey=entry.draggingKey;
+  if(sourceKey)dispatchDrag(originalDragHandle(entry,sourceKey),'dragend',sourceEvent);
+  entry.draggingKey=null;
+  requestAnimationFrame(()=>{
+    clearDragVisuals(entry);
+    scheduleUpdate();
+  });
 }
 
 function copyHeader(entry:StickyEntry){
@@ -86,7 +97,8 @@ function updateEntry(entry:StickyEntry){
     return;
   }
 
-  copyHeader(entry);
+  // Never replace the cloned DOM while a native drag is in progress.
+  if(!entry.draggingKey)copyHeader(entry);
   floating.hidden=false;
   floating.style.top=`${navBottom}px`;
   floating.style.left=`${wrapRect.left}px`;
@@ -122,43 +134,63 @@ function addTable(wrap:HTMLElement){
   floating.appendChild(track);
   document.body.appendChild(floating);
 
-  const entry:StickyEntry={wrap,table,head,floating,track,cloneTable,dragging:false};
+  const entry:StickyEntry={wrap,table,head,floating,track,cloneTable,draggingKey:null};
   entries.set(wrap,entry);
 
   floating.addEventListener('click',event=>{
-    if(entry.dragging){event.preventDefault();return;}
+    if(entry.draggingKey){event.preventDefault();return;}
     const target=event.target as Element;
     if(target.closest('.columnDragHandle'))return;
-    const button=target.closest('button');
-    const cell=button?button.closest('th'):null;
-    if(!button||!cell)return;
-    const index=headerIndex(cell);
-    const original=originalCell(entry,index)?.querySelector<HTMLButtonElement>('button');
-    original?.click();
+    const key=columnKey(target);
+    const originalButton=originalCell(entry,key)?.querySelector<HTMLButtonElement>('button');
+    if(!originalButton)return;
+    originalButton.click();
     requestAnimationFrame(scheduleUpdate);
   });
 
   floating.addEventListener('dragstart',event=>{
     const target=event.target as Element;
     if(!target.closest('.columnDragHandle'))return;
-    entry.dragging=true;
-    proxyDragEvent('dragstart',target,entry,event);
+    const key=columnKey(target);
+    const originalHandle=originalDragHandle(entry,key);
+    if(!key||!originalHandle){event.preventDefault();return;}
+    entry.draggingKey=key;
+    event.dataTransfer?.setData('text/plain',key);
+    if(event.dataTransfer)event.dataTransfer.effectAllowed='move';
+    dispatchDrag(originalHandle,'dragstart',event);
   });
+
   floating.addEventListener('dragover',event=>{
-    if(!entry.dragging)return;
-    proxyDragEvent('dragover',event.target as Element,entry,event);
+    if(!entry.draggingKey)return;
+    const targetKey=columnKey(event.target as Element);
+    const targetCell=originalCell(entry,targetKey);
+    if(!targetCell||targetKey===entry.draggingKey)return;
+    event.preventDefault();
+    if(event.dataTransfer)event.dataTransfer.dropEffect='move';
+    dispatchDrag(targetCell,'dragover',event);
   });
+
+  floating.addEventListener('dragleave',event=>{
+    if(!entry.draggingKey)return;
+    const targetKey=columnKey(event.target as Element);
+    const targetCell=originalCell(entry,targetKey);
+    targetCell?.dispatchEvent(new DragEvent('dragleave',{bubbles:true,cancelable:false,dataTransfer:event.dataTransfer}));
+  });
+
   floating.addEventListener('drop',event=>{
-    if(!entry.dragging)return;
-    proxyDragEvent('drop',event.target as Element,entry,event);
-    entry.dragging=false;
-    requestAnimationFrame(scheduleUpdate);
+    if(!entry.draggingKey)return;
+    const targetKey=columnKey(event.target as Element);
+    const targetCell=originalCell(entry,targetKey);
+    if(targetCell&&targetKey!==entry.draggingKey){
+      event.preventDefault();
+      dispatchDrag(targetCell,'drop',event);
+    }
+    finishDrag(entry,event);
   });
+
   floating.addEventListener('dragend',event=>{
-    if(!entry.dragging)return;
-    proxyDragEvent('dragend',event.target as Element,entry,event);
-    entry.dragging=false;
-    requestAnimationFrame(scheduleUpdate);
+    if(!entry.draggingKey)return;
+    finishDrag(entry,event);
   });
 
   wrap.addEventListener('scroll',scheduleUpdate,{passive:true});
