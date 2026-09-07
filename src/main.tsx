@@ -24,6 +24,8 @@ import './inventory-activity.css';
 import './hardware-polish.css';
 import './hardware-expand.css';
 import './hardware-expand';
+import './hardware-summary.css';
+import './hardware-summary';
 import './landing-story.css';
 import './faq.css';
 import './homepage-polish.css';
