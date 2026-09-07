@@ -27,9 +27,12 @@
 .inventoryActivityGrid>.dashboardCard:nth-child(2) .distributionList>div:has(.truncate[title="Unknown"])>i>b{background:#9aa9ba!important}
 
 /* Bucket rows are already encoded by their bars; the extra colored dots only duplicate that signal. */
-.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div{grid-template-columns:minmax(0,1fr) auto 48px}
-.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div>.distributionDot{display:none}
-.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div>i{grid-column:1/-1}
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div,
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>button{grid-template-columns:minmax(0,1fr) auto 48px}
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div>.distributionDot,
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>button>.distributionDot{display:none}
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div>i,
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>button>i{grid-column:1/-1}
 
 /* Card headers use the same visual language as Health & Security. */
 .inventoryActivityGrid>.dashboardCard>.dashboardCardHead{display:flex;align-items:flex-start;gap:12px;min-height:44px}
