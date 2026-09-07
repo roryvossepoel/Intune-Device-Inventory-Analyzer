@@ -12,7 +12,10 @@
 .sliderFilterClear:focus-visible{outline:2px solid #79afe8;outline-offset:1px}
 
 /* Symmetric Check-in age / Enrollment age range filters. */
-.deviceFilterPanel .ageRangeFilter{grid-column:span 2;min-width:0;padding:10px 12px 9px;border:1px solid #dce7f2;border-radius:11px;background:#fbfdff;transition:.15s ease}
+.deviceFilterPanel .ageRangeFilter{min-width:0;min-height:112px;padding:10px 12px 9px;border:1px solid #dce7f2;border-radius:11px;background:#fbfdff;transition:.15s ease}
+/* Keep the two age controls together on one dedicated 50/50 row. */
+.deviceFilterPanel .ageRangeFilter:has(input[aria-label^="Check-in age"]){grid-column:1 / span 2}
+.deviceFilterPanel .ageRangeFilter:has(input[aria-label^="Enrollment age"]){grid-column:3 / span 2}
 .deviceFilterPanel .ageRangeFilter.hasValue{background:#eef6ff;border-color:#9fc4ee;box-shadow:inset 0 0 0 1px rgba(37,99,235,.03)}
 .ageRangeHead{display:flex;align-items:center;gap:8px;min-height:24px;margin-bottom:4px}
 .ageRangeHead>span{font-size:11px;font-weight:750;color:#59718e}
@@ -63,6 +66,8 @@
 .deviceEmptyActions button:focus-visible{outline:2px solid #79afe8;outline-offset:2px}
 
 @media(min-width:1100px){.smartTable thead th{position:static!important;top:auto!important}}
-@media(max-width:1200px){.deviceFilterPanel .ageSlider,.deviceFilterPanel .ageRangeFilter{grid-column:span 2}}
-@media(max-width:900px){.deviceFilterPanel .ageSlider,.deviceFilterPanel .ageRangeFilter{grid-column:span 1}}
-@media(max-width:760px){.deviceFilterPanel .ageSlider,.deviceFilterPanel .ageRangeFilter{grid-column:auto}.ageRangeActions>small{width:100%;margin-left:0}}
+@media(max-width:900px){
+  .deviceFilterPanel .ageRangeFilter:has(input[aria-label^="Check-in age"]),
+  .deviceFilterPanel .ageRangeFilter:has(input[aria-label^="Enrollment age"]){grid-column:1 / -1}
+}
+@media(max-width:760px){.deviceFilterPanel .ageSlider{grid-column:auto}.ageRangeActions>small{width:100%;margin-left:0}}
