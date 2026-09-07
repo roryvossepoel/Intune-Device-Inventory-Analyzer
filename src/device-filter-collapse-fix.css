@@ -13,7 +13,23 @@
   background:transparent!important;
   overflow:visible!important;
 }
+
+/* Center the filter handle exactly on the panel divider and make it wider/flatter. */
+.dataCard:has(.deviceFilterShell) .deviceFilterToggle{
+  width:64px!important;
+  height:18px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  bottom:-9px!important;
+  border-radius:0 0 8px 8px!important;
+  box-shadow:0 2px 5px rgba(22,61,109,.05)!important;
+}
+.dataCard:has(.deviceFilterShell) .deviceFilterToggle svg{
+  width:12px!important;
+  height:12px!important;
+}
 .dataCard:has(.deviceFilterShell) .deviceFilterShell.filtersCollapsed .deviceFilterToggle{
-  top:-1px!important;
+  top:-9px!important;
   bottom:auto!important;
+  border-radius:0 0 8px 8px!important;
 }
