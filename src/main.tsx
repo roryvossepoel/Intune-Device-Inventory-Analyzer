@@ -41,6 +41,7 @@ import './column-resize-v2';
 import './inventory-activity-polish';
 import './health-security-final-polish.css';
 import './header-reference.css';
+import './device-filter-collapse-fix.css';
 import './header-reference';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
