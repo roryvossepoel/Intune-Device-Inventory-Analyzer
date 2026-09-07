@@ -22,8 +22,10 @@ function headerIndex(cell:Element|null){
   return row&&cell?Array.from(row.children).indexOf(cell):-1;
 }
 
-function originalCell(entry:StickyEntry,index:number){
-  return index>=0?entry.head.querySelectorAll<HTMLTableCellElement>('tr:first-child > th')[index]??null:null;
+function originalCell(entry:StickyEntry,index:number):HTMLTableCellElement|null{
+  if(index<0)return null;
+  const cells=entry.head.querySelectorAll<HTMLTableCellElement>('tr:first-child > th');
+  return cells.item(index);
 }
 
 function originalDragHandle(entry:StickyEntry,index:number){
@@ -31,7 +33,7 @@ function originalDragHandle(entry:StickyEntry,index:number){
 }
 
 function proxyDragEvent(type:'dragstart'|'dragover'|'drop'|'dragend',target:Element|null,entry:StickyEntry,sourceEvent:DragEvent){
-  const cell=target?.closest('th');
+  const cell=target?.closest('th')??null;
   const index=headerIndex(cell);
   const original=type==='dragstart'||type==='dragend'?originalDragHandle(entry,index):originalCell(entry,index);
   if(!original)return;
@@ -119,8 +121,9 @@ function addTable(wrap:HTMLElement){
   entries.set(wrap,entry);
 
   floating.addEventListener('click',event=>{
-    const button=(event.target as Element).closest('button');
-    const cell=button?.closest('th');
+    const target=event.target as Element;
+    const button=target.closest('button');
+    const cell=button?button.closest('th'):null;
     if(!button||!cell)return;
     const index=headerIndex(cell);
     const original=originalCell(entry,index)?.querySelector<HTMLButtonElement>('button');
