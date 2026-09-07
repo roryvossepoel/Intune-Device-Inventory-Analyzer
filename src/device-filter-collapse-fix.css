@@ -1,0 +1,19 @@
+/* Final collapse-state override for the device filter shell.
+   device-table-layout.css uses a more specific selector, so collapsed state
+   must override that selector explicitly. */
+.dataCard:has(.deviceFilterShell) .deviceFilterShell.filtersCollapsed{
+  display:block!important;
+  height:0!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  gap:0!important;
+  border-top:0!important;
+  border-bottom:0!important;
+  background:transparent!important;
+  overflow:visible!important;
+}
+.dataCard:has(.deviceFilterShell) .deviceFilterShell.filtersCollapsed .deviceFilterToggle{
+  top:-1px!important;
+  bottom:auto!important;
+}
