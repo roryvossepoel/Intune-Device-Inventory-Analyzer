@@ -25,7 +25,7 @@ function readRows(card:HTMLElement):DistributionRow[]{
   });
 }
 function rowTotal(rows:DistributionRow[]){return rows.reduce((sum,row)=>sum+row.count,0)}
-function escapeHtml(value:string){return value.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]||char))}
+function escapeHtml(value:string){return value.replace(/[&<>"']/g,char=>{if(char==='&')return '&amp;';if(char==='<')return '&lt;';if(char==='>')return '&gt;';if(char==='"')return '&quot;';return '&#39;'})}
 function architectureMarkup(sources:ArchitectureSource[]){
   return sources.map(source=>{
     const segments=source.rows.map((row,index)=>`<span class="architectureStackSegment architectureStackSegment${index%4}" style="width:${Math.max(0,Math.min(100,row.percent))}%" title="${escapeHtml(row.label)} ${row.percent.toFixed(1)}%"></span>`).join('');
@@ -36,11 +36,7 @@ function architectureMarkup(sources:ArchitectureSource[]){
 function ensureArchitectureCard(grid:HTMLElement,sources:ArchitectureSource[]){
   let summary=grid.querySelector<HTMLElement>(':scope > .hardwareArchitectureSummaryCard');
   if(!sources.length){summary?.remove();return}
-  if(!summary){
-    summary=document.createElement('article');
-    summary.className='dashboardCard extendedInsightCard hardwareArchitectureSummaryCard';
-    grid.append(summary);
-  }
+  if(!summary){summary=document.createElement('article');summary.className='dashboardCard extendedInsightCard hardwareArchitectureSummaryCard';grid.append(summary)}
   const signature=sources.map(source=>`${source.platform}:${source.rows.map(row=>`${row.label}:${row.count}:${row.percent}`).join(',')}`).join('|');
   if(summary.dataset.summarySignature===signature)return;
   summary.dataset.summarySignature=signature;
@@ -64,11 +60,7 @@ function setupFleet(){
   ensureArchitectureCard(grid,sources);
 
   const family=findCard(grid,'iOS/iPadOS device family');
-  if(family){
-    family.classList.add('hardwareFamilyCard');
-    const rows=readRows(family);
-    family.classList.toggle('hardwareSingleFamily',rows.length===1);
-  }
+  if(family){family.classList.add('hardwareFamilyCard');const rows=readRows(family);family.classList.toggle('hardwareSingleFamily',rows.length===1)}
 }
 
 let scheduled=false;
