@@ -7,13 +7,37 @@
 .multiFilterClear:focus-visible{outline:2px solid #79afe8;outline-offset:1px}
 .multiFilterClear svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
 
-/* The slider is the single check-in age control. */
-.deviceFilterPanel .ageSlider{grid-column:span 2;display:flex;flex-direction:column;gap:6px;min-width:0;padding:2px 4px}
-.deviceFilterPanel .ageSlider>span{display:flex!important;align-items:center;justify-content:space-between;gap:8px;font-size:11px!important;font-weight:750!important;color:#59718e;line-height:1.2}
-.deviceFilterPanel .ageSlider>span b{font-size:11px;font-weight:750;color:inherit}
 .sliderFilterClear{margin-left:auto;width:23px;height:23px;border:0;border-radius:6px;background:transparent;color:#52769d;font-size:17px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
 .sliderFilterClear:hover{background:#dcecff;color:#145fae}
 .sliderFilterClear:focus-visible{outline:2px solid #79afe8;outline-offset:1px}
+
+/* Symmetric Check-in age / Enrollment age range filters. */
+.deviceFilterPanel .ageRangeFilter{grid-column:span 2;min-width:0;padding:10px 12px 9px;border:1px solid #dce7f2;border-radius:11px;background:#fbfdff;transition:.15s ease}
+.deviceFilterPanel .ageRangeFilter.hasValue{background:#eef6ff;border-color:#9fc4ee;box-shadow:inset 0 0 0 1px rgba(37,99,235,.03)}
+.ageRangeHead{display:flex;align-items:center;gap:8px;min-height:24px;margin-bottom:4px}
+.ageRangeHead>span{font-size:11px;font-weight:750;color:#59718e}
+.ageRangeHead>strong{margin-left:auto;font-size:11px;font-weight:760;color:#1d4f85;white-space:nowrap}
+.ageRangeFilter.hasValue .ageRangeHead>strong{color:#1767ba}
+.dualRange{position:relative;height:26px;margin:0 2px}
+.dualRangeTrack{position:absolute;left:0;right:0;top:11px;height:5px;border-radius:999px;background:#dce8f4}
+.dualRange input[type="range"]{position:absolute;left:0;top:0;width:100%;height:26px;margin:0;background:transparent;pointer-events:none;appearance:none;-webkit-appearance:none}
+.dualRange input[type="range"]::-webkit-slider-runnable-track{height:5px;background:transparent}
+.dualRange input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-5.5px;border:2px solid #fff;border-radius:50%;background:#2b7de9;box-shadow:0 1px 3px rgba(23,63,110,.3);pointer-events:auto;cursor:pointer}
+.dualRange input[type="range"]::-moz-range-track{height:5px;background:transparent}
+.dualRange input[type="range"]::-moz-range-thumb{width:16px;height:16px;border:2px solid #fff;border-radius:50%;background:#2b7de9;box-shadow:0 1px 3px rgba(23,63,110,.3);pointer-events:auto;cursor:pointer}
+.dualRange input[type="range"]:disabled::-webkit-slider-thumb,.dualRange input[type="range"]:disabled::-moz-range-thumb{background:#a8b8ca;cursor:default}
+.ageRangeScale{display:flex;justify-content:space-between;gap:4px;margin-top:-2px;color:#8294aa}
+.ageRangeScale small{font-size:9px;line-height:1.2}
+.ageRangeActions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:7px;padding-top:7px;border-top:1px solid #e8eff6}
+.ageRangeActions label{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:650;color:#607890;cursor:pointer}
+.ageRangeActions input{margin:0}
+.ageRangeActions>small{margin-left:auto;font-size:9.5px;color:#6d83a0}
+.ageRangeFilter.isUnknown .dualRange,.ageRangeFilter.isUnknown .ageRangeScale{opacity:.45}
+
+/* Retain compatibility with any old single-slider markup still used elsewhere. */
+.deviceFilterPanel .ageSlider{grid-column:span 2;display:flex;flex-direction:column;gap:6px;min-width:0;padding:2px 4px}
+.deviceFilterPanel .ageSlider>span{display:flex!important;align-items:center;justify-content:space-between;gap:8px;font-size:11px!important;font-weight:750!important;color:#59718e;line-height:1.2}
+.deviceFilterPanel .ageSlider>span b{font-size:11px;font-weight:750;color:inherit}
 
 /* Make an active search as visible as an active dropdown filter. */
 .search:has(input:not(:placeholder-shown)){background:#eef6ff;border-color:#9fc4ee;box-shadow:inset 0 0 0 1px rgba(37,99,235,.035)}
@@ -27,10 +51,7 @@
 .complianceBadge.warn{background:#fff8e8;border-color:#f0dfaf;color:#8a6417}
 .complianceBadge.neutral{background:#f2f5f8;border-color:#dde5ed;color:#60758d}
 
-/* Custom-rendered secondary fields should not look accidentally blank. */
 .smartTable td small:empty::after{content:"—"}
-
-/* Friendly feedback when filtering/searching leaves no devices. */
 .emptyStateRow td{padding:0!important;background:#fff!important;border-top:1px solid #e6edf5!important;text-align:center}
 .deviceEmptyState{min-height:180px;padding:34px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#fbfdff,#f7faff);color:#647b96;white-space:normal}
 .deviceEmptyState>svg{width:34px;height:34px;fill:none;stroke:#6b93c2;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin-bottom:3px}
@@ -41,11 +62,7 @@
 .deviceEmptyActions button:hover{background:#eef6ff;border-color:#9fc4ee}
 .deviceEmptyActions button:focus-visible{outline:2px solid #79afe8;outline-offset:2px}
 
-/* The floating header implementation handles page-level stickiness. */
-@media(min-width:1100px){
-  .smartTable thead th{position:static!important;top:auto!important}
-}
-
-@media(max-width:1200px){.deviceFilterPanel .ageSlider{grid-column:span 2}}
-@media(max-width:900px){.deviceFilterPanel .ageSlider{grid-column:span 1}}
-@media(max-width:760px){.deviceFilterPanel .ageSlider{grid-column:auto}}
+@media(min-width:1100px){.smartTable thead th{position:static!important;top:auto!important}}
+@media(max-width:1200px){.deviceFilterPanel .ageSlider,.deviceFilterPanel .ageRangeFilter{grid-column:span 2}}
+@media(max-width:900px){.deviceFilterPanel .ageSlider,.deviceFilterPanel .ageRangeFilter{grid-column:span 1}}
+@media(max-width:760px){.deviceFilterPanel .ageSlider,.deviceFilterPanel .ageRangeFilter{grid-column:auto}.ageRangeActions>small{width:100%;margin-left:0}}
