@@ -69,9 +69,21 @@
   background:#f4f8fc!important;
 }
 .deviceFloatingTable thead th.sorted{background:#eef6ff!important}
-.deviceFloatingTable th button{overflow:hidden}
+.deviceFloatingTable th button{
+  overflow:hidden;
+  cursor:pointer!important;
+  pointer-events:auto!important;
+}
 .deviceFloatingTable th button>span{
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
+}
+.deviceFloatingTable th button>i,
+.deviceFloatingTable th button>i svg{
+  pointer-events:none;
+}
+.deviceFloatingTable .columnDragHandle{
+  cursor:grab!important;
+  pointer-events:auto!important;
 }
