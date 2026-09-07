@@ -7,6 +7,7 @@ type StickyEntry={
   floating:HTMLDivElement;
   track:HTMLDivElement;
   cloneTable:HTMLTableElement;
+  dragging:boolean;
 };
 
 const entries=new Map<HTMLElement,StickyEntry>();
@@ -49,6 +50,10 @@ function copyHeader(entry:StickyEntry){
 
   const clonedHead=head.cloneNode(true) as HTMLTableSectionElement;
   clonedHead.querySelectorAll<HTMLButtonElement>('button').forEach(button=>button.tabIndex=-1);
+  clonedHead.querySelectorAll<HTMLElement>('.columnDragHandle').forEach(handle=>{
+    handle.draggable=true;
+    handle.setAttribute('draggable','true');
+  });
 
   const colgroup=document.createElement('colgroup');
   originalCells.forEach(cell=>{
@@ -117,11 +122,13 @@ function addTable(wrap:HTMLElement){
   floating.appendChild(track);
   document.body.appendChild(floating);
 
-  const entry:StickyEntry={wrap,table,head,floating,track,cloneTable};
+  const entry:StickyEntry={wrap,table,head,floating,track,cloneTable,dragging:false};
   entries.set(wrap,entry);
 
   floating.addEventListener('click',event=>{
+    if(entry.dragging){event.preventDefault();return;}
     const target=event.target as Element;
+    if(target.closest('.columnDragHandle'))return;
     const button=target.closest('button');
     const cell=button?button.closest('th'):null;
     if(!button||!cell)return;
@@ -131,14 +138,26 @@ function addTable(wrap:HTMLElement){
     requestAnimationFrame(scheduleUpdate);
   });
 
-  floating.addEventListener('dragstart',event=>proxyDragEvent('dragstart',event.target as Element,entry,event));
-  floating.addEventListener('dragover',event=>proxyDragEvent('dragover',event.target as Element,entry,event));
+  floating.addEventListener('dragstart',event=>{
+    const target=event.target as Element;
+    if(!target.closest('.columnDragHandle'))return;
+    entry.dragging=true;
+    proxyDragEvent('dragstart',target,entry,event);
+  });
+  floating.addEventListener('dragover',event=>{
+    if(!entry.dragging)return;
+    proxyDragEvent('dragover',event.target as Element,entry,event);
+  });
   floating.addEventListener('drop',event=>{
+    if(!entry.dragging)return;
     proxyDragEvent('drop',event.target as Element,entry,event);
+    entry.dragging=false;
     requestAnimationFrame(scheduleUpdate);
   });
   floating.addEventListener('dragend',event=>{
+    if(!entry.dragging)return;
     proxyDragEvent('dragend',event.target as Element,entry,event);
+    entry.dragging=false;
     requestAnimationFrame(scheduleUpdate);
   });
 
