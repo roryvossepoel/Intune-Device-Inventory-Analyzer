@@ -11,15 +11,15 @@
 .sliderFilterClear:hover{background:#dcecff;color:#145fae}
 .sliderFilterClear:focus-visible{outline:2px solid #79afe8;outline-offset:1px}
 
-/* Collapsible filter shell with a compact edge control. */
+/* Collapsible filter shell with a subtle centered bottom tab. */
 .deviceFilterShell{position:relative;border-bottom:1px solid #e6edf5;padding-top:0}
-.deviceFilterToggle{position:absolute;z-index:5;left:18px;top:-13px;width:34px;height:26px;border:1px solid #cadced;border-radius:7px;background:#fff;color:#557697;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 7px rgba(22,61,109,.07);padding:0}
+.deviceFilterToggle{position:absolute;z-index:6;left:50%;top:auto;bottom:-13px;transform:translateX(-50%);width:36px;height:24px;border:1px solid #cadced;border-radius:0 0 9px 9px;background:#fff;color:#557697;display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 7px rgba(22,61,109,.06);padding:0}
 .deviceFilterToggle:hover{background:#f3f8fe;border-color:#a9c8e7;color:#1d67ad}
 .deviceFilterToggle:focus-visible{outline:2px solid #79afe8;outline-offset:2px}
-.deviceFilterToggle svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.deviceFilterToggle>span{position:absolute;left:25px;top:-7px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#2b7de9;color:#fff;font-size:9px;font-weight:750;display:grid;place-items:center;border:2px solid #fff}
-.deviceFilterShell.filtersExpanded .deviceFilterPanel{padding-top:24px}
-.deviceFilterShell.filtersCollapsed{min-height:18px;border-bottom:0}
+.deviceFilterToggle svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.deviceFilterToggle>span{display:none}
+.deviceFilterShell.filtersExpanded .deviceFilterPanel{padding-top:24px;padding-bottom:22px}
+.deviceFilterShell.filtersCollapsed{min-height:18px;border-bottom:1px solid #e6edf5}
 
 /* Symmetric Check-in age / Enrollment age range filters. */
 .deviceFilterPanel .ageRangeFilter{min-width:0;min-height:112px;padding:10px 12px 9px;border:1px solid #dce7f2;border-radius:11px;background:#fbfdff;transition:.15s ease}
@@ -52,7 +52,10 @@
 .deviceResultNumbers{display:flex;align-items:center;gap:5px;white-space:nowrap;height:100%;line-height:1}
 .deviceResultNumbers strong,.deviceResultNumbers span{display:inline-flex;align-items:center}
 .deviceTableToolbar .tableToolbarActions{display:flex;align-items:center;gap:10px;padding-top:0}
-.deviceCsvExport{display:inline-flex;align-items:center;gap:7px}
+
+/* Export belongs to the Device inventory card header, not the result toolbar. */
+.dataCard{position:relative}
+.deviceCsvExport{position:absolute;z-index:7;top:14px;right:18px;display:inline-flex;align-items:center;gap:7px}
 .deviceCsvExport svg{flex:0 0 auto}
 
 /* Retain compatibility with any old single-slider markup still used elsewhere. */
@@ -90,5 +93,6 @@
   .deviceTableToolbar{align-items:stretch;flex-direction:column}
   .deviceTableToolbar .tableToolbarActions{align-self:flex-end}
   .deviceResultSummary{min-height:42px}
+  .deviceCsvExport{top:12px;right:12px}
 }
-@media(max-width:760px){.deviceFilterPanel .ageSlider{grid-column:auto}.ageRangeActions>small{width:100%;margin-left:0}.deviceFilterToggle{left:12px}}
+@media(max-width:760px){.deviceFilterPanel .ageSlider{grid-column:auto}.ageRangeActions>small{width:100%;margin-left:0}.deviceFilterToggle{left:50%}}
