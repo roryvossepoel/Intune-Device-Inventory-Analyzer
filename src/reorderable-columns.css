@@ -1,11 +1,11 @@
 /* Drag-to-reorder affordance for the device table. */
 .smartTable thead th{
   position:relative;
-  transition:opacity .14s ease;
+  transition:opacity .14s ease,padding .13s ease;
 }
 .smartTable th button{
   justify-content:flex-start;
-  transition:background .15s ease,color .15s ease,transform .14s ease;
+  transition:background .15s ease,color .15s ease;
 }
 .smartTable th button>span:not(.columnDragHandle){
   min-width:0;
@@ -32,72 +32,86 @@
 .columnDragHandle:hover{background:#dfeeff;color:#1c68ba}
 .columnDragHandle:active{cursor:grabbing}
 
-/* Keep the source visible, but make it unmistakably the column being moved. */
+/* Keep the source visible, but clearly show that it is the item being moved. */
 .smartTable th.columnDragging{
-  opacity:.42;
+  opacity:.34;
 }
 .smartTable th.columnDragging>button{
-  background:#eaf3ff!important;
-  color:#7790ad!important;
+  background:#e8f2ff!important;
+  color:#7890ac!important;
 }
 
 /*
-   The existing reorder logic inserts before the hovered column when dragging
-   left, and after it when dragging right. The selectors below mirror that
-   behaviour so the indicator always shows the real insertion point.
+   Use a real table-cell padding slot instead of only translating header text.
+   Because the padding participates in table layout, the destination column
+   physically becomes wider while dragging and neighbouring columns move aside.
 */
 .smartTable th.columnDropTarget{
   z-index:7;
   box-shadow:none!important;
+  overflow:visible;
 }
 
-/* Full-height insertion bar. Default = before the target column. */
+/* Dragging right: source lands after the hovered target. */
+.smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget{
+  padding-right:28px!important;
+}
+
+/* Dragging left: source lands before the hovered target. */
+.smartTable thead tr:has(th.columnDropTarget ~ th.columnDragging) th.columnDropTarget{
+  padding-left:28px!important;
+}
+
+/* The pale-blue insertion lane fills the opened space. */
 .smartTable th.columnDropTarget::after{
   content:"";
   position:absolute;
   z-index:9;
-  top:0;
-  bottom:0;
-  left:-2px;
-  width:4px;
-  border-radius:999px;
-  background:#2f7ee6;
-  box-shadow:0 0 0 2px rgba(47,126,230,.12),0 0 13px rgba(47,126,230,.34);
+  top:3px;
+  bottom:3px;
+  left:0;
+  width:28px;
+  border-radius:7px;
+  background:
+    linear-gradient(90deg,
+      rgba(47,126,230,.07) 0%,
+      rgba(47,126,230,.14) 42%,
+      #2f7ee6 42%,
+      #2f7ee6 58%,
+      rgba(47,126,230,.14) 58%,
+      rgba(47,126,230,.07) 100%);
+  box-shadow:inset 0 0 0 1px rgba(47,126,230,.18),0 2px 8px rgba(47,126,230,.12);
   pointer-events:none;
 }
 
-/* Small marker makes the exact drop edge easy to spot at a glance. */
+/* A small cap makes the exact insertion point immediately recognisable. */
 .smartTable th.columnDropTarget::before{
   content:"";
   position:absolute;
   z-index:10;
-  top:-4px;
-  left:-4px;
-  width:8px;
-  height:8px;
-  border-radius:2px;
+  top:-5px;
+  left:9px;
+  width:10px;
+  height:10px;
+  border-radius:50%;
   background:#2f7ee6;
-  box-shadow:0 0 0 2px rgba(255,255,255,.9),0 2px 7px rgba(47,126,230,.28);
-  transform:rotate(45deg);
+  border:2px solid #fff;
+  box-shadow:0 2px 7px rgba(47,126,230,.32);
   pointer-events:none;
 }
 
-/* Dragging from right to left: the source will land before the target. */
-.smartTable thead tr:has(th.columnDropTarget ~ th.columnDragging) th.columnDropTarget>button{
-  transform:translateX(8px);
-}
-
-/* Dragging from left to right: the source will land after the target. */
 .smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget::after{
   left:auto;
-  right:-2px;
+  right:0;
 }
 .smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget::before{
   left:auto;
-  right:-4px;
+  right:9px;
 }
-.smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget>button{
-  transform:translateX(-8px);
+
+/* Give the destination header a subtle cue without competing with the slot. */
+.smartTable th.columnDropTarget>button{
+  background:#f7fbff!important;
 }
 
 body:has(.smartTable th.columnDragging){cursor:grabbing}
@@ -109,4 +123,9 @@ body:has(.smartTable th.columnDragging) .smartTable thead th{cursor:grabbing}
 
 @media(max-width:760px){
   .columnDragHandle{width:16px;flex-basis:16px}
+  .smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget{padding-right:22px!important}
+  .smartTable thead tr:has(th.columnDropTarget ~ th.columnDragging) th.columnDropTarget{padding-left:22px!important}
+  .smartTable th.columnDropTarget::after{width:22px}
+  .smartTable th.columnDropTarget::before{left:6px}
+  .smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget::before{left:auto;right:6px}
 }
