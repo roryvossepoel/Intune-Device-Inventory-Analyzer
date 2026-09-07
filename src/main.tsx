@@ -21,6 +21,7 @@ import './security-insights.css';
 import './dashboard-sections.css';
 import './dashboard-v2.css';
 import './inventory-activity.css';
+import './hardware-polish.css';
 import './landing-story.css';
 import './faq.css';
 import './homepage-polish.css';
