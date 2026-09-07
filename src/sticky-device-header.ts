@@ -17,6 +17,29 @@ function isDeviceTable(wrap:HTMLElement){
   return Boolean(card?.querySelector('.deviceFilterShell'));
 }
 
+function headerIndex(cell:Element|null){
+  const row=cell?.parentElement;
+  return row&&cell?Array.from(row.children).indexOf(cell):-1;
+}
+
+function originalCell(entry:StickyEntry,index:number){
+  return index>=0?entry.head.querySelectorAll<HTMLTableCellElement>('tr:first-child > th')[index]??null:null;
+}
+
+function originalDragHandle(entry:StickyEntry,index:number){
+  return originalCell(entry,index)?.querySelector<HTMLElement>('.columnDragHandle')??null;
+}
+
+function proxyDragEvent(type:'dragstart'|'dragover'|'drop'|'dragend',target:Element|null,entry:StickyEntry,sourceEvent:DragEvent){
+  const cell=target?.closest('th');
+  const index=headerIndex(cell);
+  const original=type==='dragstart'||type==='dragend'?originalDragHandle(entry,index):originalCell(entry,index);
+  if(!original)return;
+  const event=new DragEvent(type,{bubbles:true,cancelable:true,dataTransfer:sourceEvent.dataTransfer});
+  original.dispatchEvent(event);
+  if(event.defaultPrevented)sourceEvent.preventDefault();
+}
+
 function copyHeader(entry:StickyEntry){
   const {head,cloneTable,table}=entry;
   const originalCells=Array.from(head.querySelectorAll<HTMLTableCellElement>('tr:first-child > th'));
@@ -82,7 +105,6 @@ function addTable(wrap:HTMLElement){
   const floating=document.createElement('div');
   floating.className='deviceFloatingHeader';
   floating.hidden=true;
-  floating.setAttribute('aria-hidden','true');
 
   const track=document.createElement('div');
   track.className='deviceFloatingHeaderTrack';
@@ -100,11 +122,20 @@ function addTable(wrap:HTMLElement){
     const button=(event.target as Element).closest('button');
     const cell=button?.closest('th');
     if(!button||!cell)return;
-    const row=cell.parentElement;
-    if(!row)return;
-    const index=Array.from(row.children).indexOf(cell);
-    const original=head.querySelectorAll<HTMLButtonElement>('tr:first-child > th > button')[index];
+    const index=headerIndex(cell);
+    const original=originalCell(entry,index)?.querySelector<HTMLButtonElement>('button');
     original?.click();
+    requestAnimationFrame(scheduleUpdate);
+  });
+
+  floating.addEventListener('dragstart',event=>proxyDragEvent('dragstart',event.target as Element,entry,event));
+  floating.addEventListener('dragover',event=>proxyDragEvent('dragover',event.target as Element,entry,event));
+  floating.addEventListener('drop',event=>{
+    proxyDragEvent('drop',event.target as Element,entry,event);
+    requestAnimationFrame(scheduleUpdate);
+  });
+  floating.addEventListener('dragend',event=>{
+    proxyDragEvent('dragend',event.target as Element,entry,event);
     requestAnimationFrame(scheduleUpdate);
   });
 
