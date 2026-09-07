@@ -1,64 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
-type SortDirection = 'asc' | 'desc';
-
-export type SmartColumn<T> = {
-  key: string;
-  label: string;
-  value: (row:T)=>string|number|null|undefined;
-  render?: (row:T)=>ReactNode;
-  numeric?: boolean;
-};
-
-export type DeviceTableInitialFilters = {
-  platform?: string;
-  platforms?: string[];
-  manufacturer?: string;
-  model?: string;
-  osVersion?: string;
-  compliance?: string;
-  encryption?: string;
-  checkInAge?: string;
-  enrollmentAge?: string;
-  inventoryQuality?: string;
-};
-
-type Props<T> = {
-  rows: T[];
-  columns: SmartColumn<T>[];
-  rowKey: (row:T)=>string;
-  exportName: string;
-  onRowClick?: (row:T)=>void;
-  initialPageSize?: number;
-  initialFilters?: DeviceTableInitialFilters;
-  onClearFilters?: ()=>void;
-  searchQuery?: string;
-  onClearSearch?: ()=>void;
-};
-
-type DeviceLike={
-  id?:string;
-  deviceName?:string|null;
-  serialNumber?:string|null;
-  platform?:string;
-  osVersion?:string|null;
-  compliance?:string|null;
-  manufacturer?:string|null;
-  model?:string|null;
-  ownership?:string|null;
-  managedBy?:string|null;
-  userUpn?:string|null;
-  userDisplayName?:string|null;
-  lastCheckIn?:string|null;
-  raw?:Record<string,string>;
-};
-
+type SortDirection='asc'|'desc';
+export type SmartColumn<T>={key:string;label:string;value:(row:T)=>string|number|null|undefined;render?:(row:T)=>ReactNode;numeric?:boolean};
+export type DeviceTableInitialFilters={platform?:string;platforms?:string[];manufacturer?:string;model?:string;osVersion?:string;compliance?:string;encryption?:string;checkInAge?:string;enrollmentAge?:string;inventoryQuality?:string};
+type Props<T>={rows:T[];columns:SmartColumn<T>[];rowKey:(row:T)=>string;exportName:string;onRowClick?:(row:T)=>void;initialPageSize?:number;initialFilters?:DeviceTableInitialFilters;onClearFilters?:()=>void;searchQuery?:string;onClearSearch?:()=>void};
+type DeviceLike={id?:string;deviceName?:string|null;serialNumber?:string|null;platform?:string;osVersion?:string|null;compliance?:string|null;manufacturer?:string|null;model?:string|null;ownership?:string|null;managedBy?:string|null;userUpn?:string|null;userDisplayName?:string|null;lastCheckIn?:string|null;raw?:Record<string,string>};
 type ExplorerColumn<T>=SmartColumn<T>&{rawField?:boolean;pickerLabel?:string;exportLabel?:string};
 type PlatformFilterDefinition={label:string;allLabel:string;value:(device:DeviceLike)=>string};
+type AgeRange={min:number;max:number;unknown:boolean;openEnded:boolean;label:string};
 
 const pageSizes=[25,50,100,250];
-const enrollmentAgeValues=['0–30 days','31–90 days','91–365 days','1+ year','Unknown'];
 const inventoryQualityValues=['Duplicate serial entries','Duplicate device names','Missing serial number','Missing manufacturer','Missing model','Missing / invalid last check-in'];
 const normalize=(value:string|number|null|undefined)=>value==null?'':value;
 const csvCell=(value:unknown)=>`"${String(value??'').replace(/"/g,'""')}"`;
@@ -74,23 +26,31 @@ const sku=(row:DeviceLike)=>rawValue(row,/^SkuFamily$|^OS SKU$|^SKU$/i)||'Unknow
 const securityPatch=(row:DeviceLike)=>rawValue(row,/^Security patch level$/i)||'Unknown';
 const architecture=(row:DeviceLike)=>rawValue(row,/^ProcessorArchitecture$|^Architecture$/i)||'Unknown';
 const supervision=(row:DeviceLike)=>{const value=rawValue(row,/^Supervised$/i);return /^true$/i.test(value)?'Supervised':/^false$/i.test(value)?'Not supervised':'Unknown'};
+const defaultCheckIn=():AgeRange=>({min:0,max:180,unknown:false,openEnded:false,label:''});
+const defaultEnrollment=():AgeRange=>({min:0,max:730,unknown:false,openEnded:false,label:''});
 
-function matchesEnrollmentBucket(row:DeviceLike,bucket:string){
-  const age=ageDays(enrollmentDate(row));
-  if(bucket==='Unknown')return age===null;
-  if(age===null)return false;
-  if(bucket==='0–30 days')return age<=30;
-  if(bucket==='31–90 days')return age>30&&age<=90;
-  if(bucket==='91–365 days')return age>90&&age<=365;
-  if(bucket==='1+ year')return age>365;
-  return true;
+function bucketToRange(bucket:string|undefined,kind:'checkin'|'enrollment'):AgeRange{
+  const base=kind==='checkin'?defaultCheckIn():defaultEnrollment();
+  if(!bucket)return base;
+  if(bucket==='Unknown')return {...base,unknown:true,label:bucket};
+  if(kind==='checkin'){
+    if(bucket==='0–7 days')return {...base,max:7,label:bucket};
+    if(bucket==='8–30 days')return {...base,min:8,max:30,label:bucket};
+    if(bucket==='31–90 days')return {...base,min:31,max:90,label:bucket};
+    if(bucket==='90+ days')return {...base,min:91,openEnded:true,label:bucket};
+  }else{
+    if(bucket==='0–30 days')return {...base,max:30,label:bucket};
+    if(bucket==='31–90 days')return {...base,min:31,max:90,label:bucket};
+    if(bucket==='91–365 days')return {...base,min:91,max:365,label:bucket};
+    if(bucket==='1+ year')return {...base,min:366,openEnded:true,label:bucket};
+  }
+  return base;
 }
+function rangeActive(range:AgeRange,kind:'checkin'|'enrollment'){const max=kind==='checkin'?180:730;return range.unknown||range.openEnded||range.min>0||range.max<max}
+function rangeMatches(age:number|null,range:AgeRange){if(range.unknown)return age===null;if(age===null)return false;if(range.openEnded)return age>=range.min;return age>=range.min&&age<=range.max}
+function rangeLabel(range:AgeRange,kind:'checkin'|'enrollment'){if(range.unknown)return 'Unknown';if(range.openEnded)return `${range.min}+ days`;if(range.min===0){const maxDefault=kind==='checkin'?180:730;return range.max>=maxDefault?'Any age':`0–${range.max} days`}return `${range.min}–${range.max} days`}
 
-function SortIcon({active,direction}:{active:boolean;direction:SortDirection}){
-  if(active)return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{direction==='asc'?<path d="m4.75 9.25 3.25-3.25 3.25 3.25"/>:<path d="m4.75 6.75 3.25 3.25 3.25-3.25"/>}</svg>;
-  return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round"><path d="m5.25 6.5 2.75-2.75 2.75 2.75"/><path d="m5.25 9.5 2.75 2.75 2.75-2.75"/></svg>;
-}
-
+function SortIcon({active,direction}:{active:boolean;direction:SortDirection}){if(active)return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{direction==='asc'?<path d="m4.75 9.25 3.25-3.25 3.25 3.25"/>:<path d="m4.75 6.75 3.25 3.25 3.25-3.25"/>}</svg>;return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round"><path d="m5.25 6.5 2.75-2.75 2.75 2.75"/><path d="m5.25 9.5 2.75 2.75 2.75-2.75"/></svg>}
 function DragIcon(){return <svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="5" cy="8" r="1"/><circle cx="11" cy="8" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/></svg>}
 function DropdownChevron({open}:{open:boolean}){return <svg className="multiFilterChevron" aria-hidden="true" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={open?'m4.5 9.5 3.5-3 3.5 3':'m4.5 6.5 3.5 3 3.5-3'}/></svg>}
 
@@ -101,20 +61,24 @@ function MultiSelect({label,values,selected,onChange,allLabel='All',className=''
   return <div className={`multiFilter ${className}`} ref={root}><span>{label}</span><div className="multiFilterControl"><button type="button" className={`multiFilterTrigger ${open?'open':''} ${selected.length?'hasValue':''}`} aria-expanded={open} onClick={()=>setOpen(v=>!v)}><span>{summary}</span><DropdownChevron open={open}/></button>{selected.length>0&&<button type="button" className="multiFilterClear" aria-label={`Clear ${label} filter`} title={`Clear ${label} filter`} onClick={()=>{onChange([]);setOpen(false)}}><svg aria-hidden="true" viewBox="0 0 16 16"><path d="m5 5 6 6M11 5l-6 6"/></svg></button>}{open&&<div className="multiFilterMenu"><button type="button" onClick={()=>{onChange([]);setOpen(false)}} className={selected.length===0?'selected':''}>{allLabel}</button>{values.map(value=><label key={value}><input type="checkbox" checked={selected.includes(value)} onChange={()=>toggle(value)}/><span>{value}</span></label>)}</div>}</div></div>
 }
 
+function AgeRangeFilter({label,range,onChange,kind}:{label:string;range:AgeRange;onChange:(range:AgeRange)=>void;kind:'checkin'|'enrollment'}){
+  const max=kind==='checkin'?180:730;const marks=kind==='checkin'?[0,30,60,90,120,150,180]:[0,90,180,365,545,730];const active=rangeActive(range,kind);
+  const setMin=(value:number)=>onChange({...range,min:Math.min(value,range.max),unknown:false,openEnded:false,label:''});
+  const setMax=(value:number)=>onChange({...range,max:Math.max(value,range.min),unknown:false,openEnded:false,label:''});
+  return <div className={`ageRangeFilter ${active?'hasValue':''} ${range.unknown?'isUnknown':''}`}><div className="ageRangeHead"><span>{label}</span><strong>{rangeLabel(range,kind)}</strong>{active&&<button type="button" className="sliderFilterClear" onClick={()=>onChange(kind==='checkin'?defaultCheckIn():defaultEnrollment())} aria-label={`Clear ${label} filter`} title={`Clear ${label} filter`}>×</button>}</div><div className="dualRange"><div className="dualRangeTrack"/><input aria-label={`${label} minimum days`} type="range" min="0" max={max} value={Math.min(range.min,max)} disabled={range.unknown||range.openEnded} onChange={e=>setMin(Number(e.target.value))}/><input aria-label={`${label} maximum days`} type="range" min="0" max={max} value={range.openEnded?max:range.max} disabled={range.unknown||range.openEnded} onChange={e=>setMax(Number(e.target.value))}/></div><div className="ageRangeScale">{marks.map(mark=><small key={mark}>{mark===max?`${mark}+`:mark}</small>)}</div><div className="ageRangeActions"><label><input type="checkbox" checked={range.unknown} onChange={e=>onChange({...kind==='checkin'?defaultCheckIn():defaultEnrollment(),unknown:e.target.checked,label:e.target.checked?'Unknown':''})}/><span>Unknown</span></label><label><input type="checkbox" checked={range.openEnded} onChange={e=>onChange({...range,unknown:false,openEnded:e.target.checked,min:e.target.checked?Math.max(1,range.min):range.min,label:''})}/><span>No upper limit</span></label>{range.label&&<small>Dashboard range: {range.label}</small>}</div></div>
+}
+
 function complianceTone(value:string){const normalized=value.toLowerCase().replace(/[\s_-]/g,'');if(normalized==='compliant')return 'good';if(normalized==='noncompliant')return 'bad';if(normalized.includes('grace'))return 'warn';return 'neutral'}
 function displayCell<T>(column:ExplorerColumn<T>,row:T){if(column.render)return column.render(row);const value=column.value(row);const text=value==null||String(value).trim()===''?'—':String(value);if(column.key==='compliance'&&text!=='—')return <span className={`complianceBadge ${complianceTone(text)}`}>{text}</span>;return text}
 function platformFilterFor(platform:string|null):PlatformFilterDefinition|null{if(platform==='Windows')return{label:'Windows SKU',allLabel:'All editions',value:sku};if(platform==='Android')return{label:'Security patch level',allLabel:'All patch levels',value:securityPatch};if(platform==='iOS/iPadOS')return{label:'Supervision',allLabel:'All supervision states',value:supervision};if(platform==='macOS'||platform==='Linux')return{label:'Architecture',allLabel:'All architectures',value:architecture};return null}
 
 export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick,initialPageSize=50,initialFilters,onClearFilters,searchQuery='',onClearSearch}:Props<T>){
   const [page,setPage]=useState(1);const [pageSize,setPageSize]=useState(initialPageSize);const [sortKey,setSortKey]=useState(columns[0]?.key??'');const [sortDirection,setSortDirection]=useState<SortDirection>('asc');const isDevices=exportName==='intune-devices';
-  const [platformsSelected,setPlatformsSelected]=useState<string[]>([]);const [manufacturersSelected,setManufacturersSelected]=useState<string[]>([]);const [modelsSelected,setModelsSelected]=useState<string[]>([]);const [osVersionsSelected,setOsVersionsSelected]=useState<string[]>([]);const [compliancesSelected,setCompliancesSelected]=useState<string[]>([]);const [encryptionsSelected,setEncryptionsSelected]=useState<string[]>([]);const [ownershipsSelected,setOwnershipsSelected]=useState<string[]>([]);const [userStatesSelected,setUserStatesSelected]=useState<string[]>([]);const [platformSpecificSelected,setPlatformSpecificSelected]=useState<string[]>([]);
-  const [enrollmentAgeSelected,setEnrollmentAgeSelected]=useState<string[]>([]);const [inventoryQualitySelected,setInventoryQualitySelected]=useState<string[]>([]);
-  const [minAge,setMinAge]=useState(0);const [maxAge,setMaxAge]=useState(180);const [openEndedAge,setOpenEndedAge]=useState(false);const [unknownCheckIn,setUnknownCheckIn]=useState(false);const [checkInBucketLabel,setCheckInBucketLabel]=useState('');
+  const [platformsSelected,setPlatformsSelected]=useState<string[]>([]);const [manufacturersSelected,setManufacturersSelected]=useState<string[]>([]);const [modelsSelected,setModelsSelected]=useState<string[]>([]);const [osVersionsSelected,setOsVersionsSelected]=useState<string[]>([]);const [compliancesSelected,setCompliancesSelected]=useState<string[]>([]);const [encryptionsSelected,setEncryptionsSelected]=useState<string[]>([]);const [ownershipsSelected,setOwnershipsSelected]=useState<string[]>([]);const [userStatesSelected,setUserStatesSelected]=useState<string[]>([]);const [platformSpecificSelected,setPlatformSpecificSelected]=useState<string[]>([]);const [inventoryQualitySelected,setInventoryQualitySelected]=useState<string[]>([]);
+  const [checkInRange,setCheckInRange]=useState<AgeRange>(defaultCheckIn);const [enrollmentRange,setEnrollmentRange]=useState<AgeRange>(defaultEnrollment);
   const [columnsOpen,setColumnsOpen]=useState(false);const [visibleKeys,setVisibleKeys]=useState<string[]>(()=>columns.map(c=>c.key));const [columnOrder,setColumnOrder]=useState<string[]>(()=>columns.map(c=>c.key));const [draggedColumn,setDraggedColumn]=useState<string|null>(null);const [dropColumn,setDropColumn]=useState<string|null>(null);
 
-  function applyCheckInBucket(bucket?:string){setMinAge(0);setMaxAge(180);setOpenEndedAge(false);setUnknownCheckIn(false);setCheckInBucketLabel(bucket||'');if(bucket==='0–7 days')setMaxAge(7);else if(bucket==='8–30 days'){setMinAge(8);setMaxAge(30)}else if(bucket==='31–90 days'){setMinAge(31);setMaxAge(90)}else if(bucket==='90+ days'){setMinAge(90);setOpenEndedAge(true)}else if(bucket==='Unknown')setUnknownCheckIn(true)}
-
-  useEffect(()=>{if(!isDevices)return;setPlatformsSelected(initialFilters?.platforms?.length?initialFilters.platforms:initialFilters?.platform?[initialFilters.platform]:[]);setManufacturersSelected(initialFilters?.manufacturer?[initialFilters.manufacturer]:[]);setModelsSelected(initialFilters?.model?[initialFilters.model]:[]);setOsVersionsSelected(initialFilters?.osVersion?[initialFilters.osVersion]:[]);setCompliancesSelected(initialFilters?.compliance?[initialFilters.compliance]:[]);setEncryptionsSelected(initialFilters?.encryption?[initialFilters.encryption]:[]);setOwnershipsSelected([]);setUserStatesSelected([]);setPlatformSpecificSelected([]);setEnrollmentAgeSelected(initialFilters?.enrollmentAge?[initialFilters.enrollmentAge]:[]);setInventoryQualitySelected(initialFilters?.inventoryQuality?[initialFilters.inventoryQuality]:[]);applyCheckInBucket(initialFilters?.checkInAge);setPage(1)},[isDevices,initialFilters]);
+  useEffect(()=>{if(!isDevices)return;setPlatformsSelected(initialFilters?.platforms?.length?initialFilters.platforms:initialFilters?.platform?[initialFilters.platform]:[]);setManufacturersSelected(initialFilters?.manufacturer?[initialFilters.manufacturer]:[]);setModelsSelected(initialFilters?.model?[initialFilters.model]:[]);setOsVersionsSelected(initialFilters?.osVersion?[initialFilters.osVersion]:[]);setCompliancesSelected(initialFilters?.compliance?[initialFilters.compliance]:[]);setEncryptionsSelected(initialFilters?.encryption?[initialFilters.encryption]:[]);setOwnershipsSelected([]);setUserStatesSelected([]);setPlatformSpecificSelected([]);setInventoryQualitySelected(initialFilters?.inventoryQuality?[initialFilters.inventoryQuality]:[]);setCheckInRange(bucketToRange(initialFilters?.checkInAge,'checkin'));setEnrollmentRange(bucketToRange(initialFilters?.enrollmentAge,'enrollment'));setPage(1)},[isDevices,initialFilters]);
 
   const devices=rows as unknown as DeviceLike[];
   const platformValues=useMemo(()=>unique(devices.map(d=>platformName(platformFamily(d.platform)))),[rows]);const manufacturers=useMemo(()=>unique(devices.map(d=>d.manufacturer)),[rows]);const models=useMemo(()=>unique(devices.filter(d=>!manufacturersSelected.length||manufacturersSelected.includes(d.manufacturer||'')).map(d=>d.model)),[rows,manufacturersSelected]);const osVersions=useMemo(()=>unique(devices.map(d=>d.osVersion)),[rows]);const compliances=useMemo(()=>unique(devices.map(d=>d.compliance)),[rows]);const ownerships=useMemo(()=>unique(devices.map(d=>d.ownership)),[rows]);
@@ -126,11 +90,10 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
   const standardColumns=useMemo<ExplorerColumn<T>[]>(()=>{if(!isDevices)return columns;const source=new Map(columns.map(c=>[c.key,c]));const fromSource=(key:string,pickerLabel:string,exportLabel=pickerLabel,valueOverride?:ExplorerColumn<T>['value']):ExplorerColumn<T>|null=>{const column=source.get(key);return column?{...column,pickerLabel,exportLabel,value:valueOverride??column.value}:null};const result:(ExplorerColumn<T>|null)[]=[{key:'std:deviceId',label:'Device ID',pickerLabel:'Device ID',exportLabel:'Device ID',value:(row:T)=>deviceOf(row).id||''},fromSource('device','Device name','Device name'),{key:'std:serialNumber',label:'Serial number',pickerLabel:'Serial number',exportLabel:'Serial number',value:(row:T)=>deviceOf(row).serialNumber||''},fromSource('platform','Platform'),fromSource('os','OS version'),fromSource('manufacturer','Manufacturer'),fromSource('model','Model'),fromSource('user','Primary user display name','Primary user display name',(row:T)=>deviceOf(row).userDisplayName||''),{key:'std:userUpn',label:'Primary user UPN',pickerLabel:'Primary user UPN',exportLabel:'Primary user UPN',value:(row:T)=>deviceOf(row).userUpn||''},fromSource('compliance','Compliance'),{key:'std:encryption',label:'Encryption',pickerLabel:'Encryption',exportLabel:'Encryption',value:(row:T)=>encryption(deviceOf(row))},{key:'std:ownership',label:'Ownership',pickerLabel:'Ownership',exportLabel:'Ownership',value:(row:T)=>deviceOf(row).ownership||''},{key:'std:managedBy',label:'Managed by',pickerLabel:'Managed by',exportLabel:'Managed by',value:(row:T)=>deviceOf(row).managedBy||''},fromSource('checkin','Last check-in')];const known=new Set(result.filter((c):c is ExplorerColumn<T>=>Boolean(c)).map(c=>c.key));return [...result.filter((c):c is ExplorerColumn<T>=>Boolean(c)),...columns.filter(c=>!known.has(c.key))]},[columns,isDevices]);
   const originalColumns=useMemo<ExplorerColumn<T>[]>(()=>{if(!isDevices)return [];const names=[...new Set(devices.flatMap(d=>Object.keys(d.raw||{})))];return names.map(name=>({key:`raw:${name}`,label:name,pickerLabel:name,exportLabel:name,value:(row:T)=>deviceOf(row).raw?.[name]||'',rawField:true}))},[rows,isDevices]);const effectiveColumns=useMemo<ExplorerColumn<T>[]>(()=>[...standardColumns,...originalColumns],[standardColumns,originalColumns]);
 
-  const hasCheckInFilter=unknownCheckIn||openEndedAge||minAge>0||maxAge<180;
-  const activeFilterCount=[platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected,platformSpecificSelected,enrollmentAgeSelected,inventoryQualitySelected].filter(v=>v.length).length+(hasCheckInFilter?1:0);
+  const hasCheckInFilter=rangeActive(checkInRange,'checkin');const hasEnrollmentFilter=rangeActive(enrollmentRange,'enrollment');const activeFilterCount=[platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected,platformSpecificSelected,inventoryQualitySelected].filter(v=>v.length).length+(hasCheckInFilter?1:0)+(hasEnrollmentFilter?1:0);
   const trimmedSearch=searchQuery.trim();const hasSearch=Boolean(trimmedSearch);
 
-  const filteredRows=useMemo(()=>!isDevices?rows:rows.filter(row=>{const d=deviceOf(row);if(platformsSelected.length&&!platformsSelected.includes(platformName(platformFamily(d.platform))))return false;if(manufacturersSelected.length&&!manufacturersSelected.includes(d.manufacturer||''))return false;if(modelsSelected.length&&!modelsSelected.includes(d.model||''))return false;if(osVersionsSelected.length&&!osVersionsSelected.includes(d.osVersion||''))return false;if(compliancesSelected.length&&!compliancesSelected.includes(d.compliance||''))return false;if(encryptionsSelected.length&&!encryptionsSelected.includes(encryption(d)))return false;if(ownershipsSelected.length&&!ownershipsSelected.includes(d.ownership||''))return false;const hasUser=Boolean(d.userUpn||d.userDisplayName);const userState=hasUser?'Has primary user':'No primary user';if(userStatesSelected.length&&!userStatesSelected.includes(userState))return false;if(platformSpecific&&platformSpecificSelected.length&&!platformSpecificSelected.includes(platformSpecific.value(d)))return false;if(enrollmentAgeSelected.length&&!enrollmentAgeSelected.some(bucket=>matchesEnrollmentBucket(d,bucket)))return false;if(inventoryQualitySelected.length&&!inventoryQualitySelected.some(signal=>qualitySignals(d).includes(signal)))return false;const age=ageDays(d.lastCheckIn);if(unknownCheckIn){if(age!==null)return false}else if(openEndedAge){if(age===null||age<=minAge)return false}else if(minAge>0){if(age===null||age<minAge||age>maxAge)return false}else if(maxAge<180&&(age===null||age>maxAge))return false;return true}),[rows,isDevices,platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected,platformSpecificSelected,platformSpecific,enrollmentAgeSelected,inventoryQualitySelected,duplicateSerialSet,duplicateNameSet,minAge,maxAge,openEndedAge,unknownCheckIn]);
+  const filteredRows=useMemo(()=>!isDevices?rows:rows.filter(row=>{const d=deviceOf(row);if(platformsSelected.length&&!platformsSelected.includes(platformName(platformFamily(d.platform))))return false;if(manufacturersSelected.length&&!manufacturersSelected.includes(d.manufacturer||''))return false;if(modelsSelected.length&&!modelsSelected.includes(d.model||''))return false;if(osVersionsSelected.length&&!osVersionsSelected.includes(d.osVersion||''))return false;if(compliancesSelected.length&&!compliancesSelected.includes(d.compliance||''))return false;if(encryptionsSelected.length&&!encryptionsSelected.includes(encryption(d)))return false;if(ownershipsSelected.length&&!ownershipsSelected.includes(d.ownership||''))return false;const hasUser=Boolean(d.userUpn||d.userDisplayName);const userState=hasUser?'Has primary user':'No primary user';if(userStatesSelected.length&&!userStatesSelected.includes(userState))return false;if(platformSpecific&&platformSpecificSelected.length&&!platformSpecificSelected.includes(platformSpecific.value(d)))return false;if(inventoryQualitySelected.length&&!inventoryQualitySelected.some(signal=>qualitySignals(d).includes(signal)))return false;if(hasCheckInFilter&&!rangeMatches(ageDays(d.lastCheckIn),checkInRange))return false;if(hasEnrollmentFilter&&!rangeMatches(ageDays(enrollmentDate(d)),enrollmentRange))return false;return true}),[rows,isDevices,platformsSelected,manufacturersSelected,modelsSelected,osVersionsSelected,compliancesSelected,encryptionsSelected,ownershipsSelected,userStatesSelected,platformSpecificSelected,platformSpecific,inventoryQualitySelected,duplicateSerialSet,duplicateNameSet,checkInRange,enrollmentRange,hasCheckInFilter,hasEnrollmentFilter]);
 
   useEffect(()=>{setColumnOrder(order=>{const valid=order.filter(key=>effectiveColumns.some(column=>column.key===key));const missing=effectiveColumns.map(column=>column.key).filter(key=>!valid.includes(key));return [...valid,...missing]})},[effectiveColumns]);
   const orderedColumns=useMemo(()=>columnOrder.map(key=>effectiveColumns.find(column=>column.key===key)).filter((column):column is ExplorerColumn<T>=>Boolean(column)),[columnOrder,effectiveColumns]);const shownColumns=orderedColumns.filter(c=>visibleKeys.includes(c.key));useEffect(()=>setPage(1),[filteredRows,pageSize]);useEffect(()=>setVisibleKeys(keys=>{const valid=keys.filter(k=>effectiveColumns.some(c=>c.key===k));return valid.length?valid:columns.map(c=>c.key)}),[effectiveColumns,columns]);
@@ -139,10 +102,9 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
 
   function sort(column:SmartColumn<T>){if(sortKey===column.key)setSortDirection(d=>d==='asc'?'desc':'asc');else{setSortKey(column.key);setSortDirection('asc')}setPage(1)}
   function exportCsv(){const csv=[shownColumns.map(c=>csvCell(c.exportLabel??c.label)).join(','),...sorted.map(row=>shownColumns.map(c=>csvCell(c.value(row))).join(','))].join('\r\n');const blob=new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`${exportName}.csv`;document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url)}
-  function clearFilters(){setPlatformsSelected([]);setManufacturersSelected([]);setModelsSelected([]);setOsVersionsSelected([]);setCompliancesSelected([]);setEncryptionsSelected([]);setOwnershipsSelected([]);setUserStatesSelected([]);setPlatformSpecificSelected([]);setEnrollmentAgeSelected([]);setInventoryQualitySelected([]);applyCheckInBucket();onClearFilters?.()}
+  function clearFilters(){setPlatformsSelected([]);setManufacturersSelected([]);setModelsSelected([]);setOsVersionsSelected([]);setCompliancesSelected([]);setEncryptionsSelected([]);setOwnershipsSelected([]);setUserStatesSelected([]);setPlatformSpecificSelected([]);setInventoryQualitySelected([]);setCheckInRange(defaultCheckIn());setEnrollmentRange(defaultEnrollment());onClearFilters?.()}
   function toggleColumn(key:string){setVisibleKeys(keys=>keys.includes(key)?(keys.length>1?keys.filter(k=>k!==key):keys):[...keys,key])}
   function moveColumn(sourceKey:string,targetKey:string){if(sourceKey===targetKey)return;setColumnOrder(order=>{const sourceIndex=order.indexOf(sourceKey);const targetIndex=order.indexOf(targetKey);if(sourceIndex<0||targetIndex<0)return order;const next=[...order];next.splice(sourceIndex,1);next.splice(targetIndex,0,sourceKey);return next})}
-  const checkInLabel=unknownCheckIn?'Unknown check-in':openEndedAge?`${minAge}+ days ago`:minAge>0?`${minAge}–${maxAge} days ago`:maxAge<180?`within ${maxAge} days`:'within 180+ days';
 
   return <>
     {isDevices&&<div className="deviceFilterShell"><div className="deviceFilterTop"><div><strong>Explore devices</strong><span>{sorted.length.toLocaleString()} of {rows.length.toLocaleString()} devices</span></div><div><button className="tableExport deviceTopExport" onClick={exportCsv}><span>↓</span> Export CSV</button></div></div><div className="deviceFilterPanel">
@@ -154,10 +116,10 @@ export default function SmartTable<T>({rows,columns,rowKey,exportName,onRowClick
       <MultiSelect label="Encryption" values={encryptionValues} selected={encryptionsSelected} onChange={setEncryptionsSelected} allLabel="All states"/>
       <MultiSelect label="Ownership" values={ownerships} selected={ownershipsSelected} onChange={setOwnershipsSelected} allLabel="All ownership"/>
       <MultiSelect label="Primary user" values={userStateValues} selected={userStatesSelected} onChange={setUserStatesSelected} allLabel="Any"/>
-      <MultiSelect label="Enrollment age" values={enrollmentAgeValues} selected={enrollmentAgeSelected} onChange={setEnrollmentAgeSelected} allLabel="Any age"/>
       <MultiSelect label="Inventory quality" values={inventoryQualityValues} selected={inventoryQualitySelected} onChange={setInventoryQualitySelected} allLabel="All devices"/>
       {platformSpecific&&<MultiSelect className="platformSpecificFilter" label={platformSpecific.label} values={platformSpecificValues} selected={platformSpecificSelected} onChange={setPlatformSpecificSelected} allLabel={platformSpecific.allLabel}/>} 
-      <div className={`ageSlider ${hasCheckInFilter?'hasValue':''}`}><span>Checked in <b>{checkInLabel}</b>{hasCheckInFilter&&<button type="button" className="sliderFilterClear" onClick={()=>applyCheckInBucket()} aria-label="Clear check-in filter" title="Clear check-in filter">×</button>}</span><input aria-label="Checked in within days" type="range" min="1" max="180" value={openEndedAge?180:maxAge} disabled={unknownCheckIn} onChange={e=>{setMinAge(0);setOpenEndedAge(false);setUnknownCheckIn(false);setCheckInBucketLabel('');setMaxAge(Number(e.target.value))}}/><div><small>1 day</small><small>30</small><small>90</small><small>180+</small></div>{checkInBucketLabel&&<small className="ageBucketHint">Dashboard range: {checkInBucketLabel}</small>}</div>
+      <AgeRangeFilter label="Check-in age" range={checkInRange} onChange={setCheckInRange} kind="checkin"/>
+      <AgeRangeFilter label="Enrollment age" range={enrollmentRange} onChange={setEnrollmentRange} kind="enrollment"/>
     </div></div>}
     <div className={`tableToolbar ${isDevices?'deviceTableToolbar':''}`}><div className="tableResultCount"><strong>{sorted.length.toLocaleString()}</strong><span>{isDevices?`of ${rows.length.toLocaleString()} devices${activeFilterCount?` · ${activeFilterCount} filter${activeFilterCount===1?'':'s'} active`:''}`:'items'}</span></div><div className="tableToolbarActions">{isDevices?<>{activeFilterCount>0&&<button className="clearExplorer toolbarClearFilters" onClick={clearFilters}>Clear filters</button>}<button className={`tableExport tableColumns ${columnsOpen?'active':''}`} onClick={()=>setColumnsOpen(v=>!v)}><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="5" height="14" rx="1.2"/><rect x="9.5" y="5" width="5" height="14" rx="1.2"/><rect x="16" y="5" width="5" height="14" rx="1.2"/></svg><span>Columns</span><b>{shownColumns.length}</b></button></>:<><label><span>Rows</span><select value={pageSize} onChange={e=>setPageSize(Number(e.target.value))}>{pageSizes.map(size=><option key={size} value={size}>{size}</option>)}</select></label><button className="tableExport" onClick={exportCsv}><span>↓</span> Export CSV</button></>}</div></div>
     {isDevices&&columnsOpen&&<div className="columnPicker enhancedColumnPicker"><div className="columnPickerIntro"><strong>Columns & export fields</strong><span>Select normalized analyzer fields or original fields from the Intune export. CSV export uses exactly this selection.</span><div><button type="button" onClick={()=>setVisibleKeys(standardColumns.map(c=>c.key))}>Standard only</button><button type="button" onClick={()=>setVisibleKeys(effectiveColumns.map(c=>c.key))}>Select all</button></div></div><div className="columnGroups"><section><header>Standard fields <span>{standardColumns.length}</span></header><div>{standardColumns.map(c=><label key={c.key}><input type="checkbox" checked={visibleKeys.includes(c.key)} onChange={()=>toggleColumn(c.key)}/><span title={c.pickerLabel??c.label}>{c.pickerLabel??c.label}</span></label>)}</div></section><section><header>Original Intune fields <span>{originalColumns.length}</span></header><div className="rawColumnList">{originalColumns.map(c=><label key={c.key}><input type="checkbox" checked={visibleKeys.includes(c.key)} onChange={()=>toggleColumn(c.key)}/><span title={c.label}>{c.label}</span></label>)}</div></section></div></div>}
