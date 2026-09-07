@@ -14,9 +14,12 @@
   overflow:visible!important;
 }
 
-/* Match the divider between filters and results to the existing separators. */
+/* Use only the result-toolbar border as the divider when filters are expanded. */
 .dataCard:has(.deviceFilterShell) .deviceFilterShell.filtersExpanded{
-  border-bottom:1px solid #e6edf5!important;
+  border-bottom:0!important;
+}
+.dataCard:has(.deviceFilterShell) .deviceTableToolbar{
+  border-top:1px solid #e6edf5!important;
 }
 
 /* Wide, flat filter handle hanging just below the panel border. */
