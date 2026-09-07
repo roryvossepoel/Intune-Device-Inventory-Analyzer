@@ -16,17 +16,27 @@
 .smartTable th button>i{margin-left:auto}
 
 .columnDragHandle{
-  display:inline-grid;
-  place-items:center;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   width:18px;
   height:24px;
   flex:0 0 18px;
   margin-left:-4px;
+  padding:0;
+  line-height:1;
   color:#9aadc1;
   cursor:grab;
   border-radius:5px;
   opacity:.55;
   transition:background .15s ease,color .15s ease,opacity .15s ease;
+}
+.columnDragHandle svg{
+  display:block;
+  width:12px;
+  height:12px;
+  margin:0;
+  flex:0 0 auto;
 }
 .smartTable th:hover .columnDragHandle{opacity:1;color:#6482a5}
 .columnDragHandle:hover{background:#dfeeff;color:#1c68ba}
@@ -84,7 +94,7 @@
 body:has(.smartTable th.columnDragging){cursor:grabbing}
 body:has(.smartTable th.columnDragging) .smartTable thead th{cursor:grabbing}
 
-.deviceFloatingHeader .columnDragHandle{display:inline-grid!important;opacity:.55}
+.deviceFloatingHeader .columnDragHandle{display:inline-flex!important;opacity:.55}
 .deviceFloatingHeader .smartTable th button{justify-content:flex-start}
 .deviceFloatingHeader th:hover .columnDragHandle{opacity:1;color:#6482a5}
 
