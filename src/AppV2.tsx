@@ -101,14 +101,14 @@ export default function AppV2(){
     {key:'checkin',label:'Last check-in',value:d=>d.lastCheckIn||'',render:d=><time dateTime={d.lastCheckIn||undefined} title={d.lastCheckIn||undefined}>{formatDateTime(d.lastCheckIn)}</time>}
   ];
 
-  const nav:[View,string][]=[['overview','Dashboard'],['devices','Devices'],['reports','Reports'],['faq','FAQ']];
+  const nav:[View,string][]=[['overview','Dashboard'],['devices','Device Explorer'],['reports','Reports'],['faq','FAQ']];
   const overviewTitle=activePlatform?`${dashboardPlatformLabel(activePlatform)} dashboard`:'Inventory dashboard';
   const overviewDescription=platformsSelected.length===0
     ?`Health, composition, lifecycle and management insights across ${formatNumber(data?.devices.length??0)} managed devices.`
     :platformsSelected.length===1
       ?`Health, composition, lifecycle and management insights across ${formatNumber(base.length)} ${dashboardPlatformLabel(activePlatform!)} devices.`
       :`Health, composition, lifecycle and management insights across ${formatNumber(base.length)} managed devices in ${platformsSelected.length} selected platforms.`;
-  const pageTitle=view==='overview'?overviewTitle:view==='devices'?'Devices':view==='reports'?'Reports':'FAQ';
+  const pageTitle=view==='overview'?overviewTitle:view==='devices'?'Device Explorer':view==='reports'?'Reports':'FAQ';
   const pageDescription=view==='overview'?overviewDescription:view==='devices'?'Search and inspect every device in the imported inventory.':'Prepare management-ready exports and summaries from the current inventory.';
 
   return <div className="app">
@@ -126,7 +126,7 @@ export default function AppV2(){
       <LandingContent/>
     </main>:<main className="workspace dashboardWorkspace">
       {demoMode&&<div className="demoBanner"><span>Demo inventory</span><strong>You're exploring fictional data.</strong><button onClick={()=>input.current?.click()}>Open your own export</button></div>}
-      <section className="pageHead dashboardHead"><div>{view!=='overview'&&<span className="eyebrow">{view.toUpperCase()}</span>}<h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view==='overview'?<DashboardPlatformFilter platforms={platforms} selected={platformsSelected} onChange={values=>{setPlatformsSelected(values);setFilter(null)}}/>:view==='devices'?<Search value={query} setValue={setQuery}/>:null}</section>
+      <section className="pageHead dashboardHead"><div>{view!=='overview'&&<span className="eyebrow">{view==='devices'?'DEVICE EXPLORER':view.toUpperCase()}</span>}<h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view==='overview'?<DashboardPlatformFilter platforms={platforms} selected={platformsSelected} onChange={values=>{setPlatformsSelected(values);setFilter(null)}}/>:view==='devices'?<Search value={query} setValue={setQuery}/>:null}</section>
       {view==='overview'&&<Overview devices={base} allDevices={platformsSelected.length?base:data.devices} total={base.length} lifecycle={lifecycle} compliant={compliant} noncompliant={noncompliant} grace={grace} stale={stale} compliance={compliance} platformsSelected={platformsSelected} activePlatform={activePlatform} drill={drill}/>} 
       {view==='devices'&&<DataCard title="Device inventory" subtitle=""><SmartTable rows={deviceRows} columns={deviceColumns} rowKey={device=>device.id} exportName="intune-devices" onRowClick={setSelected} initialFilters={deviceInitialFilters} onClearFilters={()=>{setPlatformsSelected([]);setFilter(null)}} searchQuery={query} onClearSearch={()=>setQuery('')}/></DataCard>}
       {view==='reports'&&<section className="reportsPlaceholder"><div className="reportsIcon">▤</div><h2>Management reports</h2><p>PDF and PowerPoint reporting will be built here using the currently loaded inventory. The report engine will remain fully local in the browser.</p><span>Planned: executive summary · platform overview · compliance · lifecycle · hardware</span></section>}
