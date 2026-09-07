@@ -24,7 +24,7 @@ const displayOsVersion=(device:Device)=>describeOsVersion(intelligencePlatform(d
 const countBy=(devices:Device[],selector:(device:Device)=>string)=>Object.entries(devices.reduce<Record<string,number>>((acc,device)=>{const value=selector(device);acc[value]=(acc[value]??0)+1;return acc},{})).sort((a,b)=>b[1]-a[1]) as [string,number][];
 
 type View='overview'|'devices'|'reports'|'faq';
-type Filter={field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption';label:string;value:string}|null;
+type Filter={field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality';label:string;value:string}|null;
 
 export default function AppV2(){
   const [data,setData]=useState<ImportResult|null>(null);
@@ -74,18 +74,21 @@ export default function AppV2(){
 
   const deviceInitialFilters=useMemo<DeviceTableInitialFilters>(()=>{
     const initial:DeviceTableInitialFilters={};
-    if(activePlatform)initial.platform=platformLabel[activePlatform]||activePlatform;
+    if(platformsSelected.length)initial.platforms=platformsSelected.map(platform=>platformLabel[platform]||platform);
     if(!filter)return initial;
     if(filter.field==='compliance')initial.compliance=filter.value;
     if(filter.field==='osVersion')initial.osVersion=filter.value;
     if(filter.field==='manufacturer')initial.manufacturer=filter.value;
     if(filter.field==='model')initial.model=filter.value;
+    if(filter.field==='checkInAge')initial.checkInAge=filter.value;
+    if(filter.field==='enrollmentAge')initial.enrollmentAge=filter.value;
+    if(filter.field==='inventoryQuality')initial.inventoryQuality=filter.value;
     if(filter.field==='encryption'){
       const value=filter.value.toLowerCase();
       initial.encryption=['false','no','0','not encrypted','unencrypted'].includes(value)?'Not encrypted':['true','yes','1','encrypted'].includes(value)?'Encrypted':'Unknown';
     }
     return initial;
-  },[activePlatform,filter]);
+  },[platformsSelected,filter]);
 
   const deviceColumns:SmartColumn<Device>[]=[
     {key:'device',label:'Device',value:d=>d.deviceName||'',render:d=><><strong>{d.deviceName||'—'}</strong><small>{d.serialNumber}</small></>},
