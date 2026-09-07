@@ -100,20 +100,25 @@
   grid-column:1/-1;
 }
 
-/* Windows hardware is a supporting technical summary, not another long ranking.
-   Keep its two coverage metrics compact and close to the architecture bars. */
+/* BIOS/TPM "reported" counts describe export-field coverage rather than useful
+   hardware capability, so omit those tiles from the dashboard. Keep this card
+   focused on the architecture mix and let it size to its actual content. */
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:has(.platformCardLogo-windows){
+  min-height:0;
+  align-self:start;
+}
 .extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:has(.platformCardLogo-windows) .metricTiles{
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  max-width:360px;
-  gap:8px;
-  margin:14px 0 0;
+  display:none;
 }
-.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:has(.platformCardLogo-windows) .metricTile{
-  padding:10px 12px;
+
+/* The old subtitle mentions firmware coverage because those tiles existed.
+   Present the card as the architecture overview it now actually is. */
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:has(.platformCardLogo-windows) .dashboardCardHead p{
+  font-size:0;
 }
-.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:has(.platformCardLogo-windows) .metricTile strong{
-  font-size:18px;
-  margin-top:2px;
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:has(.platformCardLogo-windows) .dashboardCardHead p:after{
+  content:"Processor architecture across Windows devices";
+  font-size:12px;
 }
 
 @media(max-width:760px){
