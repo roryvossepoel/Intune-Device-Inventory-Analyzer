@@ -14,15 +14,16 @@
   overflow:visible!important;
 }
 
-/* Wide, flat filter handle hanging below the panel border. */
+/* Wide, flat filter handle hanging just below the panel border. */
 .dataCard:has(.deviceFilterShell) .deviceFilterToggle{
   width:64px!important;
   height:18px!important;
   left:50%!important;
   transform:translateX(-50%)!important;
-  bottom:-18px!important;
+  bottom:-19px!important;
   border-radius:0 0 7px 7px!important;
   box-shadow:0 1px 4px rgba(22,61,109,.04)!important;
+  color:#315b85!important;
 }
 .dataCard:has(.deviceFilterShell) .deviceFilterToggle svg{
   width:12px!important;
