@@ -4,7 +4,7 @@ import EncryptionCard, { securityAttention } from './SecurityInsights';
 import { getWindowsIntelligence } from './deviceIntelligence';
 import type { Device } from './types';
 
-type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption';
+type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality';
 type Drill=(field:DrillField,label:string,value:string)=>void;
 type Row=[string,number];
 type SecurityTone='good'|'warn'|'bad';
@@ -163,9 +163,9 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
 
     <DashboardSection icon="activity" title="Inventory & Activity" subtitle="Inventory freshness, device activity and data-quality signals.">
       <div className="extendedInsightGrid inventoryActivityGrid">
-        <Card title="Check-in age" subtitle="Time since last Intune check-in"><Distribution rows={staleBuckets} total={total}/></Card>
-        <Card title="Enrollment age" subtitle="Time since enrollment in Intune"><Distribution rows={enrollmentBuckets} total={total}/></Card>
-        <Card title="Inventory quality" subtitle="Duplicate and incomplete inventory signals"><div className="inventoryQualitySummary"><strong>{fmt(inventoryQualityAffected)}</strong><span>{inventoryQualityAffected===1?'device needs':'devices need'} data-quality review</span></div><SignalList rows={inventoryQuality.map(([label,value])=>[value,label,value?'warn':'neutral',undefined])}/></Card>
+        <Card title="Check-in age" subtitle="Time since last Intune check-in"><Distribution rows={staleBuckets} total={total} onClick={label=>drill('checkInAge','Check-in age',label)}/></Card>
+        <Card title="Enrollment age" subtitle="Time since enrollment in Intune"><Distribution rows={enrollmentBuckets} total={total} onClick={label=>drill('enrollmentAge','Enrollment age',label)}/></Card>
+        <Card title="Inventory quality" subtitle="Duplicate and incomplete inventory signals"><div className="inventoryQualitySummary"><strong>{fmt(inventoryQualityAffected)}</strong><span>{inventoryQualityAffected===1?'device needs':'devices need'} data-quality review</span></div><SignalList rows={inventoryQuality.map(([label,value])=>[value,label,value?'warn':'neutral',value?()=>drill('inventoryQuality','Inventory quality',label):undefined])}/></Card>
       </div>
     </DashboardSection>
 
