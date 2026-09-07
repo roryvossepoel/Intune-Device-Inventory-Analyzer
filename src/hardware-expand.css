@@ -1,0 +1,33 @@
+/* Manufacturers and Models stay compact by default and expand on demand. */
+.dashboardCard[data-hardware-collapsible="true"]:not([data-hardware-expanded="true"]) .distributionList > :nth-child(n+6){
+  display:none!important;
+}
+.hardwareExpandToggle{
+  width:100%;
+  margin:6px 0 0;
+  padding:9px 10px;
+  border:1px solid #dce6f2;
+  border-radius:9px;
+  background:#f8fbff;
+  color:#2b5f99;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+}
+.hardwareExpandToggle:hover{
+  background:#f1f7ff;
+  border-color:#bfd5ec;
+}
+.hardwareExpandToggle svg{
+  width:14px;
+  height:14px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
