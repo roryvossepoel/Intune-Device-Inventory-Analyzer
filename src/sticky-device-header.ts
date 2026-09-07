@@ -74,6 +74,17 @@ function finishDrag(entry:StickyEntry){
   requestAnimationFrame(scheduleUpdate);
 }
 
+function sortFromSticky(entry:StickyEntry,target:Element){
+  if(entry.draggingKey||target.closest('.columnDragHandle'))return;
+  const key=columnKey(target);
+  const originalButton=originalCell(entry,key)?.querySelector<HTMLButtonElement>('button')??null;
+  if(!originalButton)return;
+  const props=reactProps(originalButton);
+  if(props?.onClick)props.onClick();
+  else originalButton.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+  requestAnimationFrame(()=>requestAnimationFrame(scheduleUpdate));
+}
+
 function copyHeader(entry:StickyEntry){
   const {head,cloneTable,table}=entry;
   const originalCells=Array.from(head.querySelectorAll<HTMLTableCellElement>('tr:first-child > th'));
@@ -156,17 +167,17 @@ function addTable(wrap:HTMLElement){
   const entry:StickyEntry={wrap,table,head,floating,track,cloneTable,draggingKey:null};
   entries.set(wrap,entry);
 
-  floating.addEventListener('click',event=>{
-    if(entry.draggingKey){event.preventDefault();return;}
-    const target=event.target as Element;
-    if(target.closest('.columnDragHandle'))return;
-    const key=columnKey(target);
-    const originalButton=originalCell(entry,key)?.querySelector<HTMLButtonElement>('button')??null;
-    const props=reactProps(originalButton);
-    if(props?.onClick)props.onClick();
-    else originalButton?.click();
-    requestAnimationFrame(()=>requestAnimationFrame(scheduleUpdate));
+  /* Pointer-up is used instead of click because the floating header is cloned
+     and refreshed while scrolling. This keeps sorting reliable on the sticky
+     copy without changing the existing React sort implementation. */
+  floating.addEventListener('pointerup',event=>{
+    if(event.button!==0)return;
+    sortFromSticky(entry,event.target as Element);
   });
+
+  /* Suppress the subsequent synthetic click; pointerup above already handled
+     sorting and drag handles are excluded from sortFromSticky. */
+  floating.addEventListener('click',event=>event.preventDefault());
 
   floating.addEventListener('dragstart',event=>{
     const target=event.target as Element;
