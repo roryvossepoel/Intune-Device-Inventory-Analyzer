@@ -14,9 +14,9 @@
   overflow:visible!important;
 }
 
-/* Slightly stronger divider between filters and results. */
+/* Match the divider between filters and results to the existing separators. */
 .dataCard:has(.deviceFilterShell) .deviceFilterShell.filtersExpanded{
-  border-bottom:2px solid #e6edf5!important;
+  border-bottom:1px solid #e6edf5!important;
 }
 
 /* Wide, flat filter handle hanging just below the panel border. */
