@@ -1,0 +1,73 @@
+/* Hardware section layout and distribution cleanup.
+   The hardware grid is the only two-column insight grid whose first three
+   cards are generic cards before platform-specific hardware cards. */
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard)){
+  align-items:stretch;
+}
+
+/* Pair the conceptual cards: Device types + Windows hardware, then Manufacturers + Models. */
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .dashboardCard:first-child{
+  order:1;
+  grid-column:1;
+}
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:has(.platformCardLogo-windows){
+  order:2;
+  grid-column:2;
+}
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .dashboardCard:nth-child(2):not(.platformSpecificCard){
+  order:3;
+  grid-column:1;
+}
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .dashboardCard:nth-child(3):not(.platformSpecificCard){
+  order:4;
+  grid-column:2;
+}
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:not(:has(.platformCardLogo-windows)){
+  order:5;
+}
+
+/* If Windows hardware is not part of the current platform scope, let Device types
+   use the first row and keep Manufacturers + Models paired below it. */
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard)):not(:has(> .platformSpecificCard .platformCardLogo-windows))> .dashboardCard:first-child{
+  grid-column:1/-1;
+}
+
+/* The bars already encode the distribution. Remove the duplicate color dots. */
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard)) .distributionDot{
+  display:none;
+}
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard)) .distributionList>div{
+  grid-template-columns:minmax(0,1fr) auto 48px;
+}
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard)) .distributionList>div>i{
+  grid-column:1/-1;
+}
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard)) .distributionList>button.distributionAction{
+  grid-template-columns:minmax(0,1fr) auto 48px;
+}
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard)) .distributionList>button.distributionAction>i{
+  grid-column:1/-1;
+}
+
+/* Windows hardware is a supporting technical summary, not another long ranking.
+   Keep its two coverage metrics compact and close to the architecture bars. */
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:has(.platformCardLogo-windows) .metricTiles{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  max-width:360px;
+  gap:8px;
+  margin:14px 0 0;
+}
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:has(.platformCardLogo-windows) .metricTile{
+  padding:10px 12px;
+}
+.extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard:has(.platformCardLogo-windows) .metricTile strong{
+  font-size:18px;
+  margin-top:2px;
+}
+
+@media(max-width:760px){
+  .extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .dashboardCard,
+  .extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .platformSpecificCard{
+    grid-column:1/-1!important;
+  }
+}
