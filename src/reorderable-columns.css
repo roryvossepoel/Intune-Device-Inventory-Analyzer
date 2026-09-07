@@ -32,16 +32,16 @@
 .columnDragHandle:hover{background:#dfeeff;color:#1c68ba}
 .columnDragHandle:active{cursor:grabbing}
 
-.smartTable th.columnDragging{opacity:.38}
+.smartTable th.columnDragging{opacity:.48}
 .smartTable th.columnDragging>button{
-  background:#eaf3ff!important;
+  background:#eef5fd!important;
   color:#7890ac!important;
 }
 
 /*
-  Keep all drop visuals inside the header button. This avoids the oversized
-  viewport-spanning indicator that can occur with absolutely positioned
-  pseudo-elements on sticky table cells / cloned sticky headers.
+  Drop feedback stays inside the header button so it remains safe with the
+  sticky/cloned header. Keep it deliberately restrained: one insertion line,
+  a small amount of breathing room and a very light destination tint.
 */
 .smartTable th.columnDropTarget{
   z-index:7;
@@ -49,44 +49,37 @@
 }
 .smartTable th.columnDropTarget>button{
   position:relative;
-  background:#f7fbff!important;
-  box-shadow:inset 0 0 0 1px rgba(47,126,230,.18);
+  background:#f8fbff!important;
 }
 
 /* Moving left: source lands before the hovered column. */
 .smartTable thead tr:has(th.columnDropTarget ~ th.columnDragging) th.columnDropTarget>button{
-  padding-left:50px!important;
+  padding-left:30px!important;
   background:
-    linear-gradient(90deg,rgba(47,126,230,.10) 0 36px,#f7fbff 36px)!important;
-  box-shadow:
-    inset 4px 0 #2f7ee6,
-    inset 0 0 0 1px rgba(47,126,230,.18);
+    linear-gradient(90deg,rgba(47,126,230,.055) 0 20px,#f8fbff 20px)!important;
 }
 
 /* Moving right: source lands after the hovered column. */
 .smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget>button{
-  padding-right:50px!important;
+  padding-right:30px!important;
   background:
-    linear-gradient(90deg,#f7fbff calc(100% - 36px),rgba(47,126,230,.10) calc(100% - 36px))!important;
-  box-shadow:
-    inset -4px 0 #2f7ee6,
-    inset 0 0 0 1px rgba(47,126,230,.18);
+    linear-gradient(90deg,#f8fbff calc(100% - 20px),rgba(47,126,230,.055) calc(100% - 20px))!important;
 }
 
-/* Short, contained insertion marker inside the header itself. */
+/* One compact insertion marker. */
 .smartTable th.columnDropTarget>button::after{
   content:"";
   position:absolute;
-  top:7px;
-  bottom:7px;
-  width:4px;
+  top:8px;
+  bottom:8px;
+  width:3px;
   border-radius:999px;
   background:#2f7ee6;
-  box-shadow:0 0 0 2px rgba(47,126,230,.10);
+  box-shadow:0 0 0 1px rgba(47,126,230,.08);
   pointer-events:none;
 }
-.smartTable thead tr:has(th.columnDropTarget ~ th.columnDragging) th.columnDropTarget>button::after{left:16px}
-.smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget>button::after{right:16px}
+.smartTable thead tr:has(th.columnDropTarget ~ th.columnDragging) th.columnDropTarget>button::after{left:9px}
+.smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget>button::after{right:9px}
 
 body:has(.smartTable th.columnDragging){cursor:grabbing}
 body:has(.smartTable th.columnDragging) .smartTable thead th{cursor:grabbing}
@@ -97,6 +90,6 @@ body:has(.smartTable th.columnDragging) .smartTable thead th{cursor:grabbing}
 
 @media(max-width:760px){
   .columnDragHandle{width:16px;flex-basis:16px}
-  .smartTable thead tr:has(th.columnDropTarget ~ th.columnDragging) th.columnDropTarget>button{padding-left:44px!important}
-  .smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget>button{padding-right:44px!important}
+  .smartTable thead tr:has(th.columnDropTarget ~ th.columnDragging) th.columnDropTarget>button{padding-left:27px!important}
+  .smartTable thead tr:has(th.columnDragging ~ th.columnDropTarget) th.columnDropTarget>button{padding-right:27px!important}
 }
