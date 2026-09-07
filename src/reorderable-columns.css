@@ -8,7 +8,7 @@
 .columnDragHandle:hover{background:#dfeeff;color:#1c68ba}
 .columnDragHandle:active{cursor:grabbing}
 .smartTable th.columnDragging{opacity:.52}
-.smartTable th.columnDropTarget::before{content:"";position:absolute;z-index:8;left:-1px;top:5px;bottom:5px;width:3px;border-radius:3px;background:#2f7ee6;box-shadow:0 0 0 2px rgba(47,126,230,.08)}
+.smartTable th.columnDropTarget{box-shadow:inset 3px 0 #2f7ee6!important}
 body:has(.smartTable th.columnDragging){cursor:grabbing}
 .deviceFloatingHeader .columnDragHandle{display:inline-grid!important;opacity:.55}
 .deviceFloatingHeader .smartTable th button{justify-content:flex-start}
