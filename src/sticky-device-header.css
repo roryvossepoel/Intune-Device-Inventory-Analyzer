@@ -4,6 +4,46 @@
   top:auto!important;
 }
 
+/* Keep original and floating headers on exactly the same vertical rhythm. */
+.dataCard:has(.deviceFilterShell) .smartTable thead th,
+.deviceFloatingTable thead th{
+  height:44px!important;
+  min-height:44px!important;
+  vertical-align:middle!important;
+  box-sizing:border-box;
+}
+.dataCard:has(.deviceFilterShell) .smartTable thead th>button,
+.deviceFloatingTable thead th>button{
+  height:44px!important;
+  min-height:44px!important;
+  padding:0 14px!important;
+  box-sizing:border-box;
+  display:flex!important;
+  align-items:center!important;
+  line-height:1!important;
+}
+.dataCard:has(.deviceFilterShell) .smartTable thead th>button>span,
+.deviceFloatingTable thead th>button>span,
+.dataCard:has(.deviceFilterShell) .smartTable thead th>button>i,
+.deviceFloatingTable thead th>button>i{
+  display:inline-flex;
+  align-items:center;
+  line-height:1!important;
+}
+/* Sorted state changes color only; it must not affect header geometry. */
+.dataCard:has(.deviceFilterShell) .smartTable thead th.sorted,
+.deviceFloatingTable thead th.sorted{
+  height:44px!important;
+  min-height:44px!important;
+}
+.dataCard:has(.deviceFilterShell) .smartTable thead th.sorted>button,
+.deviceFloatingTable thead th.sorted>button{
+  height:44px!important;
+  min-height:44px!important;
+  padding-top:0!important;
+  padding-bottom:0!important;
+}
+
 .deviceFloatingHeader{
   position:fixed;
   z-index:29;
