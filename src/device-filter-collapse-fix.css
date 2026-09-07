@@ -14,6 +14,11 @@
   overflow:visible!important;
 }
 
+/* Slightly stronger divider between filters and results. */
+.dataCard:has(.deviceFilterShell) .deviceFilterShell.filtersExpanded{
+  border-bottom:2px solid #e6edf5!important;
+}
+
 /* Wide, flat filter handle hanging just below the panel border. */
 .dataCard:has(.deviceFilterShell) .deviceFilterToggle{
   width:64px!important;
