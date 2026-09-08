@@ -50,6 +50,7 @@ import './header-reference.css';
 import './device-filter-collapse-fix.css';
 import './header-reference';
 import './dashboard-unity-polish.css';
+import './mobile-hardware-icon-fix.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
