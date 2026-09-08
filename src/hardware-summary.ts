@@ -72,18 +72,13 @@ function overallMarkup(sources:ArchitectureSource[]){
 }
 
 function platformMarkup(source:ArchitectureSource){
-  const rows=source.rows;
   const header=`<header><strong>${source.platform}</strong><span>${source.total.toLocaleString()} ${source.total===1?'device':'devices'}</span></header>`;
-  if(rows.length===1){
-    const row=rows[0];
-    return `<section class="architecturePlatformBreakdown">${header}<div class="architectureOnlyLine"><span title="${escapeHtml(architectureTooltip(row.label))}">${escapeHtml(row.label)} only</span><strong>${row.count.toLocaleString()}</strong></div></section>`;
-  }
-  const values=rows.map(row=>`<div class="architecturePlatformValue"><span title="${escapeHtml(architectureTooltip(row.label))}">${escapeHtml(row.label)}</span><strong>${row.count.toLocaleString()}</strong><small>${row.percent.toFixed(1)}%</small></div>`).join('');
+  const values=source.rows.map(row=>`<div class="architecturePlatformValue"><span title="${escapeHtml(architectureTooltip(row.label))}">${escapeHtml(row.label)}</span><strong>${row.count.toLocaleString()}</strong><small>${row.percent.toFixed(1)}%</small></div>`).join('');
   return `<section class="architecturePlatformBreakdown">${header}<div class="architecturePlatformValues">${values}</div></section>`;
 }
 
 function architectureMarkup(sources:ArchitectureSource[]){
-  return `<div class="architectureOverviewBody">${overallMarkup(sources)}<div class="architectureByPlatform"><div class="architectureByPlatformTitle">By platform</div>${sources.map(platformMarkup).join('')}</div></div>`;
+  return `<div class="architectureOverviewBody">${overallMarkup(sources)}<div class="architectureByPlatform"><div class="architectureByPlatformTitle">By platform</div><div class="architecturePlatformGrid">${sources.map(platformMarkup).join('')}</div></div></div>`;
 }
 
 function ensureArchitectureCard(grid:HTMLElement,sources:ArchitectureSource[]){
