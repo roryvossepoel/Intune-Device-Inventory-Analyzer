@@ -26,6 +26,7 @@ import './hardware-expand.css';
 import './hardware-expand';
 import './hardware-summary.css';
 import './hardware-summary';
+import './percentage-polish';
 import './landing-story.css';
 import './faq.css';
 import './homepage-polish.css';
