@@ -63,9 +63,9 @@
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20V9l5-3v4l5-3v4l6-3v12H4Z'/%3E%3Cpath d='M8 14h2m3 0h2m3 0h1M8 17h2m3 0h2m3 0h1'/%3E%3C/svg%3E");
 }
 
-/* Models: product catalogue / model grid. */
+/* Models: concrete device model / product tag. */
 .extendedInsightGrid.twoInsightGrid:has(> .dashboardCard:nth-child(3):not(.platformSpecificCard))> .dashboardCard:nth-child(3):not(.platformSpecificCard)>.dashboardCardHead:before{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4.5' width='6' height='6' rx='1.2'/%3E%3Crect x='14' y='4.5' width='6' height='6' rx='1.2'/%3E%3Crect x='4' y='13.5' width='6' height='6' rx='1.2'/%3E%3Crect x='14' y='13.5' width='6' height='6' rx='1.2'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='12' height='9' rx='1.6'/%3E%3Cpath d='M7 18h5m-2.5-4v4'/%3E%3Cpath d='M16.5 9.5h2.8l1.7 1.7v3.6l-4.5 4.5-3.3-3.3 3.3-3.3V9.5Z'/%3E%3Ccircle cx='18.5' cy='11.5' r='.7'/%3E%3C/svg%3E");
 }
 
 /* Match the Windows badge to those same 38px header anchors. */
