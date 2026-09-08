@@ -4,12 +4,13 @@ import { createDemoInventory } from './demoData';
 import SmartTable from './SmartTable';
 import DashboardSections from './DashboardSections';
 import DashboardPlatformFilter from './DashboardPlatformFilter';
+import HardwareExplorerFilters, { emptyHardwareExplorerFilters, hardwareExplorerFilterMatches } from './HardwareExplorerFilters';
 import LandingContent from './LandingContent';
 import FaqPage from './FaqPage';
 import DeviceDetailPanel from './DeviceDetail';
 import { describeOsVersion } from './deviceIntelligence';
 import { lifecycleRiskSummary } from './lifecycleRisk';
-import { appleDeviceFamily, cellularCapability, hardwareType } from './hardwareClassification';
+import type { HardwareExplorerFilterState } from './HardwareExplorerFilters';
 import type { DeviceTableInitialFilters, SmartColumn } from './SmartTable';
 import type { Device, ImportResult } from './types';
 
@@ -35,6 +36,7 @@ export default function AppV2(){
   const [query,setQuery]=useState('');
   const [platformsSelected,setPlatformsSelected]=useState<string[]>([]);
   const [filter,setFilter]=useState<Filter>(null);
+  const [hardwareFilters,setHardwareFilters]=useState<HardwareExplorerFilterState>(()=>emptyHardwareExplorerFilters());
   const [selected,setSelected]=useState<Device|null>(null);
   const [demoMode,setDemoMode]=useState(false);
   const input=useRef<HTMLInputElement>(null);
@@ -42,23 +44,35 @@ export default function AppV2(){
   async function open(file?:File){
     if(!file)return;
     setBusy(true);setError(null);
-    try{setData(await importInventory(file));setDemoMode(false);setView('overview');setPlatformsSelected([]);setFilter(null);setQuery('')}
+    try{setData(await importInventory(file));setDemoMode(false);setView('overview');setPlatformsSelected([]);setFilter(null);setHardwareFilters(emptyHardwareExplorerFilters());setQuery('')}
     catch(error){setError(error instanceof Error?error.message:'The export could not be read.')}
     finally{setBusy(false)}
   }
 
   function openDemo(target:View='overview'){
-    setData(createDemoInventory());setDemoMode(true);setView(target);setPlatformsSelected([]);setFilter(null);setQuery('');window.scrollTo({top:0,behavior:'smooth'});
+    setData(createDemoInventory());setDemoMode(true);setView(target);setPlatformsSelected([]);setFilter(null);setHardwareFilters(emptyHardwareExplorerFilters());setQuery('');window.scrollTo({top:0,behavior:'smooth'});
   }
 
   function navigate(target:View){
-    if(target==='faq'){setView('faq');window.scrollTo({top:0,behavior:'smooth'});return}
+    if(target==='faq'){setFilter(null);setHardwareFilters(emptyHardwareExplorerFilters());setView('faq');window.scrollTo({top:0,behavior:'smooth'});return}
     if(!data){openDemo(target);return}
+    if(target!=='devices'){setFilter(null);setHardwareFilters(emptyHardwareExplorerFilters())}
     setView(target);setQuery('');window.scrollTo({top:0,behavior:'smooth'});
   }
 
   function drill(field:NonNullable<Filter>['field'],label:string,value:string){
-    setFilter({field,label,value});setView('devices');setQuery('');window.scrollTo({top:0,behavior:'smooth'});
+    if(field==='deviceType'||field==='appleDeviceFamily'||field==='cellularCapability'){
+      setFilter(null);
+      setHardwareFilters({
+        deviceTypes:field==='deviceType'?[value]:[],
+        appleFamilies:field==='appleDeviceFamily'?[value]:[],
+        cellularCapabilities:field==='cellularCapability'?[value]:[]
+      });
+    }else{
+      setHardwareFilters(emptyHardwareExplorerFilters());
+      setFilter({field,label,value});
+    }
+    setView('devices');setQuery('');window.scrollTo({top:0,behavior:'smooth'});
   }
 
   const base=useMemo(()=>data?.devices.filter(device=>!platformsSelected.length||platformsSelected.includes(platformKey(device.platform)))??[],[data,platformsSelected]);
@@ -71,12 +85,7 @@ export default function AppV2(){
   const stale=useMemo(()=>base.filter(device=>{const age=daysSince(device.lastCheckIn);return age!==null&&age>30}).length,[base]);
   const lifecycle=useMemo(()=>lifecycleRiskSummary(base),[base]);
   const q=query.trim().toLowerCase();
-  const deviceRows=useMemo(()=>data?.devices.filter(device=>{
-    if(filter?.field==='deviceType'&&hardwareType(device)!==filter.value)return false;
-    if(filter?.field==='appleDeviceFamily'&&appleDeviceFamily(device)!==filter.value)return false;
-    if(filter?.field==='cellularCapability'&&cellularCapability(device)!==filter.value)return false;
-    return !q||[device.deviceName,device.serialNumber,device.userDisplayName,device.userUpn,device.manufacturer,device.model,device.osVersion,device.sourceOS].some(value=>value?.toLowerCase().includes(q));
-  })??[],[data,q,filter]);
+  const deviceRows=useMemo(()=>data?.devices.filter(device=>hardwareExplorerFilterMatches(device,hardwareFilters)&&(!q||[device.deviceName,device.serialNumber,device.userDisplayName,device.userUpn,device.manufacturer,device.model,device.osVersion,device.sourceOS].some(value=>value?.toLowerCase().includes(q))))??[],[data,q,hardwareFilters]);
 
   const deviceInitialFilters=useMemo<DeviceTableInitialFilters>(()=>{
     const initial:DeviceTableInitialFilters={};
@@ -116,7 +125,6 @@ export default function AppV2(){
       :`Health, composition, lifecycle and management insights across ${formatNumber(base.length)} managed devices in ${platformsSelected.length} selected platforms.`;
   const pageTitle=view==='overview'?overviewTitle:view==='devices'?'Device Explorer':view==='reports'?'Reports':'FAQ';
   const pageDescription=view==='overview'?overviewDescription:view==='devices'?'Search and inspect every device in the imported inventory.':'Prepare management-ready exports and summaries from the current inventory.';
-  const hardwareDrillFilter=filter&&(filter.field==='deviceType'||filter.field==='appleDeviceFamily'||filter.field==='cellularCapability')?filter:null;
 
   return <div className="app">
     <header className={`topbar ${!data||view==='faq'?'publicTopbar':''}`}><div className="topbarInner">
@@ -133,9 +141,9 @@ export default function AppV2(){
       <LandingContent/>
     </main>:<main className="workspace dashboardWorkspace">
       {demoMode&&<div className="demoBanner"><span>Demo inventory</span><strong>You're exploring fictional data.</strong><button onClick={()=>input.current?.click()}>Open your own export</button></div>}
-      <section className="pageHead dashboardHead"><div>{view!=='overview'&&<span className="eyebrow">{view==='devices'?'DEVICE EXPLORER':view.toUpperCase()}</span>}<h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view==='overview'?<DashboardPlatformFilter platforms={platforms} selected={platformsSelected} onChange={values=>{setPlatformsSelected(values);setFilter(null)}}/>:view==='devices'?<Search value={query} setValue={setQuery}/>:null}</section>
+      <section className="pageHead dashboardHead"><div>{view!=='overview'&&<span className="eyebrow">{view==='devices'?'DEVICE EXPLORER':view.toUpperCase()}</span>}<h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view==='overview'?<DashboardPlatformFilter platforms={platforms} selected={platformsSelected} onChange={values=>{setPlatformsSelected(values);setFilter(null);setHardwareFilters(emptyHardwareExplorerFilters())}}/>:view==='devices'?<Search value={query} setValue={setQuery}/>:null}</section>
       {view==='overview'&&<Overview devices={base} allDevices={platformsSelected.length?base:data.devices} total={base.length} lifecycle={lifecycle} compliant={compliant} noncompliant={noncompliant} grace={grace} stale={stale} compliance={compliance} platformsSelected={platformsSelected} activePlatform={activePlatform} drill={drill}/>} 
-      {view==='devices'&&<>{hardwareDrillFilter&&<div className="dashboardDrillFilter"><span>Dashboard filter</span><strong>{hardwareDrillFilter.label}: {hardwareDrillFilter.value}</strong><button type="button" onClick={()=>setFilter(null)} aria-label="Clear dashboard filter">×</button></div>}<DataCard title="Device inventory" subtitle=""><SmartTable rows={deviceRows} columns={deviceColumns} rowKey={device=>device.id} exportName="intune-devices" onRowClick={setSelected} initialFilters={deviceInitialFilters} onClearFilters={()=>{setPlatformsSelected([]);setFilter(null)}} searchQuery={query} onClearSearch={()=>setQuery('')}/></DataCard></>}
+      {view==='devices'&&<DataCard title="Device inventory" subtitle=""><HardwareExplorerFilters devices={data.devices} value={hardwareFilters} onChange={setHardwareFilters}/><SmartTable rows={deviceRows} columns={deviceColumns} rowKey={device=>device.id} exportName="intune-devices" onRowClick={setSelected} initialFilters={deviceInitialFilters} onClearFilters={()=>{setPlatformsSelected([]);setFilter(null);setHardwareFilters(emptyHardwareExplorerFilters())}} searchQuery={query} onClearSearch={()=>setQuery('')}/></DataCard>}
       {view==='reports'&&<section className="reportsPlaceholder"><div className="reportsIcon">▤</div><h2>Management reports</h2><p>PDF and PowerPoint reporting will be built here using the currently loaded inventory. The report engine will remain fully local in the browser.</p><span>Planned: executive summary · platform overview · compliance · lifecycle · hardware</span></section>}
     </main>}
 
