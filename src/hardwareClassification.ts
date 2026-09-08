@@ -10,9 +10,16 @@ function rawValue(device:Device,patterns:RegExp[]){
 function platformFamily(platform:string){return platform==='ios'||platform==='ipados'?'applemobile':platform}
 
 export function appleDeviceFamily(device:Device){
-  const signal=`${device.model||''} ${device.sourceOS||''} ${rawValue(device,[/^ProductName$/i,/^Product name$/i])}`.toLowerCase();
-  if(device.platform==='ipados'||signal.includes('ipad'))return 'iPad';
-  if(device.platform==='ios'||signal.includes('iphone'))return 'iPhone';
+  // Intune commonly reports the generic OS value "iOS/iPadOS" for both
+  // families, so sourceOS itself must not be used as an iPad signal.
+  const hardwareSignal=`${device.model||''} ${rawValue(device,[/^ProductName$/i,/^Product name$/i])}`.toLowerCase();
+  if(hardwareSignal.includes('ipad')||device.platform==='ipados')return 'iPad';
+  if(hardwareSignal.includes('iphone')||device.platform==='ios')return 'iPhone';
+
+  // Only use sourceOS when it is an unambiguous family value.
+  const source=(device.sourceOS||'').trim().toLowerCase();
+  if(source==='ipados'||source.startsWith('ipados '))return 'iPad';
+  if(source==='ios'||source.startsWith('ios '))return 'iPhone';
   return 'Unknown';
 }
 
