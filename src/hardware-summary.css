@@ -67,15 +67,16 @@
 [data-hardware-summary-grid="true"]>.hardwareCellularCard .platformCardLogo{width:38px;height:38px;flex:0 0 38px;border-radius:11px}
 [data-hardware-summary-grid="true"]>.hardwareFamilyCard .platformCardLogo svg,
 [data-hardware-summary-grid="true"]>.hardwareCellularCard .platformCardLogo svg{width:21px;height:21px}
-.hardwareDonutLayout{display:grid;grid-template-columns:126px minmax(0,1fr);align-items:center;gap:22px;margin-top:2px;padding:2px 0 1px}
+.hardwareDonutLayout{display:grid;grid-template-columns:126px minmax(0,1fr);align-items:center;gap:16px;margin-top:2px;padding:2px 0 1px}
 .hardwareDonutLayout .donut{width:116px;height:116px;margin:0 auto}
 .hardwareDonutLayout .donut:after{inset:17px}
 .hardwareDonutLayout .donut strong{font-size:18px;letter-spacing:-.35px}
 .hardwareDonutLayout .donut span{font-size:10px}
-.hardwareDonutLayout .distributionList{gap:9px}
-.hardwareDonutLayout .distributionList>div{grid-template-columns:9px minmax(0,1fr) auto 48px!important;gap:9px;padding:4px 0!important}
+.hardwareDonutLayout .distributionList{gap:8px;align-items:flex-start}
+.hardwareDonutLayout .distributionList>div{grid-template-columns:9px minmax(112px,auto) 34px 52px!important;justify-content:start;gap:9px;padding:4px 0!important;width:auto!important;max-width:100%}
 .hardwareDonutLayout .distributionList>div>i{display:none!important}
 .hardwareDonutLayout .distributionDot{display:block!important;width:8px!important;height:8px!important;border-radius:50%!important}
+.hardwareDonutLayout .distributionList .truncate{overflow:visible;text-overflow:clip}
 
 @media(max-width:760px){
   [data-hardware-summary-grid="true"]>.hardwareCardTypes,
@@ -86,4 +87,6 @@
   [data-hardware-summary-grid="true"]>.hardwareCellularCard{grid-column:1/-1!important}
   .architecturePlatformGrid{grid-template-columns:1fr}
   .hardwareDonutLayout{grid-template-columns:1fr;gap:14px}
+  .hardwareDonutLayout .distributionList{align-items:stretch}
+  .hardwareDonutLayout .distributionList>div{grid-template-columns:9px minmax(0,1fr) auto 52px!important;width:100%!important}
 }
