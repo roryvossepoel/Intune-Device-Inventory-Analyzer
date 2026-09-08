@@ -48,11 +48,9 @@ function MultiSelect({label,values,selected,onChange,allLabel}:{label:string;val
 
 export default function HardwareExplorerFilters({devices,value,onChange}:{devices:Device[];value:HardwareExplorerFilterState;onChange:(value:HardwareExplorerFilterState)=>void}){
   const deviceTypes=useMemo(()=>unique(devices.map(hardwareType)),[devices]);
-  const appleFamilies=useMemo(()=>unique(devices.filter(isAppleMobile).map(appleDeviceFamily)),[devices]);
+  const appleFamilies=useMemo(()=>unique(devices.filter(isAppleMobile).map(appleDeviceFamily).filter(value=>value!=='Unknown')),[devices]);
   const cellularCapabilities=useMemo(()=>unique(devices.filter(isMobile).map(cellularCapability)),[devices]);
-  const active=value.deviceTypes.length+value.appleFamilies.length+value.cellularCapabilities.length;
   return <section className="hardwareFixedFilters" aria-label="Hardware filters">
-    <div className="hardwareFixedFiltersHead"><div><strong>Hardware filters</strong><span>Persistent inventory filters for device form factor and mobile hardware.</span></div>{active>0&&<button type="button" onClick={()=>onChange(emptyHardwareExplorerFilters())}>Clear hardware filters</button>}</div>
     <div className="deviceFilterPanel hardwareFixedFilterPanel">
       <MultiSelect label="Device type" values={deviceTypes} selected={value.deviceTypes} onChange={deviceTypes=>onChange({...value,deviceTypes})} allLabel="All device types"/>
       {appleFamilies.length>0&&<MultiSelect label="Apple device family" values={appleFamilies} selected={value.appleFamilies} onChange={appleFamilies=>onChange({...value,appleFamilies})} allLabel="All Apple families"/>}
