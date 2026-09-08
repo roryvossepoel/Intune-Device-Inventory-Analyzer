@@ -11,7 +11,7 @@ type SecurityTone='good'|'warn'|'bad';
 
 const platformLabel:Record<string,string>={windows:'Windows',android:'Android',applemobile:'iOS/iPadOS',macos:'macOS',linux:'Linux',unknown:'Unknown'};
 const fmt=(n:number)=>n.toLocaleString();
-const pct=(n:number,total:number)=>total?`${(n/total*100).toFixed(1)}%`:'0.0%';
+const pct=(n:number,total:number)=>{const value=total?n/total*100:0;const rounded=Math.round(value*10)/10;return `${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`};
 const clean=(v:string|null|undefined)=>v?.trim()||'Unknown';
 const platformKey=(value:string)=>value==='ios'||value==='ipados'?'applemobile':value;
 
@@ -58,7 +58,26 @@ function androidMode(device:Device){
   if(/^aosp/i.test(value))return value.replace(/^AOSP\s*/i,'AOSP ');
   return value==='Android'?'Android / Unknown':value;
 }
-function appleDeviceFamily(device:Device){const value=`${device.sourceOS||''} ${device.model||''}`.toLowerCase();if(value.includes('ipad'))return 'iPad';if(value.includes('iphone'))return 'iPhone';return 'Unknown'}
+function appleDeviceFamily(device:Device){
+  if(device.platform==='ipados')return 'iPad';
+  if(device.platform==='ios')return 'iPhone';
+  const value=`${device.model||''} ${rawValue(device,[/^ProductName$/i,/^Product name$/i])}`.toLowerCase();
+  if(value.includes('ipad'))return 'iPad';
+  if(value.includes('iphone'))return 'iPhone';
+  return 'Unknown';
+}
+function cellularCapability(device:Device){
+  const technology=rawValue(device,[/^CellularTechnology$/i,/^Cellular technology$/i]).trim().toLowerCase();
+  const identifier=rawValue(device,[/^IMEI$/i,/^EID$/i,/^ICCID$/i,/^MEID$/i,/^Phone number$/i,/^PhoneNumber$/i]);
+  if(identifier)return 'Cellular capable';
+  if(technology){
+    if(['none','no','false','wifi','wi-fi','wifi only','wi-fi only','not supported','not applicable','n/a'].includes(technology))return 'Wi-Fi only';
+    if(technology==='unknown')return 'Unknown';
+    return 'Cellular capable';
+  }
+  if(device.platform==='ios'||appleDeviceFamily(device)==='iPhone')return 'Cellular capable';
+  return 'Unknown';
+}
 function supervision(device:Device){const value=rawValue(device,[/^Supervised$/i]);if(/^true$/i.test(value))return 'Supervised';if(/^false$/i.test(value))return 'Not supervised';return 'Unknown'}
 
 function platformDevices(allDevices:Device[],selectedPlatform:string|null,target:string,currentScope:Device[]){
@@ -76,6 +95,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const apple=platformDevices(allDevices,platform,'applemobile',devices);
   const macos=platformDevices(allDevices,platform,'macos',devices);
   const linux=platformDevices(allDevices,platform,'linux',devices);
+  const mobile=[...apple,...android];
 
   const staleBuckets:Row[]=[
     ['0–7 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age<=7}).length],
@@ -143,6 +163,8 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const androidModes=countValues(android.map(androidMode));
 
   const appleFamilies=countValues(apple.map(appleDeviceFamily));
+  const cellularRows=countValues(mobile.map(cellularCapability));
+  const cellularCapable=cellularRows.find(([label])=>label==='Cellular capable')?.[1]??0;
   const appleSupervision=countValues(apple.map(supervision));
   const appleCert=certificateBuckets(apple);
   const macArch=countValues(macos.map(architecture));
@@ -175,7 +197,8 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
         <Card title="Manufacturers" subtitle="Largest device vendors in the current scope"><Distribution rows={manufacturers} total={total} onClick={label=>drill('manufacturer','Manufacturer',label)}/></Card>
         <Card title="Models" subtitle="Most common reported models in the current scope"><Distribution rows={models} total={total} onClick={label=>drill('model','Model',label)}/></Card>
         {windows.length>0&&<PlatformCard platform="windows" title="Windows hardware" subtitle="Architecture and firmware inventory coverage"><Distribution rows={windowsArch} total={windows.length}/><div className="metricTiles"><Metric label="BIOS reported" value={fmt(bios)}/><Metric label="TPM reported" value={fmt(tpm)}/></div></PlatformCard>}
-        {apple.length>0&&<PlatformCard platform="applemobile" title="iOS/iPadOS device family" subtitle="iPhone and iPad distribution"><Distribution rows={appleFamilies} total={apple.length}/></PlatformCard>}
+        {apple.length>0&&<PlatformCard platform="applemobile" title="iOS/iPadOS device family" subtitle="iPhone and iPad distribution"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleFamilies} center={fmt(apple.length)} label="devices"/><Distribution rows={appleFamilies} total={apple.length}/></div></PlatformCard>}
+        {mobile.length>0&&<PlatformCard platform="cellular" title="Cellular capability" subtitle="Cellular-capable vs Wi-Fi-only mobile devices"><div className="hardwareDonutLayout"><Donut total={mobile.length} items={cellularRows} center={pct(cellularCapable,mobile.length)} label="cellular"/><Distribution rows={cellularRows} total={mobile.length}/></div></PlatformCard>}
         {macos.length>0&&<PlatformCard platform="macos" title="macOS architecture" subtitle="Apple Silicon and Intel architecture reported by inventory"><Distribution rows={macArch} total={macos.length}/></PlatformCard>}
         {linux.length>0&&<PlatformCard platform="linux" title="Linux architecture" subtitle="Reported processor architecture"><Distribution rows={linuxArch} total={linux.length}/></PlatformCard>}
       </div>
@@ -225,4 +248,4 @@ function Distribution({rows,total,onClick}:{rows:Row[];total:number;onClick?:(la
 function Metric({label,value}:{label:string;value:string}){return <div className="metricTile"><span>{label}</span><strong>{value}</strong></div>}
 function SignalList({rows}:{rows:[number,string,string,(()=>void)|undefined][]}){const visible=rows.filter(([n])=>n>0);return <div className="platformSignalList">{visible.length?visible.map(([n,label,tone,onClick])=>onClick?<button type="button" key={label} className={`${tone} signalAction`} onClick={onClick}><span>{label}</span><strong>{fmt(n)}</strong></button>:<div key={label} className={tone}><span>{label}</span><strong>{fmt(n)}</strong></div>):<div className="clear"><span>No attention signals detected in this scope</span><strong>✓</strong></div>}</div>}
 function Donut({total,items,center,label}:{total:number;items:Row[];center:string;label:string}){let cursor=0;const stops=items.map(([,n],i)=>{const start=cursor;cursor+=total?n/total*100:0;return `var(--chart-${i%6}) ${start}% ${cursor}%`});return <div className="donut" style={{background:`conic-gradient(${stops.join(',')||'#e7eef7 0 100%'})`}}><div><strong>{center}</strong><span>{label}</span></div></div>}
-function PlatformLogo({platform}:{platform:string}){const p=platformKey(platform);return <span className={`platformCardLogo platformCardLogo-${p}`} aria-hidden="true">{p==='windows'?<svg viewBox="0 0 24 24"><path d="M3 5.5 10.5 4v7H3V5.5Zm8.5-1.7L21 2v9h-9.5V3.8ZM3 12h7.5v8L3 18.5V12Zm8.5 0H21v10l-9.5-1.8V12Z" fill="currentColor"/></svg>:p==='android'?<svg viewBox="0 0 24 24"><path d="M7 9h10v8H7V9Zm2-3-1.5-2M15 6l1.5-2M5 10v5m14-5v5M9 17v3m6-3v3"/></svg>:p==='linux'?<svg viewBox="0 0 24 24"><path d="M12 3c-2.5 0-4 2.2-4 5.2 0 1.2-.4 2.1-1.1 3.2C5.8 13 5 15 5 17.2c0 2 1.5 3.8 3.4 3.8 1.3 0 2.4-.7 3.6-1.7 1.2 1 2.3 1.7 3.6 1.7 1.9 0 3.4-1.8 3.4-3.8 0-2.2-.8-4.2-1.9-5.8-.7-1.1-1.1-2-1.1-3.2C16 5.2 14.5 3 12 3Z"/><circle cx="10.2" cy="8" r=".7" fill="currentColor"/><circle cx="13.8" cy="8" r=".7" fill="currentColor"/></svg>:<svg viewBox="0 0 24 24"><path d="M15.5 7.2c-.9-1.1-2.3-1.9-3.7-1.9-2.1 0-3.6 1.2-4.6 1.2-1.1 0-2.5-1.1-4.2-1-2.2 0-4.2 1.3-5.3 3.2-2.3 4-.6 9.8 1.6 13 .9 1.3 2 2.8 3.4 2.7 1.3-.1 1.9-.9 3.5-.9 1.7 0 2.2.9 3.6.9 1.5 0 2.4-1.3 3.3-2.6 1-1.5 1.5-3 1.5-3.1-.1 0-2.9-1.1-3-4.4 0-2.8 2.3-4.2 2.4-4.3-1.3-1.9-3.3-2.1-4-2.2Zm-1.4-3.9c.8-1 1.4-2.4 1.2-3.8-1.2.1-2.7.8-3.5 1.8-.8.9-1.5 2.3-1.3 3.7 1.4.1 2.8-.7 3.6-1.7Z" transform="translate(3 1) scale(.75)" fill="currentColor"/></svg>}</span>}
+function PlatformLogo({platform}:{platform:string}){const p=platformKey(platform);return <span className={`platformCardLogo platformCardLogo-${p}`} aria-hidden="true">{p==='windows'?<svg viewBox="0 0 24 24"><path d="M3 5.5 10.5 4v7H3V5.5Zm8.5-1.7L21 2v9h-9.5V3.8ZM3 12h7.5v8L3 18.5V12Zm8.5 0H21v10l-9.5-1.8V12Z" fill="currentColor"/></svg>:p==='android'?<svg viewBox="0 0 24 24"><path d="M7 9h10v8H7V9Zm2-3-1.5-2M15 6l1.5-2M5 10v5m14-5v5M9 17v3m6-3v3"/></svg>:p==='cellular'?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="10" height="18" rx="2"/><path d="M8 17h2M17 16v3M20 12v7"/></svg>:p==='linux'?<svg viewBox="0 0 24 24"><path d="M12 3c-2.5 0-4 2.2-4 5.2 0 1.2-.4 2.1-1.1 3.2C5.8 13 5 15 5 17.2c0 2 1.5 3.8 3.4 3.8 1.3 0 2.4-.7 3.6-1.7 1.2 1 2.3 1.7 3.6 1.7 1.9 0 3.4-1.8 3.4-3.8 0-2.2-.8-4.2-1.9-5.8-.7-1.1-1.1-2-1.1-3.2C16 5.2 14.5 3 12 3Z"/><circle cx="10.2" cy="8" r=".7" fill="currentColor"/><circle cx="13.8" cy="8" r=".7" fill="currentColor"/></svg>:<svg viewBox="0 0 24 24"><path d="M15.5 7.2c-.9-1.1-2.3-1.9-3.7-1.9-2.1 0-3.6 1.2-4.6 1.2-1.1 0-2.5-1.1-4.2-1-2.2 0-4.2 1.3-5.3 3.2-2.3 4-.6 9.8 1.6 13 .9 1.3 2 2.8 3.4 2.7 1.3-.1 1.9-.9 3.5-.9 1.7 0 2.2.9 3.6.9 1.5 0 2.4-1.3 3.3-2.6 1-1.5 1.5-3 1.5-3.1-.1 0-2.9-1.1-3-4.4 0-2.8 2.3-4.2 2.4-4.3-1.3-1.9-3.3-2.1-4-2.2Zm-1.4-3.9c.8-1 1.4-2.4 1.2-3.8-1.2.1-2.7.8-3.5 1.8-.8.9-1.5 2.3-1.3 3.7 1.4.1 2.8-.7 3.6-1.7Z" transform="translate(3 1) scale(.75)" fill="currentColor"/></svg>}</span>}
