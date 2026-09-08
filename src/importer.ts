@@ -41,24 +41,29 @@ function normalizeManufacturer(input:string|null){
   return value;
 }
 
-function normalizePlatform(os: string | null, model: string | null): PlatformFamily {
+function normalizePlatform(os: string | null, model: string | null, productName: string | null): PlatformFamily {
   const source = (os ?? '').toLowerCase();
-  const hardware = (model ?? '').toLowerCase();
+  const hardware = `${model ?? ''} ${productName ?? ''}`.toLowerCase();
   if (source.includes('windows')) return 'windows';
   if (source.includes('android') || source.includes('aosp')) return 'android';
   if (source.includes('mac')) return 'macos';
   if (source.includes('linux')) return 'linux';
-  // Intune presents iPhone and iPad management as the Apple Mobile platform.
-  // Keep the actual operating-system name in sourceOS, but use one platform key for UI filtering/reporting.
-  if (source.includes('ipad') || hardware.includes('ipad')) return 'ios';
-  if (source.includes('ios') || source.includes('iphone') || hardware.includes('iphone')) return 'ios';
+
+  // Intune can report the combined value "iOS/iPadOS" for both iPhones and iPads.
+  // Prefer hardware identity so iPads remain distinguishable while both families
+  // are still grouped together as Apple Mobile in the UI.
+  if (hardware.includes('ipad')) return 'ipados';
+  if (hardware.includes('iphone')) return 'ios';
+  if (source.includes('ipad') && !source.includes('ios')) return 'ipados';
+  if (source.includes('ios') || source.includes('iphone') || source.includes('ipad')) return 'ios';
   return 'unknown';
 }
 
 function normalizeRow(row: Record<string, string>, index: number, sourceFileName: string): Device {
   const sourceOS = value(row, 'OS', 'Operating system');
   const model = value(row, 'Model');
-  const platform = normalizePlatform(sourceOS, model);
+  const productName = value(row, 'ProductName', 'Product name');
+  const platform = normalizePlatform(sourceOS, model, productName);
   const rawOsVersion = value(row, 'OS version');
   return {
     id: value(row, 'Device ID', 'DeviceId') ?? `${sourceFileName}:row-${index}`,
