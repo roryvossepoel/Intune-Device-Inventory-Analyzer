@@ -16,6 +16,13 @@ const ARCHITECTURE_HELP:Record<string,string>={
   Unknown:'Architecture not reported or not recognized'
 };
 
+const ARCHITECTURE_DISPLAY:Record<string,string>={
+  x64:'Intel/AMD (x64)',
+  ARM64:'ARM (ARM64)',
+  x86:'Intel/AMD 32-bit (x86)',
+  Unknown:'Unknown'
+};
+
 function cardTitle(card:HTMLElement){return card.querySelector<HTMLElement>('.dashboardCardHead h2')?.textContent?.trim()||''}
 function findFleetSection(){return Array.from(document.querySelectorAll<HTMLElement>('.dashboardCategory')).find(section=>section.querySelector<HTMLElement>('.dashboardCategoryHead>div>span')?.textContent?.trim()==='Fleet & Hardware')||null}
 function findCard(grid:HTMLElement,title:string){return Array.from(grid.querySelectorAll<HTMLElement>(':scope > .dashboardCard')).find(card=>cardTitle(card)===title)||null}
@@ -29,7 +36,9 @@ function normalizeArchitectureLabel(value:string){
   if(!raw||['unknown','na','n/a'].includes(normalized))return 'Unknown';
   return raw;
 }
+function architectureDisplayLabel(label:string){return ARCHITECTURE_DISPLAY[label]||label}
 function architectureTooltip(label:string){return `${label} — ${ARCHITECTURE_HELP[label]||`${label} processor architecture`}`}
+function formatPercent(value:number){const rounded=Math.round(value*10)/10;return `${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`}
 function readRows(card:HTMLElement):DistributionRow[]{
   const list=card.querySelector<HTMLElement>('.distributionList');
   if(!list)return [];
@@ -61,19 +70,19 @@ function overallArchitectureRows(sources:ArchitectureSource[]):DistributionRow[]
 }
 
 function stackMarkup(rows:DistributionRow[],className:string){
-  return `<div class="${className}">${rows.map((row,index)=>`<span class="architectureMixSegment architectureMixSegment${index%4}" style="width:${Math.max(0,Math.min(100,row.percent))}%" title="${escapeHtml(architectureTooltip(row.label))}: ${row.percent.toFixed(1)}%"></span>`).join('')}</div>`;
+  return `<div class="${className}">${rows.map((row,index)=>`<span class="architectureMixSegment architectureMixSegment${index%4}" style="width:${Math.max(0,Math.min(100,row.percent))}%" title="${escapeHtml(architectureTooltip(row.label))}: ${formatPercent(row.percent)}"></span>`).join('')}</div>`;
 }
 
 function overallMarkup(sources:ArchitectureSource[]){
   const rows=overallArchitectureRows(sources);
   const total=rowTotal(rows);
-  const values=rows.map(row=>`<div class="architectureOverallRow"><span title="${escapeHtml(architectureTooltip(row.label))}">${escapeHtml(row.label)}</span><strong>${row.count.toLocaleString()}</strong><small>${row.percent.toFixed(1)}%</small></div>`).join('');
+  const values=rows.map(row=>`<div class="architectureOverallRow"><span title="${escapeHtml(architectureTooltip(row.label))}">${escapeHtml(architectureDisplayLabel(row.label))}</span><strong>${row.count.toLocaleString()}</strong><small>${formatPercent(row.percent)}</small></div>`).join('');
   return `<section class="architectureOverall"><header><strong>Overall mix</strong><span>${total.toLocaleString()} ${total===1?'device':'devices'}</span></header><div class="architectureOverallRows">${values}</div>${stackMarkup(rows,'architectureOverallStack')}</section>`;
 }
 
 function platformMarkup(source:ArchitectureSource){
   const header=`<header><strong>${source.platform}</strong><span>${source.total.toLocaleString()} ${source.total===1?'device':'devices'}</span></header>`;
-  const values=source.rows.map(row=>`<div class="architecturePlatformValue"><span title="${escapeHtml(architectureTooltip(row.label))}">${escapeHtml(row.label)}</span><strong>${row.count.toLocaleString()}</strong><small>${row.percent.toFixed(1)}%</small></div>`).join('');
+  const values=source.rows.map(row=>`<div class="architecturePlatformValue"><span title="${escapeHtml(architectureTooltip(row.label))}">${escapeHtml(architectureDisplayLabel(row.label))}</span><strong>${row.count.toLocaleString()}</strong><small>${formatPercent(row.percent)}</small></div>`).join('');
   return `<section class="architecturePlatformBreakdown">${header}<div class="architecturePlatformValues">${values}</div></section>`;
 }
 
