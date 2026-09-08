@@ -189,6 +189,68 @@
   padding:21px!important;
 }
 
+/* Mobile hardware donuts are a compact chart + legend unit. Keep every legend item on one line. */
+[data-hardware-summary-grid="true"] .hardwareDonutLayout{
+  grid-template-columns:128px minmax(240px,360px)!important;
+  justify-content:center!important;
+  align-items:center!important;
+  column-gap:30px!important;
+  row-gap:0!important;
+  padding:4px 6px 2px!important;
+}
+[data-hardware-summary-grid="true"] .hardwareDonutLayout .donut{
+  width:122px!important;
+  height:122px!important;
+  margin:0!important;
+}
+[data-hardware-summary-grid="true"] .hardwareDonutLayout .donut:after{inset:18px!important}
+[data-hardware-summary-grid="true"] .hardwareDonutLayout .distributionList{
+  width:100%!important;
+  max-width:360px!important;
+  gap:0!important;
+  align-items:stretch!important;
+}
+[data-hardware-summary-grid="true"] .hardwareDonutLayout .distributionList>div{
+  grid-template-columns:8px minmax(0,1fr) 38px 56px!important;
+  column-gap:10px!important;
+  row-gap:0!important;
+  align-items:center!important;
+  width:100%!important;
+  max-width:none!important;
+  padding:11px 0!important;
+  border-bottom:1px solid #edf2f7;
+}
+[data-hardware-summary-grid="true"] .hardwareDonutLayout .distributionList>div:last-child{border-bottom:0}
+[data-hardware-summary-grid="true"] .hardwareDonutLayout .distributionDot{
+  display:block!important;
+  grid-column:1!important;
+  grid-row:1!important;
+  width:8px!important;
+  height:8px!important;
+  margin:0!important;
+}
+[data-hardware-summary-grid="true"] .hardwareDonutLayout .distributionList .truncate{
+  grid-column:2!important;
+  grid-row:1!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+[data-hardware-summary-grid="true"] .hardwareDonutLayout .distributionList strong{
+  grid-column:3!important;
+  grid-row:1!important;
+  min-width:38px!important;
+  text-align:right!important;
+}
+[data-hardware-summary-grid="true"] .hardwareDonutLayout .distributionList small{
+  grid-column:4!important;
+  grid-row:1!important;
+  min-width:56px!important;
+  text-align:right!important;
+}
+[data-hardware-summary-grid="true"] .hardwareDonutLayout .distributionList>div>i{display:none!important}
+
 @media(max-width:760px){
   .inventoryActivityGrid,
   [data-hardware-summary-grid="true"]{
@@ -200,4 +262,11 @@
   }
   .inventoryActivityGrid>.dashboardCard,
   [data-hardware-summary-grid="true"]>.dashboardCard{padding:18px!important}
+  [data-hardware-summary-grid="true"] .hardwareDonutLayout{
+    grid-template-columns:1fr!important;
+    justify-content:stretch!important;
+    row-gap:14px!important;
+  }
+  [data-hardware-summary-grid="true"] .hardwareDonutLayout .donut{margin:0 auto!important}
+  [data-hardware-summary-grid="true"] .hardwareDonutLayout .distributionList{max-width:none!important}
 }
