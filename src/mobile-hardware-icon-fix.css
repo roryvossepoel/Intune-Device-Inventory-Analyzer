@@ -32,3 +32,50 @@
   transform-origin:center;
   overflow:visible;
 }
+
+/* Drill-through made these legend rows buttons. Keep the compact donut legend
+   presentation identical to the previous non-clickable rows. */
+.hardwareDonutLayout .distributionList>button.distributionAction{
+  display:grid!important;
+  grid-template-columns:9px minmax(112px,auto) 34px 52px!important;
+  align-items:center!important;
+  justify-content:start!important;
+  gap:9px!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:4px 0!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:transparent!important;
+  color:inherit!important;
+  text-align:left!important;
+  box-shadow:none!important;
+}
+.hardwareDonutLayout .distributionList>button.distributionAction:hover{
+  background:#f4f8fd!important;
+}
+.hardwareDonutLayout .distributionList>button.distributionAction:focus-visible{
+  outline:2px solid #9fc4ee;
+  outline-offset:2px;
+}
+.hardwareDonutLayout .distributionList>button.distributionAction>i{
+  display:none!important;
+}
+.hardwareDonutLayout .distributionList>button.distributionAction .distributionDot{
+  display:block!important;
+  width:8px!important;
+  height:8px!important;
+  border-radius:50%!important;
+}
+.hardwareDonutLayout .distributionList>button.distributionAction .truncate{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+@media(max-width:760px){
+  .hardwareDonutLayout .distributionList>button.distributionAction{
+    grid-template-columns:9px minmax(0,1fr) auto 52px!important;
+  }
+}
