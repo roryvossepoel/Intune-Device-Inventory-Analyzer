@@ -164,7 +164,6 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
 
   const appleFamilies=countValues(apple.map(appleDeviceFamily));
   const cellularRows=countValues(mobile.map(cellularCapability));
-  const cellularCapable=cellularRows.find(([label])=>label==='Cellular capable')?.[1]??0;
   const appleSupervision=countValues(apple.map(supervision));
   const appleCert=certificateBuckets(apple);
   const macArch=countValues(macos.map(architecture));
@@ -198,7 +197,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
         <Card title="Models" subtitle="Most common reported models in the current scope"><Distribution rows={models} total={total} onClick={label=>drill('model','Model',label)}/></Card>
         {windows.length>0&&<PlatformCard platform="windows" title="Windows hardware" subtitle="Architecture and firmware inventory coverage"><Distribution rows={windowsArch} total={windows.length}/><div className="metricTiles"><Metric label="BIOS reported" value={fmt(bios)}/><Metric label="TPM reported" value={fmt(tpm)}/></div></PlatformCard>}
         {apple.length>0&&<PlatformCard platform="applemobile" title="iOS/iPadOS device family" subtitle="iPhone and iPad distribution"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleFamilies} center={fmt(apple.length)} label="devices"/><Distribution rows={appleFamilies} total={apple.length}/></div></PlatformCard>}
-        {mobile.length>0&&<PlatformCard platform="cellular" title="Cellular capability" subtitle="Cellular-capable vs Wi-Fi-only mobile devices"><div className="hardwareDonutLayout"><Donut total={mobile.length} items={cellularRows} center={pct(cellularCapable,mobile.length)} label="cellular"/><Distribution rows={cellularRows} total={mobile.length}/></div></PlatformCard>}
+        {mobile.length>0&&<PlatformCard platform="cellular" title="Cellular capability" subtitle="Cellular support across iOS, iPadOS and Android devices"><div className="hardwareDonutLayout"><Donut total={mobile.length} items={cellularRows} center={fmt(mobile.length)} label="devices"/><Distribution rows={cellularRows} total={mobile.length}/></div></PlatformCard>}
         {macos.length>0&&<PlatformCard platform="macos" title="macOS architecture" subtitle="Apple Silicon and Intel architecture reported by inventory"><Distribution rows={macArch} total={macos.length}/></PlatformCard>}
         {linux.length>0&&<PlatformCard platform="linux" title="Linux architecture" subtitle="Reported processor architecture"><Distribution rows={linuxArch} total={linux.length}/></PlatformCard>}
       </div>
