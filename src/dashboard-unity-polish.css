@@ -50,6 +50,13 @@
   align-items:center!important;
   padding:0 0 8px!important;
 }
+/* Manufacturers and Models use clickable rows. An older, more specific rule added
+   7px top padding to those buttons, making their vertical rhythm visibly looser
+   than Device types. Override it at equal/higher specificity. */
+[data-hardware-summary-grid="true"]>.hardwareCardManufacturers .distributionList>button.distributionAction,
+[data-hardware-summary-grid="true"]>.hardwareCardModels .distributionList>button.distributionAction{
+  padding:0 0 8px!important;
+}
 .inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList .truncate,
 [data-hardware-summary-grid="true"] .distributionList .truncate{
   font-size:var(--unity-label-size)!important;
