@@ -2,9 +2,10 @@ import DashboardSection from './DashboardSection';
 import WindowsLifecycle from './WindowsLifecycle';
 import EncryptionCard, { securityAttention } from './SecurityInsights';
 import { getWindowsIntelligence } from './deviceIntelligence';
+import { appleDeviceFamily, cellularCapability, hardwareType } from './hardwareClassification';
 import type { Device } from './types';
 
-type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality';
+type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability';
 type Drill=(field:DrillField,label:string,value:string)=>void;
 type Row=[string,number];
 type SecurityTone='good'|'warn'|'bad';
@@ -28,23 +29,6 @@ function patchLevel(device:Device){return rawValue(device,[/^Security patch leve
 function managedBy(device:Device){return clean(device.managedBy)}
 function enrollmentDate(device:Device){return rawValue(device,[/^Enrollment date$/i,/^EnrollmentDateTime$/i,/^Enrolled date$/i])}
 
-function hardwareType(device:Device){
-  const explicit=rawValue(device,[/chassis/i,/form.?factor/i,/device.?type/i,/hardware.?type/i,/device.?category/i]).toLowerCase();
-  const model=(device.model||'').toLowerCase();
-  const manufacturer=(device.manufacturer||'').toLowerCase();
-  const signal=`${explicit} ${model} ${manufacturer}`;
-  if(platformKey(device.platform)==='applemobile'){if(/ipad/.test(signal))return 'Tablet';return 'Smartphone'}
-  if(/virtual|vmware|hyper-v|parallels|virtualbox|kvm|virtual machine|virtual desktop|horizon|avd/.test(signal))return 'Virtual';
-  if(/server/.test(signal))return 'Server';
-  if(device.platform==='android'){if(/tablet|slate|galaxy tab|tab active|pixel tablet|sm-[xtp]/.test(signal))return 'Tablet';return 'Smartphone'}
-  if(device.platform==='macos'){if(/macbook/.test(signal))return 'Laptop';if(/imac|mac mini|mac studio|mac pro/.test(signal))return 'Desktop'}
-  if(/tablet|slate|ipad|galaxy tab|surface pro|surface go/.test(signal))return 'Tablet';
-  if(/smartphone|phone|handheld/.test(explicit))return 'Smartphone';
-  if(/laptop|notebook|portable|mobile workstation|macbook|latitude|thinkpad|thinkbook|ideapad|elitebook|probook|zbook|surface laptop|galaxy book|travelmate|lifebook|dynabook/.test(signal))return 'Laptop';
-  if(/desktop|tower|mini pc|micro pc|small form factor|sff|optiplex|thinkcentre|prodesk|elitedesk|imac|mac mini|mac studio|mac pro|surface studio|workstation/.test(signal))return 'Desktop';
-  return 'Unknown';
-}
-
 function androidMode(device:Device){
   const source=clean(device.sourceOS);
   const raw=rawValue(device,[/^ManagementMode$/i,/^Management mode$/i,/^EnrollmentType$/i,/^Enrollment type$/i]);
@@ -57,26 +41,6 @@ function androidMode(device:Device){
   if(/personally.*work profile|byod/i.test(value))return 'Personally owned work profile (BYOD)';
   if(/^aosp/i.test(value))return value.replace(/^AOSP\s*/i,'AOSP ');
   return value==='Android'?'Android / Unknown':value;
-}
-function appleDeviceFamily(device:Device){
-  if(device.platform==='ipados')return 'iPad';
-  if(device.platform==='ios')return 'iPhone';
-  const value=`${device.model||''} ${rawValue(device,[/^ProductName$/i,/^Product name$/i])}`.toLowerCase();
-  if(value.includes('ipad'))return 'iPad';
-  if(value.includes('iphone'))return 'iPhone';
-  return 'Unknown';
-}
-function cellularCapability(device:Device){
-  const technology=rawValue(device,[/^CellularTechnology$/i,/^Cellular technology$/i]).trim().toLowerCase();
-  const identifier=rawValue(device,[/^IMEI$/i,/^EID$/i,/^ICCID$/i,/^MEID$/i,/^Phone number$/i,/^PhoneNumber$/i]);
-  if(identifier)return 'Cellular capable';
-  if(technology){
-    if(['none','no','false','wifi','wi-fi','wifi only','wi-fi only','not supported','not applicable','n/a'].includes(technology))return 'Wi-Fi only';
-    if(technology==='unknown')return 'Unknown';
-    return 'Cellular capable';
-  }
-  if(device.platform==='ios'||appleDeviceFamily(device)==='iPhone')return 'Cellular capable';
-  return 'Unknown';
 }
 function supervision(device:Device){const value=rawValue(device,[/^Supervised$/i]);if(/^true$/i.test(value))return 'Supervised';if(/^false$/i.test(value))return 'Not supervised';return 'Unknown'}
 
@@ -192,12 +156,12 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
 
     <DashboardSection icon="fleet" title="Fleet & Hardware" subtitle="Platform distribution, form factor, manufacturers, models and hardware standardization.">
       <div className="extendedInsightGrid twoInsightGrid">
-        <Card title="Device types" subtitle="Form factor inferred from inventory and known model families"><Distribution rows={types} total={total}/></Card>
+        <Card title="Device types" subtitle="Form factor inferred from inventory and known model families"><Distribution rows={types} total={total} onClick={label=>drill('deviceType','Device type',label)}/></Card>
         <Card title="Manufacturers" subtitle="Largest device vendors in the current scope"><Distribution rows={manufacturers} total={total} limit={manufacturers.length} onClick={label=>drill('manufacturer','Manufacturer',label)}/></Card>
         <Card title="Models" subtitle="Most common reported models in the current scope"><Distribution rows={models} total={total} limit={models.length} onClick={label=>drill('model','Model',label)}/></Card>
         {windows.length>0&&<PlatformCard platform="windows" title="Windows hardware" subtitle="Architecture and firmware inventory coverage"><Distribution rows={windowsArch} total={windows.length}/><div className="metricTiles"><Metric label="BIOS reported" value={fmt(bios)}/><Metric label="TPM reported" value={fmt(tpm)}/></div></PlatformCard>}
-        {apple.length>0&&<PlatformCard platform="applemobile" title="iOS/iPadOS device family" subtitle="iPhone and iPad distribution"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleFamilies} center={fmt(apple.length)} label="devices"/><Distribution rows={appleFamilies} total={apple.length}/></div></PlatformCard>}
-        {mobile.length>0&&<PlatformCard platform="cellular" title="Cellular capability" subtitle="Cellular support across iOS, iPadOS and Android devices"><div className="hardwareDonutLayout"><Donut total={mobile.length} items={cellularRows} center={fmt(mobile.length)} label="devices"/><Distribution rows={cellularRows} total={mobile.length}/></div></PlatformCard>}
+        {apple.length>0&&<PlatformCard platform="applemobile" title="iOS/iPadOS device family" subtitle="iPhone and iPad distribution"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleFamilies} center={fmt(apple.length)} label="devices"/><Distribution rows={appleFamilies} total={apple.length} onClick={label=>drill('appleDeviceFamily','Device family',label)}/></div></PlatformCard>}
+        {mobile.length>0&&<PlatformCard platform="cellular" title="Cellular capability" subtitle="Cellular support across iOS, iPadOS and Android devices"><div className="hardwareDonutLayout"><Donut total={mobile.length} items={cellularRows} center={fmt(mobile.length)} label="devices"/><Distribution rows={cellularRows} total={mobile.length} onClick={label=>drill('cellularCapability','Cellular capability',label)}/></div></PlatformCard>}
         {macos.length>0&&<PlatformCard platform="macos" title="macOS architecture" subtitle="Apple Silicon and Intel architecture reported by inventory"><Distribution rows={macArch} total={macos.length}/></PlatformCard>}
         {linux.length>0&&<PlatformCard platform="linux" title="Linux architecture" subtitle="Reported processor architecture"><Distribution rows={linuxArch} total={linux.length}/></PlatformCard>}
       </div>
