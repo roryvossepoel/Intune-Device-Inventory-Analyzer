@@ -35,6 +35,7 @@ import './device-table-layout.css';
 import './search-polish.css';
 import './active-filter-state.css';
 import './device-ux-polish.css';
+import './hardware-explorer-filters.css';
 import './device-detail-v2.css';
 import './platform-intelligence-v2.css';
 import './sticky-device-header.css';
