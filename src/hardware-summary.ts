@@ -9,20 +9,41 @@ const ARCHITECTURE_TITLES:[string,string][]=[
   ['Linux','Linux architecture']
 ];
 
+const ARCHITECTURE_HELP:Record<string,string>={
+  x64:'64-bit Intel/AMD architecture',
+  ARM64:'64-bit ARM architecture',
+  x86:'32-bit Intel/AMD architecture',
+  Unknown:'Architecture not reported or not recognized'
+};
+
 function cardTitle(card:HTMLElement){return card.querySelector<HTMLElement>('.dashboardCardHead h2')?.textContent?.trim()||''}
 function findFleetSection(){return Array.from(document.querySelectorAll<HTMLElement>('.dashboardCategory')).find(section=>section.querySelector<HTMLElement>('.dashboardCategoryHead>div>span')?.textContent?.trim()==='Fleet & Hardware')||null}
 function findCard(grid:HTMLElement,title:string){return Array.from(grid.querySelectorAll<HTMLElement>(':scope > .dashboardCard')).find(card=>cardTitle(card)===title)||null}
 function parseNumber(value:string){const cleaned=value.replace(/[^0-9.-]/g,'');const parsed=Number(cleaned);return Number.isFinite(parsed)?parsed:0}
+function normalizeArchitectureLabel(value:string){
+  const raw=value.trim();
+  const normalized=raw.toLowerCase().replace(/[\s_-]/g,'');
+  if(['x64','amd64','x8664'].includes(normalized))return 'x64';
+  if(['arm64','aarch64'].includes(normalized))return 'ARM64';
+  if(['x86','i386','i486','i586','i686','ia32'].includes(normalized))return 'x86';
+  if(!raw||['unknown','na','n/a'].includes(normalized))return 'Unknown';
+  return raw;
+}
+function architectureTooltip(label:string){return `${label} — ${ARCHITECTURE_HELP[label]||`${label} processor architecture`}`}
 function readRows(card:HTMLElement):DistributionRow[]{
   const list=card.querySelector<HTMLElement>('.distributionList');
   if(!list)return [];
-  return Array.from(list.children).flatMap(child=>{
-    if(!(child instanceof HTMLElement))return [];
-    const label=child.querySelector<HTMLElement>('.truncate')?.textContent?.trim()||'';
+  const grouped=new Map<string,number>();
+  for(const child of Array.from(list.children)){
+    if(!(child instanceof HTMLElement))continue;
+    const sourceLabel=child.querySelector<HTMLElement>('.truncate')?.textContent?.trim()||'';
+    if(!sourceLabel)continue;
+    const label=normalizeArchitectureLabel(sourceLabel);
     const count=parseNumber(child.querySelector<HTMLElement>('strong')?.textContent||'0');
-    const percent=parseNumber(child.querySelector<HTMLElement>('small')?.textContent||'0');
-    return label?[{label,count,percent}]:[];
-  });
+    grouped.set(label,(grouped.get(label)||0)+count);
+  }
+  const total=Array.from(grouped.values()).reduce((sum,count)=>sum+count,0);
+  return Array.from(grouped.entries()).map(([label,count])=>({label,count,percent:total?count/total*100:0})).sort((a,b)=>b.count-a.count);
 }
 function rowTotal(rows:DistributionRow[]){return rows.reduce((sum,row)=>sum+row.count,0)}
 function escapeHtml(value:string){return value.replace(/[&<>"']/g,char=>{if(char==='&')return '&amp;';if(char==='<')return '&lt;';if(char==='>')return '&gt;';if(char==='"')return '&quot;';return '&#39;'})}
@@ -40,13 +61,13 @@ function overallArchitectureRows(sources:ArchitectureSource[]):DistributionRow[]
 }
 
 function stackMarkup(rows:DistributionRow[],className:string){
-  return `<div class="${className}">${rows.map((row,index)=>`<span class="architectureMixSegment architectureMixSegment${index%4}" style="width:${Math.max(0,Math.min(100,row.percent))}%" title="${escapeHtml(row.label)} ${row.percent.toFixed(1)}%"></span>`).join('')}</div>`;
+  return `<div class="${className}">${rows.map((row,index)=>`<span class="architectureMixSegment architectureMixSegment${index%4}" style="width:${Math.max(0,Math.min(100,row.percent))}%" title="${escapeHtml(architectureTooltip(row.label))}: ${row.percent.toFixed(1)}%"></span>`).join('')}</div>`;
 }
 
 function overallMarkup(sources:ArchitectureSource[]){
   const rows=overallArchitectureRows(sources);
   const total=rowTotal(rows);
-  const values=rows.map(row=>`<div class="architectureOverallRow"><span>${escapeHtml(row.label)}</span><strong>${row.count.toLocaleString()}</strong><small>${row.percent.toFixed(1)}%</small></div>`).join('');
+  const values=rows.map(row=>`<div class="architectureOverallRow"><span title="${escapeHtml(architectureTooltip(row.label))}">${escapeHtml(row.label)}</span><strong>${row.count.toLocaleString()}</strong><small>${row.percent.toFixed(1)}%</small></div>`).join('');
   return `<section class="architectureOverall"><header><strong>Overall mix</strong><span>${total.toLocaleString()} ${total===1?'device':'devices'}</span></header><div class="architectureOverallRows">${values}</div>${stackMarkup(rows,'architectureOverallStack')}</section>`;
 }
 
@@ -55,9 +76,9 @@ function platformMarkup(source:ArchitectureSource){
   const header=`<header><strong>${source.platform}</strong><span>${source.total.toLocaleString()} ${source.total===1?'device':'devices'}</span></header>`;
   if(rows.length===1){
     const row=rows[0];
-    return `<section class="architecturePlatformBreakdown">${header}<div class="architectureOnlyLine"><span>${escapeHtml(row.label)} only</span><strong>${row.count.toLocaleString()}</strong></div></section>`;
+    return `<section class="architecturePlatformBreakdown">${header}<div class="architectureOnlyLine"><span title="${escapeHtml(architectureTooltip(row.label))}">${escapeHtml(row.label)} only</span><strong>${row.count.toLocaleString()}</strong></div></section>`;
   }
-  const values=rows.map(row=>`<div class="architecturePlatformValue"><span>${escapeHtml(row.label)}</span><strong>${row.count.toLocaleString()}</strong><small>${row.percent.toFixed(1)}%</small></div>`).join('');
+  const values=rows.map(row=>`<div class="architecturePlatformValue"><span title="${escapeHtml(architectureTooltip(row.label))}">${escapeHtml(row.label)}</span><strong>${row.count.toLocaleString()}</strong><small>${row.percent.toFixed(1)}%</small></div>`).join('');
   return `<section class="architecturePlatformBreakdown">${header}<div class="architecturePlatformValues">${values}</div></section>`;
 }
 
