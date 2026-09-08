@@ -77,7 +77,7 @@ function overallMarkup(sources:ArchitectureSource[]){
   const rows=overallArchitectureRows(sources);
   const total=rowTotal(rows);
   const values=rows.map((row,index)=>`<div class="architectureOverallRow"><span class="architectureOverallLabel" title="${escapeHtml(architectureTooltip(row.label))}"><i class="architectureOverallSwatch architectureMixSegment${index%4}" aria-hidden="true"></i>${escapeHtml(architectureDisplayLabel(row.label))}</span><strong>${row.count.toLocaleString()}</strong><small>${formatPercent(row.percent)}</small></div>`).join('');
-  return `<section class="architectureOverall"><header><strong>Overall mix</strong><span>${total.toLocaleString()} ${total===1?'computer':'computers'}</span></header><div class="architectureOverallRows">${values}</div>${stackMarkup(rows,'architectureOverallStack')}</section>`;
+  return `<section class="architectureOverall"><header><strong>Overall mix</strong><span>${total.toLocaleString()} ${total===1?'device':'devices'}</span></header><div class="architectureOverallRows">${values}</div>${stackMarkup(rows,'architectureOverallStack')}</section>`;
 }
 
 function platformMarkup(source:ArchitectureSource){
@@ -97,7 +97,7 @@ function ensureArchitectureCard(grid:HTMLElement,sources:ArchitectureSource[]){
   const signature=sources.map(source=>`${source.platform}:${source.rows.map(row=>`${row.label}:${row.count}:${row.percent}`).join(',')}`).join('|');
   if(summary.dataset.summarySignature===signature)return;
   summary.dataset.summarySignature=signature;
-  summary.innerHTML=`<header class="dashboardCardHead insightCardHead"><div><h2>Processor architecture</h2><p>Architecture mix across Windows, macOS and Linux computers</p></div></header>${architectureMarkup(sources)}`;
+  summary.innerHTML=`<header class="dashboardCardHead insightCardHead"><div><h2>Processor architecture</h2><p>Architecture mix across Windows, macOS and Linux devices</p></div></header>${architectureMarkup(sources)}`;
 }
 function markCard(card:HTMLElement|null,className:string){if(card&&!card.classList.contains(className))card.classList.add(className)}
 function setupFleet(){
@@ -116,8 +116,8 @@ function setupFleet(){
   }
   ensureArchitectureCard(grid,sources);
 
-  const family=findCard(grid,'iOS/iPadOS device family');
-  if(family){family.classList.add('hardwareFamilyCard');const rows=readRows(family);family.classList.toggle('hardwareSingleFamily',rows.length===1)}
+  markCard(findCard(grid,'iOS/iPadOS device family'),'hardwareFamilyCard');
+  markCard(findCard(grid,'Cellular capability'),'hardwareCellularCard');
 }
 
 let scheduled=false;
