@@ -28,11 +28,20 @@
 
 /* Bucket rows are already encoded by their bars; the extra colored dots only duplicate that signal. */
 .inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div,
-.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>button{grid-template-columns:minmax(0,1fr) auto 48px}
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>button{grid-template-columns:minmax(0,1fr) auto 52px}
 .inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div>.distributionDot,
 .inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>button>.distributionDot{display:none}
 .inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div>i,
 .inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>button>i{grid-column:1/-1}
+
+/* Match the row typography to the stronger Inventory quality card. */
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList .truncate{font-size:14px;line-height:1.35;font-weight:520;color:#19325c}
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList strong{font-size:14px;line-height:1.35;font-weight:700;color:#0b1f44}
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList small{font-size:13px;line-height:1.35;font-weight:500;color:#7387a3;min-width:52px}
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div,
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>button{row-gap:8px;padding-bottom:9px}
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>div>i,
+.inventoryActivityGrid>.dashboardCard:nth-child(-n+2) .distributionList>button>i{margin-top:2px}
 
 /* Card headers use the same visual language as Health & Security. */
 .inventoryActivityGrid>.dashboardCard>.dashboardCardHead{display:flex;align-items:flex-start;gap:12px;min-height:44px}
