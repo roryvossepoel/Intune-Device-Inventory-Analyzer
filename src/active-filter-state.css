@@ -34,3 +34,38 @@
 .deviceFilterPanel .ageSlider.hasValue>div{
   color:#6789b1;
 }
+
+.dashboardDrillFilter{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:max-content;
+  max-width:100%;
+  margin:0 0 12px;
+  padding:8px 10px 8px 12px;
+  border:1px solid #b9d5f1;
+  border-radius:10px;
+  background:#eef6ff;
+  color:#174f91;
+  font-size:13px;
+  line-height:18px;
+}
+.dashboardDrillFilter>span{
+  color:#6789b1;
+  font-weight:600;
+}
+.dashboardDrillFilter>strong{
+  font-weight:700;
+}
+.dashboardDrillFilter>button{
+  width:24px;
+  height:24px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#2769b4;
+  font-size:18px;
+  line-height:1;
+  cursor:pointer;
+}
+.dashboardDrillFilter>button:hover{background:#deedff}
