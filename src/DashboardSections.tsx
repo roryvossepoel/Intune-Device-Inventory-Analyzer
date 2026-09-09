@@ -10,7 +10,6 @@ type Drill=(field:DrillField,label:string,value:string)=>void;
 type Row=[string,number];
 type SecurityTone='good'|'warn'|'bad';
 
-const platformLabel:Record<string,string>={windows:'Windows',android:'Android',applemobile:'iOS/iPadOS',macos:'macOS',linux:'Linux',unknown:'Unknown'};
 const fmt=(n:number)=>n.toLocaleString();
 const pct=(n:number,total:number)=>{const value=total?n/total*100:0;const rounded=Math.round(value*10)/10;return `${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`};
 const clean=(v:string|null|undefined)=>v?.trim()||'Unknown';
@@ -120,8 +119,11 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
     ['5+ devices',userCounts.filter(([,n])=>n>=5).length]
   ];
 
-  const osByPlatform=Object.entries(devices.reduce<Record<string,Device[]>>((acc,d)=>{const key=platformKey(d.platform);(acc[key]??=[]).push(d);return acc},{})).sort((a,b)=>b[1].length-a[1].length);
-  const adoption=osByPlatform.map(([p,list])=>{const versions=countValues(list.map(d=>clean(d.osVersion))),top=versions[0];return {platform:p,devices:list.length,versions:versions.length,topVersion:top?.[0]||'Unknown',topCount:top?.[1]||0}});
+  const windowsVersions=countValues(windows.map(d=>clean(d.osVersion)));
+  const androidVersions=countValues(android.map(d=>clean(d.osVersion)));
+  const appleVersions=countValues(apple.map(d=>clean(d.osVersion)));
+  const macosVersions=countValues(macos.map(d=>clean(d.osVersion)));
+  const linuxVersions=countValues(linux.map(d=>clean(d.osVersion)));
 
   const windowsSkus=countValues(windows.map(sku));
   const windowsArch=countValues(windows.map(architecture));
@@ -184,11 +186,15 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
       </div>
     </DashboardSection>
 
-    <DashboardSection icon="lifecycle" title="Operating System & Lifecycle" subtitle="OS adoption, support lifecycle, update position and patch status.">
-      <div className="extendedInsightGrid" style={{gridTemplateColumns:'1fr'}}>
-        <Card title="OS release adoption" subtitle="Release diversity and dominant version per operating-system family"><div className="fragmentationList">{adoption.map(row=><div key={row.platform}><header><strong>{platformLabel[row.platform]||row.platform}</strong><span>{row.versions} version{row.versions===1?'':'s'}</span></header><div><span className="truncate">{row.topVersion}</span><b>{pct(row.topCount,row.devices)} on top version</b></div><i><b style={{width:pct(row.topCount,row.devices)}}/></i></div>)}</div></Card>
-        {windows.length>0&&<WindowsLifecycle devices={windows} title="Windows lifecycle"/>}
+    <DashboardSection icon="lifecycle" title="Operating System & Lifecycle" subtitle="OS versions, support lifecycle, update position and patch status.">
+      <div className="extendedInsightGrid twoInsightGrid osVersionsGrid">
+        {windows.length>0&&<PlatformCard platform="windows" title="Windows versions" subtitle={`${fmt(windows.length)} devices · ${windowsVersions.length} reported version${windowsVersions.length===1?'':'s'}`}><Distribution rows={windowsVersions} total={windows.length} limit={windowsVersions.length} onClick={label=>drill('osVersion','OS version',label)}/></PlatformCard>}
+        {android.length>0&&<PlatformCard platform="android" title="Android versions" subtitle={`${fmt(android.length)} devices · ${androidVersions.length} reported version${androidVersions.length===1?'':'s'}`}><Distribution rows={androidVersions} total={android.length} limit={androidVersions.length} onClick={label=>drill('osVersion','OS version',label)}/></PlatformCard>}
+        {apple.length>0&&<PlatformCard platform="applemobile" title="iOS/iPadOS versions" subtitle={`${fmt(apple.length)} devices · ${appleVersions.length} reported version${appleVersions.length===1?'':'s'}`}><Distribution rows={appleVersions} total={apple.length} limit={appleVersions.length} onClick={label=>drill('osVersion','OS version',label)}/></PlatformCard>}
+        {macos.length>0&&<PlatformCard platform="macos" title="macOS versions" subtitle={`${fmt(macos.length)} devices · ${macosVersions.length} reported version${macosVersions.length===1?'':'s'}`}><Distribution rows={macosVersions} total={macos.length} limit={macosVersions.length} onClick={label=>drill('osVersion','OS version',label)}/></PlatformCard>}
+        {linux.length>0&&<PlatformCard platform="linux" title="Linux versions" subtitle={`${fmt(linux.length)} devices · ${linuxVersions.length} reported version${linuxVersions.length===1?'':'s'}`}><Distribution rows={linuxVersions} total={linux.length} limit={linuxVersions.length} onClick={label=>drill('osVersion','OS version',label)}/></PlatformCard>}
       </div>
+      {windows.length>0&&<div className="extendedInsightGrid" style={{gridTemplateColumns:'1fr'}}><WindowsLifecycle devices={windows} title="Windows lifecycle"/></div>}
       <div className="extendedInsightGrid twoInsightGrid">
         {windows.length>0&&<PlatformCard platform="windows" title="Windows edition & servicing" subtitle="Edition mix and servicing signals"><Distribution rows={windowsSkus} total={windows.length}/><SignalList rows={[[windowsBehind,'Behind current build','bad',undefined],[windowsEditionReview,'Edition-dependent servicing','warn',undefined]]}/></PlatformCard>}
         {android.length>0&&<PlatformCard platform="android" title="Android security patch" subtitle="Reported security patch level and freshness"><Distribution rows={androidPatch} total={android.length}/><SignalList rows={[[androidOldPatch,'Patch older than 90 days','bad',undefined],[androidUnknownPatch,'Patch level not reported','warn',undefined]]}/></PlatformCard>}
