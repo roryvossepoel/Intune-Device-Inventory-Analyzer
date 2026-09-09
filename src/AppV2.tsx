@@ -25,7 +25,7 @@ const intelligencePlatform=(value:string)=>platformKey(value) as 'windows'|'andr
 const displayOsVersion=(device:Device)=>describeOsVersion(intelligencePlatform(device.platform),device.osVersion)||(device.osVersion||'');
 const countBy=(devices:Device[],selector:(device:Device)=>string)=>Object.entries(devices.reduce<Record<string,number>>((acc,device)=>{const value=selector(device);acc[value]=(acc[value]??0)+1;return acc},{})).sort((a,b)=>b[1]-a[1]) as [string,number][];
 const primaryUserKey=(device:Device)=>(device.userUpn||device.userDisplayName||'').trim();
-const userDensityBucket=(count:number)=>count<=1?'1 device':count===2?'2 devices':'3+ devices';
+const userDensityBucket=(count:number)=>count<=1?'1 device':count===2?'2 devices':count===3?'3 devices':count===4?'4 devices':'5+ devices';
 
 type View='overview'|'devices'|'reports'|'faq';
 type Filter={field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability'|'primaryUser'|'userDensity'|'ownership';label:string;value:string}|null;
