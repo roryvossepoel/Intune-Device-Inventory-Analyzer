@@ -6,7 +6,8 @@
   gap:16px!important;
   align-items:stretch!important;
 }
-.usersOwnershipGrid>.dashboardCard{
+.usersOwnershipGrid>.usersOwnershipSource{display:none!important}
+.usersOwnershipGrid>.dashboardCard:not(.usersOwnershipSource){
   min-height:330px!important;
   padding:21px!important;
   display:flex!important;
