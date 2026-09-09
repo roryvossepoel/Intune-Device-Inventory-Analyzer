@@ -14,6 +14,12 @@
   overflow:visible!important;
 }
 
+/* Hardware filters are part of the same Device Explorer filter area.
+   When the main filter shell is collapsed, hide these as well. */
+.dataCard:has(.deviceFilterShell.filtersCollapsed) .hardwareFixedFilters{
+  display:none!important;
+}
+
 /* Use only the result-toolbar border as the divider when filters are expanded. */
 .dataCard:has(.deviceFilterShell) .deviceFilterShell.filtersExpanded{
   border-bottom:0!important;
