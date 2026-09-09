@@ -5,7 +5,7 @@ import { getWindowsIntelligence } from './deviceIntelligence';
 import { appleDeviceFamily, cellularCapability, hardwareType } from './hardwareClassification';
 import type { Device } from './types';
 
-type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability';
+type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability'|'primaryUser'|'userDensity'|'ownership';
 type Drill=(field:DrillField,label:string,value:string)=>void;
 type Row=[string,number];
 type SecurityTone='good'|'warn'|'bad';
@@ -109,7 +109,10 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const types=countValues(devices.map(hardwareType));
   const ownership=countValues(devices.map(d=>clean(d.ownership)));
   const userCounts=countValues(devices.map(d=>clean(d.userUpn||d.userDisplayName)).filter(v=>v!=='Unknown'));
-  const userDistribution:Row[]=[['1 device',userCounts.filter(([,n])=>n===1).length],['2 devices',userCounts.filter(([,n])=>n===2).length],['3+ devices',userCounts.filter(([,n])=>n>=3).length],['No primary user',devices.filter(d=>!d.userUpn&&!d.userDisplayName).length]];
+  const noPrimaryUser=devices.filter(d=>!d.userUpn&&!d.userDisplayName).length;
+  const identifiedUsers=userCounts.length;
+  const primaryUserCoverage:Row[]=[['Primary user assigned',Math.max(0,total-noPrimaryUser)],['No primary user',noPrimaryUser]];
+  const userDensity:Row[]=[['1 device',userCounts.filter(([,n])=>n===1).length],['2 devices',userCounts.filter(([,n])=>n===2).length],['3+ devices',userCounts.filter(([,n])=>n>=3).length]];
 
   const osByPlatform=Object.entries(devices.reduce<Record<string,Device[]>>((acc,d)=>{const key=platformKey(d.platform);(acc[key]??=[]).push(d);return acc},{})).sort((a,b)=>b[1].length-a[1].length);
   const adoption=osByPlatform.map(([p,list])=>{const versions=countValues(list.map(d=>clean(d.osVersion))),top=versions[0];return {platform:p,devices:list.length,versions:versions.length,topVersion:top?.[0]||'Unknown',topCount:top?.[1]||0}});
@@ -168,9 +171,10 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
     </DashboardSection>
 
     <DashboardSection icon="users" title="Users & Ownership" subtitle="Primary-user coverage, device density and ownership state.">
-      <div className="extendedInsightGrid twoInsightGrid">
-        <Card title="User assignment" subtitle="Managed-device density for identified primary users"><Distribution rows={userDistribution} total={Math.max(total,userCounts.length)}/></Card>
-        <Card title="Ownership" subtitle="Corporate, personal and other ownership states"><Distribution rows={ownership} total={total}/></Card>
+      <div className="extendedInsightGrid usersOwnershipGrid">
+        <Card className="usersPrimaryCoverageCard" title="Primary user coverage" subtitle="Devices with an identified primary user"><div className="usersDonutLayout"><Donut total={total} items={primaryUserCoverage} center={fmt(total)} label="devices"/><Distribution rows={primaryUserCoverage} total={total} onClick={label=>drill('primaryUser','Primary user',label==='Primary user assigned'?'Has primary user':'No primary user')}/></div></Card>
+        {identifiedUsers>0&&<Card className="usersDensityCard" title="Devices per user" subtitle="Managed-device density for identified primary users"><div className="usersDensitySummary"><strong>{fmt(identifiedUsers)}</strong><span>{identifiedUsers===1?'identified user':'identified users'}</span></div><Distribution rows={userDensity} total={identifiedUsers} onClick={label=>drill('userDensity','Devices per user',label)}/></Card>}
+        <Card className="usersOwnershipCard" title="Ownership" subtitle="Corporate, personal and other ownership states"><div className="usersDonutLayout"><Donut total={total} items={ownership} center={fmt(total)} label="devices"/><Distribution rows={ownership} total={total} onClick={label=>drill('ownership','Ownership',label)}/></div></Card>
       </div>
     </DashboardSection>
 
@@ -205,7 +209,7 @@ function certificateBuckets(devices:Device[]):Row[]{
   return rows;
 }
 
-function Card({title,subtitle,children,tone}:{title:string;subtitle:string;children:React.ReactNode;tone?:SecurityTone}){return <article className={`dashboardCard extendedInsightCard${tone?` tone-${tone}`:''}`}><header className="dashboardCardHead insightCardHead"><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
+function Card({title,subtitle,children,tone,className=''}:{title:string;subtitle:string;children:React.ReactNode;tone?:SecurityTone;className?:string}){return <article className={`dashboardCard extendedInsightCard${tone?` tone-${tone}`:''}${className?` ${className}`:''}`}><header className="dashboardCardHead insightCardHead"><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
 function PlatformCard({platform,title,subtitle,children}:{platform:string;title:string;subtitle:string;children:React.ReactNode}){return <article className="dashboardCard extendedInsightCard platformSpecificCard"><header className="dashboardCardHead insightCardHead"><PlatformLogo platform={platform}/><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
 function Distribution({rows,total,onClick,limit=8}:{rows:Row[];total:number;onClick?:(label:string)=>void;limit?:number}){return <div className="distributionList">{rows.filter(([,n])=>n>0).slice(0,limit).map(([label,n],i)=>{const body=<><span className={`distributionDot dot${i%6}`}/><span className="truncate" title={label}>{label}</span><strong>{fmt(n)}</strong><small>{pct(n,total)}</small><i><b style={{width:pct(n,total)}}/></i></>;return onClick?<button type="button" className="distributionAction" key={label} onClick={()=>onClick(label)}>{body}</button>:<div key={label}>{body}</div>})}</div>}
 function Metric({label,value}:{label:string;value:string}){return <div className="metricTile"><span>{label}</span><strong>{value}</strong></div>}
