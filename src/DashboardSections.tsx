@@ -112,7 +112,13 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const noPrimaryUser=devices.filter(d=>!d.userUpn&&!d.userDisplayName).length;
   const identifiedUsers=userCounts.length;
   const primaryUserCoverage:Row[]=[['Primary user assigned',Math.max(0,total-noPrimaryUser)],['No primary user',noPrimaryUser]];
-  const userDensity:Row[]=[['1 device',userCounts.filter(([,n])=>n===1).length],['2 devices',userCounts.filter(([,n])=>n===2).length],['3+ devices',userCounts.filter(([,n])=>n>=3).length]];
+  const userDensity:Row[]=[
+    ['1 device',userCounts.filter(([,n])=>n===1).length],
+    ['2 devices',userCounts.filter(([,n])=>n===2).length],
+    ['3 devices',userCounts.filter(([,n])=>n===3).length],
+    ['4 devices',userCounts.filter(([,n])=>n===4).length],
+    ['5+ devices',userCounts.filter(([,n])=>n>=5).length]
+  ];
 
   const osByPlatform=Object.entries(devices.reduce<Record<string,Device[]>>((acc,d)=>{const key=platformKey(d.platform);(acc[key]??=[]).push(d);return acc},{})).sort((a,b)=>b[1].length-a[1].length);
   const adoption=osByPlatform.map(([p,list])=>{const versions=countValues(list.map(d=>clean(d.osVersion))),top=versions[0];return {platform:p,devices:list.length,versions:versions.length,topVersion:top?.[0]||'Unknown',topCount:top?.[1]||0}});
@@ -173,7 +179,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
     <DashboardSection icon="users" title="Users & Ownership" subtitle="Primary-user coverage, device density and ownership state.">
       <div className="extendedInsightGrid usersOwnershipGrid">
         <Card className="usersPrimaryCoverageCard" title="Primary user coverage" subtitle="Devices with an identified primary user"><div className="usersDonutLayout"><Donut total={total} items={primaryUserCoverage} center={fmt(total)} label="devices"/><Distribution rows={primaryUserCoverage} total={total} onClick={label=>drill('primaryUser','Primary user',label==='Primary user assigned'?'Has primary user':'No primary user')}/></div></Card>
-        {identifiedUsers>0&&<Card className="usersDensityCard" title="Devices per user" subtitle="Managed-device density for identified primary users"><div className="usersDensitySummary"><strong>{fmt(identifiedUsers)}</strong><span>{identifiedUsers===1?'identified user':'identified users'}</span></div><Distribution rows={userDensity} total={identifiedUsers} onClick={label=>drill('userDensity','Devices per user',label)}/></Card>}
+        {identifiedUsers>0&&<Card className="usersDensityCard" title="Devices per user" subtitle="Managed-device density for identified primary users"><div className="usersDensitySummary"><strong>{fmt(identifiedUsers)}</strong><span>{identifiedUsers===1?'identified user':'identified users'}</span></div><Distribution rows={userDensity} total={identifiedUsers} limit={5} onClick={label=>drill('userDensity','Devices per user',label)}/></Card>}
         <Card className="usersOwnershipCard" title="Ownership" subtitle="Corporate, personal and other ownership states"><div className="usersDonutLayout"><Donut total={total} items={ownership} center={fmt(total)} label="devices"/><Distribution rows={ownership} total={total} onClick={label=>drill('ownership','Ownership',label)}/></div></Card>
       </div>
     </DashboardSection>
