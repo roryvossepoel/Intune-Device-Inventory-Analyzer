@@ -24,9 +24,11 @@ const daysSince=(value:string|null)=>{if(!value)return null;const time=Date.pars
 const intelligencePlatform=(value:string)=>platformKey(value) as 'windows'|'android'|'applemobile'|'macos'|'linux'|'unknown';
 const displayOsVersion=(device:Device)=>describeOsVersion(intelligencePlatform(device.platform),device.osVersion)||(device.osVersion||'');
 const countBy=(devices:Device[],selector:(device:Device)=>string)=>Object.entries(devices.reduce<Record<string,number>>((acc,device)=>{const value=selector(device);acc[value]=(acc[value]??0)+1;return acc},{})).sort((a,b)=>b[1]-a[1]) as [string,number][];
+const primaryUserKey=(device:Device)=>(device.userUpn||device.userDisplayName||'').trim();
+const userDensityBucket=(count:number)=>count<=1?'1 device':count===2?'2 devices':'3+ devices';
 
 type View='overview'|'devices'|'reports'|'faq';
-type Filter={field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability';label:string;value:string}|null;
+type Filter={field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability'|'primaryUser'|'userDensity'|'ownership';label:string;value:string}|null;
 
 export default function AppV2(){
   const [data,setData]=useState<ImportResult|null>(null);
@@ -85,7 +87,32 @@ export default function AppV2(){
   const stale=useMemo(()=>base.filter(device=>{const age=daysSince(device.lastCheckIn);return age!==null&&age>30}).length,[base]);
   const lifecycle=useMemo(()=>lifecycleRiskSummary(base),[base]);
   const q=query.trim().toLowerCase();
-  const deviceRows=useMemo(()=>data?.devices.filter(device=>hardwareExplorerFilterMatches(device,hardwareFilters)&&(!q||[device.deviceName,device.serialNumber,device.userDisplayName,device.userUpn,device.manufacturer,device.model,device.osVersion,device.sourceOS].some(value=>value?.toLowerCase().includes(q))))??[],[data,q,hardwareFilters]);
+  const deviceRows=useMemo(()=>{
+    if(!data)return [];
+    let densityCounts:Map<string,number>|null=null;
+    if(filter?.field==='userDensity'){
+      densityCounts=new Map<string,number>();
+      for(const device of data.devices){
+        if(platformsSelected.length&&!platformsSelected.includes(platformKey(device.platform)))continue;
+        const user=primaryUserKey(device);if(!user)continue;
+        densityCounts.set(user,(densityCounts.get(user)||0)+1);
+      }
+    }
+    return data.devices.filter(device=>{
+      if(!hardwareExplorerFilterMatches(device,hardwareFilters))return false;
+      if(filter?.field==='ownership'&&key(device.ownership)!==filter.value)return false;
+      if(filter?.field==='primaryUser'){
+        const hasUser=Boolean(primaryUserKey(device));
+        if(filter.value==='Has primary user'&&!hasUser)return false;
+        if(filter.value==='No primary user'&&hasUser)return false;
+      }
+      if(filter?.field==='userDensity'){
+        const user=primaryUserKey(device);if(!user)return false;
+        if(userDensityBucket(densityCounts?.get(user)||0)!==filter.value)return false;
+      }
+      return !q||[device.deviceName,device.serialNumber,device.userDisplayName,device.userUpn,device.manufacturer,device.model,device.osVersion,device.sourceOS].some(value=>value?.toLowerCase().includes(q));
+    });
+  },[data,q,hardwareFilters,filter,platformsSelected]);
 
   const deviceInitialFilters=useMemo<DeviceTableInitialFilters>(()=>{
     const initial:DeviceTableInitialFilters={};
@@ -125,6 +152,7 @@ export default function AppV2(){
       :`Health, composition, lifecycle and management insights across ${formatNumber(base.length)} managed devices in ${platformsSelected.length} selected platforms.`;
   const pageTitle=view==='overview'?overviewTitle:view==='devices'?'Device Explorer':view==='reports'?'Reports':'FAQ';
   const pageDescription=view==='overview'?overviewDescription:view==='devices'?'Search and inspect every device in the imported inventory.':'Prepare management-ready exports and summaries from the current inventory.';
+  const userDrillFilter=filter&&(filter.field==='primaryUser'||filter.field==='userDensity'||filter.field==='ownership')?filter:null;
 
   return <div className="app">
     <header className={`topbar ${!data||view==='faq'?'publicTopbar':''}`}><div className="topbarInner">
@@ -143,7 +171,7 @@ export default function AppV2(){
       {demoMode&&<div className="demoBanner"><span>Demo inventory</span><strong>You're exploring fictional data.</strong><button onClick={()=>input.current?.click()}>Open your own export</button></div>}
       <section className="pageHead dashboardHead"><div>{view!=='overview'&&<span className="eyebrow">{view==='devices'?'DEVICE EXPLORER':view.toUpperCase()}</span>}<h1>{pageTitle}</h1><p>{pageDescription}</p></div>{view==='overview'?<DashboardPlatformFilter platforms={platforms} selected={platformsSelected} onChange={values=>{setPlatformsSelected(values);setFilter(null);setHardwareFilters(emptyHardwareExplorerFilters())}}/>:view==='devices'?<Search value={query} setValue={setQuery}/>:null}</section>
       {view==='overview'&&<Overview devices={base} allDevices={platformsSelected.length?base:data.devices} total={base.length} lifecycle={lifecycle} compliant={compliant} noncompliant={noncompliant} grace={grace} stale={stale} compliance={compliance} platformsSelected={platformsSelected} activePlatform={activePlatform} drill={drill}/>} 
-      {view==='devices'&&<DataCard title="Device inventory" subtitle=""><HardwareExplorerFilters devices={data.devices} value={hardwareFilters} onChange={setHardwareFilters}/><SmartTable rows={deviceRows} columns={deviceColumns} rowKey={device=>device.id} exportName="intune-devices" onRowClick={setSelected} initialFilters={deviceInitialFilters} onClearFilters={()=>{setPlatformsSelected([]);setFilter(null);setHardwareFilters(emptyHardwareExplorerFilters())}} searchQuery={query} onClearSearch={()=>setQuery('')}/></DataCard>}
+      {view==='devices'&&<DataCard title="Device inventory" subtitle="">{userDrillFilter&&<div className="dashboardDrillFilter usersDashboardDrillFilter"><span>Dashboard filter</span><strong>{userDrillFilter.label}: {userDrillFilter.value}</strong><button type="button" onClick={()=>setFilter(null)} aria-label="Clear dashboard filter">×</button></div>}<HardwareExplorerFilters devices={data.devices} value={hardwareFilters} onChange={setHardwareFilters}/><SmartTable rows={deviceRows} columns={deviceColumns} rowKey={device=>device.id} exportName="intune-devices" onRowClick={setSelected} initialFilters={deviceInitialFilters} onClearFilters={()=>{setPlatformsSelected([]);setFilter(null);setHardwareFilters(emptyHardwareExplorerFilters())}} searchQuery={query} onClearSearch={()=>setQuery('')}/></DataCard>}
       {view==='reports'&&<section className="reportsPlaceholder"><div className="reportsIcon">▤</div><h2>Management reports</h2><p>PDF and PowerPoint reporting will be built here using the currently loaded inventory. The report engine will remain fully local in the browser.</p><span>Planned: executive summary · platform overview · compliance · lifecycle · hardware</span></section>}
     </main>}
 
