@@ -13,13 +13,14 @@ function escapeHtml(value:string){return value.replace(/[&<>"']/g,char=>char==='
 
 function donutMarkup(rows:Row[],total:number,center:string,label:string){let cursor=0;const stops=rows.map((row,index)=>{const start=cursor;cursor+=total?row.count/total*100:0;return `var(--chart-${index%6}) ${start}% ${cursor}%`});return `<div class="usersDonut" style="background:conic-gradient(${stops.join(',')||'#e7eef7 0 100%'})"><div><strong>${escapeHtml(center)}</strong><span>${escapeHtml(label)}</span></div></div>`}
 function legendMarkup(rows:Row[],total:number){return `<div class="usersLegend">${rows.filter(row=>row.count>0).map((row,index)=>`<div><i class="usersLegendDot usersLegendDot${index%6}"></i><span>${escapeHtml(row.label)}</span><strong>${fmt(row.count)}</strong><small>${pct(row.count,total)}</small></div>`).join('')}</div>`}
-function distributionMarkup(rows:Row[],total:number){return `<div class="usersDensityList">${rows.filter(row=>row.count>0).map((row,index)=>`<div><span>${escapeHtml(row.label)}</span><strong>${fmt(row.count)}</strong><small>${pct(row.count,total)}</small><i><b style="width:${pct(row.count,total)}"></b></i></div>`).join('')}</div>`}
+function distributionMarkup(rows:Row[],total:number){return `<div class="usersDensityList">${rows.filter(row=>row.count>0).map(row=>`<div><span>${escapeHtml(row.label)}</span><strong>${fmt(row.count)}</strong><small>${pct(row.count,total)}</small><i><b style="width:${pct(row.count,total)}"></b></i></div>`).join('')}</div>`}
 function header(title:string,subtitle:string){return `<header class="dashboardCardHead insightCardHead"><div><h2>${escapeHtml(title)}</h2><p>${escapeHtml(subtitle)}</p></div></header>`}
+function ensureGeneratedCard(grid:HTMLElement,className:string){let card=grid.querySelector<HTMLElement>(`:scope > .${className}`);if(!card){card=document.createElement('article');card.className=`dashboardCard extendedInsightCard ${className}`;grid.append(card)}return card}
 
 function setupUsersOwnership(){
   const section=findUsersSection();if(!section)return;
   const grid=section.querySelector<HTMLElement>('.dashboardCategoryContent .extendedInsightGrid');if(!grid)return;
-  const assignment=findCard(grid,'User assignment')||findCard(grid,'Primary user coverage');
+  const assignment=findCard(grid,'User assignment');
   const ownership=findCard(grid,'Ownership');
   if(!assignment||!ownership)return;
 
@@ -27,28 +28,31 @@ function setupUsersOwnership(){
   const ownershipRows=readRows(ownership);
   const totalDevices=ownershipRows.reduce((sum,row)=>sum+row.count,0);
   if(!totalDevices)return;
+
   const noPrimary=assignmentRows.find(row=>row.label==='No primary user')?.count||0;
   const assigned=Math.max(0,totalDevices-noPrimary);
   const densityRows=assignmentRows.filter(row=>row.label!=='No primary user');
   const identifiedUsers=densityRows.reduce((sum,row)=>sum+row.count,0);
   const coverageRows:Row[]=[{label:'Primary user assigned',count:assigned},{label:'No primary user',count:noPrimary}];
+  const signature=`${totalDevices}|${noPrimary}|${densityRows.map(row=>`${row.label}:${row.count}`).join(',')}|${ownershipRows.map(row=>`${row.label}:${row.count}`).join(',')}`;
 
   grid.classList.add('usersOwnershipGrid');
-  assignment.classList.add('usersPrimaryCoverageCard');
-  assignment.classList.remove('usersDensityCard');
-  assignment.innerHTML=`${header('Primary user coverage','Devices with an identified primary user')}<div class="usersDonutLayout">${donutMarkup(coverageRows,totalDevices,fmt(totalDevices),'devices')}${legendMarkup(coverageRows,totalDevices)}</div>`;
+  assignment.classList.add('usersOwnershipSource');
+  ownership.classList.add('usersOwnershipSource');
+  if(grid.dataset.usersOwnershipSignature===signature)return;
+  grid.dataset.usersOwnershipSignature=signature;
+
+  const coverage=ensureGeneratedCard(grid,'usersPrimaryCoverageCard');
+  coverage.innerHTML=`${header('Primary user coverage','Devices with an identified primary user')}<div class="usersDonutLayout">${donutMarkup(coverageRows,totalDevices,fmt(totalDevices),'devices')}${legendMarkup(coverageRows,totalDevices)}</div>`;
 
   let density=grid.querySelector<HTMLElement>(':scope > .usersDensityCard');
   if(identifiedUsers>0){
-    if(!density){density=document.createElement('article');density.className='dashboardCard extendedInsightCard usersDensityCard';grid.append(density)}
+    density=ensureGeneratedCard(grid,'usersDensityCard');
     density.innerHTML=`${header('Devices per user','Managed-device density for identified primary users')}<div class="usersDensitySummary"><strong>${fmt(identifiedUsers)}</strong><span>${identifiedUsers===1?'identified user':'identified users'}</span></div>${distributionMarkup(densityRows,identifiedUsers)}`;
   }else density?.remove();
 
-  ownership.classList.add('usersOwnershipCard');
-  ownership.innerHTML=`${header('Ownership','Corporate, personal and other ownership states')}<div class="usersDonutLayout">${donutMarkup(ownershipRows,totalDevices,fmt(totalDevices),'devices')}${legendMarkup(ownershipRows,totalDevices)}</div>`;
-
-  const signature=`${totalDevices}|${noPrimary}|${densityRows.map(row=>`${row.label}:${row.count}`).join(',')}|${ownershipRows.map(row=>`${row.label}:${row.count}`).join(',')}`;
-  grid.dataset.usersOwnershipSignature=signature;
+  const ownershipSummary=ensureGeneratedCard(grid,'usersOwnershipCard');
+  ownershipSummary.innerHTML=`${header('Ownership','Corporate, personal and other ownership states')}<div class="usersDonutLayout">${donutMarkup(ownershipRows,totalDevices,fmt(totalDevices),'devices')}${legendMarkup(ownershipRows,totalDevices)}</div>`;
 }
 
 let scheduled=false;
