@@ -1,6 +1,6 @@
-type Props={onOpenExport:()=>void;onOpenDemo:()=>void;onOpenReports:()=>void;busy:boolean;error:string|null};
+type Props={onOpenExport?:()=>void;onOpenDemo?:()=>void;onOpenReports?:()=>void;busy?:boolean;error?:string|null};
 
-export default function LandingContent({onOpenExport,onOpenDemo,onOpenReports,busy,error}:Props){
+export default function LandingContent({onOpenExport=()=>document.querySelector<HTMLInputElement>('input[type="file"]')?.click(),onOpenDemo=()=>document.querySelector<HTMLButtonElement>('.mainNav button')?.click(),onOpenReports=()=>document.querySelectorAll<HTMLButtonElement>('.mainNav button')[2]?.click(),busy=false,error=null}:Props={}){
   return <div className="idaHome">
     <section className="idaHero">
       <div className="idaHeroCopy">
