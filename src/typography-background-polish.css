@@ -1,0 +1,219 @@
+/* Readability and page-surface polish. Loaded last on purpose. */
+
+/* Give every public/workspace page a little more visual depth without turning it into a gradient-heavy marketing page. */
+body{
+  background:#eef4fa!important;
+}
+.app{
+  background:transparent!important;
+}
+.landing.landingPro{
+  background:
+    radial-gradient(circle at 12% 4%,rgba(58,125,210,.07),transparent 27%),
+    radial-gradient(circle at 88% 14%,rgba(31,176,196,.055),transparent 24%),
+    linear-gradient(180deg,#f4f8fc 0,#f8fbfe 720px,#f2f7fb 100%)!important;
+}
+.workspace.dashboardWorkspace{
+  position:relative;
+  background:
+    radial-gradient(circle at 88% 2%,rgba(39,112,204,.055),transparent 23%),
+    linear-gradient(180deg,#f2f7fc 0,#f6f9fc 370px,#eef4f9 100%)!important;
+}
+.workspace.dashboardWorkspace:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background-image:linear-gradient(rgba(57,92,130,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(57,92,130,.018) 1px,transparent 1px);
+  background-size:36px 36px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.4),transparent 520px);
+}
+.workspace.dashboardWorkspace>*{position:relative;z-index:1}
+.faqPage{
+  background:
+    radial-gradient(circle at 14% 6%,rgba(55,126,214,.06),transparent 25%),
+    linear-gradient(180deg,#f3f8fc 0,#f8fbfe 330px,#eff5fa 100%)!important;
+}
+
+/* Homepage: raise the smallest text a step so it remains polished but readable on a normal desktop. */
+.idaEyebrow,.idaHomeIntro>span,.idaWorkflow header>span,.idaReportsTeaserCopy>span,.idaRealExamplesCopy>span{
+  font-size:12px!important;
+}
+.idaHeroCopy>p{
+  font-size:17px!important;
+}
+.idaHeroMeta{
+  font-size:12px!important;
+}
+.idaDropZone div strong{
+  font-size:14px!important;
+}
+.idaDropZone div span{
+  font-size:12px!important;
+  line-height:1.5!important;
+}
+.idaDropZone>b{
+  font-size:10px!important;
+}
+.idaHomeIntro p{
+  font-size:15px!important;
+}
+
+.idaCapabilityCopy>span{
+  font-size:10.5px!important;
+}
+.idaCapabilityCopy h3{
+  font-size:22px!important;
+}
+.idaCapabilityCopy p{
+  font-size:14px!important;
+  line-height:1.7!important;
+}
+.idaCapabilityCopy button{
+  font-size:12.5px!important;
+}
+
+/* Keep the miniature UI previews compact, but not microscopic. */
+.idaDashboardMini strong,.idaPreviewCard>span,.idaReportMini header strong{
+  font-size:11px!important;
+}
+.idaDashboardMini p,.idaPreviewCard>p,.idaExplorerMiniRow{
+  font-size:9px!important;
+}
+.idaExplorerMiniFilters span,.idaExplorerMiniHead,.idaReportMini header small{
+  font-size:8px!important;
+}
+.idaReportMini>p{
+  font-size:11px!important;
+}
+.idaReportMini>div small{
+  font-size:8px!important;
+}
+.idaReportMini>div b{
+  font-size:14px!important;
+}
+
+.idaRealExamplesCopy p{
+  font-size:14px!important;
+}
+.idaRealExamplesCopy button,.idaReportsTeaserCopy>button{
+  font-size:12.5px!important;
+}
+.idaExampleStack article>div strong{
+  font-size:12px!important;
+}
+.idaExampleStack article>div p{
+  font-size:10.5px!important;
+  line-height:1.55!important;
+}
+.idaExampleStack article>b{
+  font-size:12px!important;
+}
+
+.idaWorkflow article strong{
+  font-size:13px!important;
+}
+.idaWorkflow article p{
+  font-size:11.5px!important;
+  line-height:1.6!important;
+}
+.idaReportsTeaserCopy>p{
+  font-size:14px!important;
+}
+.idaReportsTeaserCopy article strong{
+  font-size:12px!important;
+}
+.idaReportsTeaserCopy article span{
+  font-size:10.5px!important;
+}
+.idaTrustLead small{
+  font-size:9px!important;
+}
+.idaTrustLead p{
+  font-size:10.5px!important;
+}
+.idaTrustPanel>article strong{
+  font-size:12px!important;
+}
+.idaTrustPanel>article span{
+  font-size:10.5px!important;
+}
+
+/* Reports page readability. */
+.reportEyebrow,.reportStoryIntro>span,.reportRoadmap>div:first-child>span{
+  font-size:10px!important;
+}
+.reportStudioHero p{
+  font-size:13px!important;
+}
+.reportPlanCard>span{
+  font-size:9px!important;
+}
+.reportPlanCard>small{
+  font-size:10px!important;
+}
+.reportPlanCard b{
+  font-size:8.5px!important;
+}
+.reportStoryIntro p{
+  font-size:12px!important;
+}
+.reportNarrative{
+  font-size:12.5px!important;
+}
+.reportMetric span,.reportMetric small{
+  font-size:9px!important;
+}
+.reportBars>div>div{
+  font-size:10px!important;
+}
+.reportLifecycleDiagram span{
+  font-size:9px!important;
+}
+.reportRoadmap p{
+  font-size:11px!important;
+}
+.reportRoadmapItems strong{
+  font-size:10.5px!important;
+}
+.reportRoadmapItems p{
+  font-size:9.5px!important;
+}
+
+/* Footer was intentionally small; bring it closer to normal product-site readability. */
+.productFooterBrand strong{
+  font-size:15px!important;
+}
+.productFooterBrand span,
+.productFooterLead>p{
+  font-size:11px!important;
+}
+.productFooterGrid section>h3{
+  font-size:11px!important;
+}
+.productFooterGrid section>a,.productFooterGrid section>button,.productFooterGrid section>span{
+  font-size:10.5px!important;
+}
+.productFooterPrivacy strong{
+  font-size:10.5px!important;
+}
+.productFooterPrivacy span{
+  font-size:9.5px!important;
+}
+.productFooterBottom{
+  font-size:9.5px!important;
+}
+
+/* Let cards stand off the new page surface slightly more clearly. */
+.dashboardCard,.dataCard,.reportStory,.reportStudioHero,.faqItem,.faqCta{
+  box-shadow:0 10px 28px rgba(25,58,94,.055)!important;
+}
+.dashboardCard,.dataCard,.reportStory,.reportStudioHero{
+  border-color:#d7e3ef!important;
+}
+
+@media(max-width:820px){
+  .idaHeroCopy>p{font-size:15px!important}
+  .idaCapabilityCopy p{font-size:13px!important}
+  .idaHomeIntro p,.idaRealExamplesCopy p,.idaReportsTeaserCopy>p{font-size:13px!important}
+}
