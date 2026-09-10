@@ -57,6 +57,7 @@ import './mobile-hardware-unity.css';
 import './users-ownership.css';
 import './product-refresh.css';
 import './homepage-final-polish.css';
+import './typography-background-polish.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
