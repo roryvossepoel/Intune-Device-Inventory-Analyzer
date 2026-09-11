@@ -60,6 +60,7 @@ import './homepage-final-polish.css';
 import './typography-background-polish.css';
 import './homepage-readable-v2.css';
 import './brand-home';
+import './header-height-polish.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
