@@ -58,6 +58,8 @@ import './users-ownership.css';
 import './product-refresh.css';
 import './homepage-final-polish.css';
 import './typography-background-polish.css';
+import './homepage-readable-v2.css';
+import './brand-home';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
