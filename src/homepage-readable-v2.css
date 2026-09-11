@@ -1,0 +1,73 @@
+/* Readability pass requested after the homepage redesign.
+   Loaded last so these sizes win over the earlier visual-polish layers. */
+
+/* The hero already has a clear primary CTA; remove the duplicate import strip. */
+.idaDropZone{display:none!important}
+.idaHomeState{margin:18px 0 34px!important}
+
+/* The dashboard header does not need a second Open export action. */
+.idaHeaderOpen{display:none!important}
+
+/* Capability cards: keep the compact product feel, but make the text easier to read. */
+.idaCapabilityCopy>span{font-size:10.5px!important}
+.idaCapabilityCopy h3{font-size:23px!important;line-height:1.2!important}
+.idaCapabilityCopy p{font-size:14px!important;line-height:1.68!important;color:#657b92!important}
+.idaCapabilityCopy button{font-size:13px!important}
+
+/* Preview cards inside the three homepage product cards. */
+.idaDashboardMini strong{font-size:11.5px!important}
+.idaDashboardMini p{font-size:10px!important}
+.idaDashboardMini .idaPreviewBar>div{font-size:10px!important}
+.idaExplorerMiniFilters span{font-size:9px!important}
+.idaExplorerMiniHead{font-size:8px!important}
+.idaExplorerMiniRow{font-size:9.5px!important}
+.idaExplorerMiniRow em{font-size:8px!important}
+.idaReportMini header small{font-size:8.5px!important}
+.idaReportMini header strong{font-size:12.5px!important}
+.idaReportMini>p{font-size:11.5px!important;line-height:1.65!important}
+.idaReportMini>div b{font-size:14px!important}
+.idaReportMini>div small{font-size:8.5px!important}
+
+/* Real examples cards. */
+.idaExampleStack article>div strong{font-size:12.5px!important}
+.idaExampleStack article>div p{font-size:11px!important;line-height:1.5!important}
+.idaExampleStack article>b{font-size:12px!important}
+
+/* Four-step workflow. */
+.idaWorkflow header>span{font-size:12px!important}
+.idaWorkflow h2{font-size:36px!important}
+.idaWorkflow article>span{width:38px!important;height:38px!important;font-size:12px!important}
+.idaWorkflow article strong{font-size:14px!important}
+.idaWorkflow article p{font-size:12.5px!important;line-height:1.58!important;max-width:255px!important}
+.idaWorkflowArrow{font-size:17px!important}
+
+/* Reports teaser. */
+.idaReportsTeaserCopy>span{font-size:12px!important}
+.idaReportsTeaserCopy h2{font-size:36px!important}
+.idaReportsTeaserCopy>p{font-size:14px!important;line-height:1.7!important}
+.idaReportsTeaserCopy article strong{font-size:13px!important}
+.idaReportsTeaserCopy article span{font-size:11.5px!important;line-height:1.5!important}
+.idaReportsTeaserCopy>button{font-size:13px!important}
+
+/* Trust panel. */
+.idaTrustLead small{font-size:9.5px!important}
+.idaTrustLead h2{font-size:21px!important}
+.idaTrustLead p{font-size:12.5px!important;line-height:1.6!important}
+.idaTrustPanel>article strong{font-size:12.5px!important}
+.idaTrustPanel>article span{font-size:11.5px!important;line-height:1.58!important}
+
+/* Footer. */
+.productFooterBrand strong{font-size:15px!important}
+.productFooterBrand span{font-size:11.5px!important}
+.productFooterLead>p{font-size:12px!important;line-height:1.7!important}
+.productFooterGrid section>h3{font-size:11px!important}
+.productFooterGrid section>a,.productFooterGrid section>button,.productFooterGrid section>span{font-size:11px!important;line-height:1.5!important}
+.productFooterPrivacy strong{font-size:11.5px!important}
+.productFooterPrivacy span{font-size:10.5px!important;line-height:1.55!important}
+.productFooterBottom{font-size:10px!important}
+
+@media(max-width:820px){
+  .idaCapabilityCopy p{font-size:13.5px!important}
+  .idaWorkflow article p{font-size:12px!important;max-width:none!important}
+  .idaReportsTeaserCopy>p{font-size:13.5px!important}
+}
