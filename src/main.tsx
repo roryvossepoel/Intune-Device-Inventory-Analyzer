@@ -62,6 +62,7 @@ import './homepage-readable-v2.css';
 import './brand-home';
 import './header-height-polish.css';
 import './homepage-body-polish.css';
+import './homepage-card-variants.css';
 import './homepage-scroll-reveal.css';
 import './homepage-scroll-reveal';
 
