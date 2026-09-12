@@ -28,18 +28,17 @@ export default function FaqPage(){
   const normalized=query.trim().toLowerCase();
   const filtered=useMemo(()=>normalized?entries.filter(entry=>`${entry.category} ${entry.q} ${textOf(entry.answer)}`.toLowerCase().includes(normalized)):entries,[normalized]);
 
-  return <main className="faqPage">
-    <section className="faqHero">
-      <span className="faqEyebrow">FAQ</span>
-      <h1>Questions about the Analyzer</h1>
-      <p>How the Analyzer works, what your inventory data does, and how dashboard insights are calculated.</p>
-      <div className="faqSearchWrap">
-        <div className={`faqSearch ${query?'hasValue':''}`}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg>
-          <input value={query} onChange={event=>setQuery(event.target.value)} type="search" placeholder="Search questions, topics or answers…" aria-label="Search frequently asked questions"/>
-          {query&&<button type="button" onClick={()=>setQuery('')} aria-label="Clear FAQ search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>}
-        </div>
-        <span className="faqSearchMeta">{normalized?`${filtered.length} ${filtered.length===1?'answer':'answers'} found`:`${entries.length} questions`}</span>
+  return <main className="faqPage workspace">
+    <section className="pageHead faqPageHead">
+      <div>
+        <span className="eyebrow">FAQ</span>
+        <h1>FAQ</h1>
+        <p>Search answers about how the Analyzer works, what happens to your inventory data, and how dashboard insights are calculated.</p>
+      </div>
+      <div className={`faqSearch ${query?'hasValue':''}`}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg>
+        <input value={query} onChange={event=>setQuery(event.target.value)} type="search" placeholder="Search FAQ…" aria-label="Search frequently asked questions"/>
+        {query&&<button type="button" onClick={()=>setQuery('')} aria-label="Clear FAQ search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>}
       </div>
     </section>
 
@@ -50,7 +49,7 @@ export default function FaqPage(){
 }
 
 function Faq({entry,index}:{entry:FaqEntry;index:number}){
-  return <details className="faqItem" name="faq" open={false}>
+  return <details className="faqItem" name="faq">
     <summary><span className="faqNumber">{String(index+1).padStart(2,'0')}</span><span className="faqQuestion"><small>{entry.category}</small><strong>{entry.q}</strong></span><span className="faqToggle" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 10 4 4 4-4"/></svg></span></summary>
     <div className="faqAnswer"><p>{entry.answer}</p></div>
   </details>;
