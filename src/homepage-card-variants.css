@@ -1,0 +1,53 @@
+/* Temporary browser comparison: current vs calm vs tooling. */
+.idaCardStyleCompare{display:grid;gap:48px;margin-bottom:86px}
+.idaVariantBlock{display:grid;gap:16px}
+.idaVariantHeader{display:flex;align-items:baseline;gap:10px;padding:0 4px}
+.idaVariantHeader span{font-size:10px;font-weight:900;letter-spacing:.14em;color:#2c6fd1}
+.idaVariantHeader strong{font-size:20px;line-height:1.2;color:#102e57}
+.idaCapabilityGridCompare{margin-bottom:0!important}
+
+/* shared CTA polish */
+.idaCardStyleCompare .idaCapabilityCopy button{display:inline-flex!important;align-items:center!important;gap:9px!important}
+.idaCardStyleCompare .idaCapabilityCopy button b{font-size:17px!important;line-height:1!important;transition:transform .16s ease}
+.idaCardStyleCompare .idaCapabilityCopy button:hover b{transform:translateX(3px)}
+
+/* Option 1: calm / product-led */
+.idaVariantCalm .idaCapability{border-color:#d7e3ef!important;box-shadow:0 16px 34px rgba(22,56,92,.065)!important}
+.idaVariantCalm .idaCapabilityCopy p{font-size:14.5px!important;line-height:1.72!important;color:#607790!important}
+.idaVariantCalm .idaCapabilityCopy button{font-size:13.5px!important;color:#225eb2!important}
+.idaVariantCalm .idaDashboardMini,.idaVariantCalm .idaExplorerMini,.idaVariantCalm .idaReportMini{background:linear-gradient(180deg,#fbfdff,#f7fafe)!important;border-color:#dce7f2!important}
+.idaVariantCalm .idaDashboardMini strong{font-size:12px!important}
+.idaVariantCalm .idaDashboardMini p{font-size:10.5px!important}
+.idaVariantCalm .idaDashboardMini .idaPreviewBar>div{font-size:10.5px!important}
+.idaVariantCalm .idaExplorerMiniFilters span{font-size:9.5px!important}
+.idaVariantCalm .idaExplorerMiniHead{font-size:8.5px!important}
+.idaVariantCalm .idaExplorerMiniRow{font-size:10px!important}
+.idaVariantCalm .idaReportMini header small{font-size:9px!important}
+.idaVariantCalm .idaReportMini header strong{font-size:13px!important}
+.idaVariantCalm .idaReportMini>p{font-size:12px!important}
+.idaVariantCalm .idaReportMini>div small{font-size:9px!important}
+
+/* Option 3: Microsoft/tooling feel */
+.idaVariantTooling .idaCapability{border-color:#cbd9e8!important;border-radius:14px!important;box-shadow:0 8px 18px rgba(18,47,82,.045)!important}
+.idaVariantTooling .idaCapability:before{height:2px!important;opacity:.65!important}
+.idaVariantTooling .idaCapabilityCopy{padding:24px 24px 18px!important}
+.idaVariantTooling .idaCapabilityCopy>span{font-size:10.5px!important;color:#235fbc!important;letter-spacing:.11em!important}
+.idaVariantTooling .idaCapabilityCopy h3{font-size:22px!important;line-height:1.18!important;max-width:18ch!important}
+.idaVariantTooling .idaCapabilityCopy p{font-size:14px!important;line-height:1.62!important;color:#536d88!important}
+.idaVariantTooling .idaCapabilityCopy button{font-size:13px!important;color:#174f9d!important;font-weight:850!important}
+.idaVariantTooling .idaDashboardMini,.idaVariantTooling .idaExplorerMini,.idaVariantTooling .idaReportMini{border-radius:10px!important;background:#f5f8fc!important;border-color:#cfdbe8!important;box-shadow:none!important}
+.idaVariantTooling .idaDashboardMini>div{border-radius:8px!important;border-color:#cfdbe8!important}
+.idaVariantTooling .idaExplorerMiniFilters span{font-size:9.5px!important;color:#56718f!important;border-radius:6px!important;border-color:#c7d6e6!important;background:#fff!important}
+.idaVariantTooling .idaExplorerMiniHead{font-size:8.5px!important;color:#657f9b!important}
+.idaVariantTooling .idaExplorerMiniRow{font-size:10px!important;color:#516b87!important}
+.idaVariantTooling .idaExplorerMiniRow strong{color:#10355f!important}
+.idaVariantTooling .idaExplorerMiniRow em{font-size:8.5px!important;border-radius:4px!important}
+.idaVariantTooling .idaReportMini{background:#fff!important}
+.idaVariantTooling .idaReportMini header small{font-size:9px!important;letter-spacing:.08em!important}
+.idaVariantTooling .idaReportMini header strong{font-size:13px!important}
+.idaVariantTooling .idaReportMini>p{font-size:12px!important;line-height:1.6!important;color:#526d88!important}
+.idaVariantTooling .idaReportMini>div span{border-radius:7px!important;background:#f5f8fc!important;border-color:#d3deea!important}
+.idaVariantTooling .idaReportMini>div small{font-size:9px!important}
+
+@media(max-width:1180px){.idaCardStyleCompare{gap:36px}.idaCapabilityGridCompare{grid-template-columns:1fr!important}.idaVariantCurrent .idaCapability,.idaVariantCalm .idaCapability,.idaVariantTooling .idaCapability{min-height:440px!important}}
+@media(max-width:620px){.idaVariantHeader strong{font-size:18px}.idaVariantHeader span{font-size:9.5px}}
