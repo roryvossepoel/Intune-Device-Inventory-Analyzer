@@ -68,6 +68,7 @@ import './homepage-scroll-reveal';
 import './mobile-navigation.css';
 import './homepage-hero-preview-polish.css';
 import './homepage-hero-preview-data';
+import './main-page-heading-unity.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
