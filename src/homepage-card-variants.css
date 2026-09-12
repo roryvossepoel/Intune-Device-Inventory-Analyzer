@@ -55,43 +55,53 @@
 .idaVariantCurrent .idaExplorerMiniHead{
   margin-top:2px!important;
   padding:10px 7px!important;
-  font-size:9.2px!important;
-  color:#6e829a!important;
+  font-size:10.1px!important;
+  line-height:1.25!important;
+  color:#60768f!important;
 }
 .idaVariantCurrent .idaExplorerMiniRow{
-  padding:11px 7px!important;
-  font-size:10.8px!important;
-  color:#536c86!important;
+  padding:12px 7px!important;
+  font-size:11.6px!important;
+  line-height:1.35!important;
+  color:#506981!important;
 }
 .idaVariantCurrent .idaExplorerMiniRow strong{
-  font-size:10.9px!important;
+  font-size:11.7px!important;
   color:#12385f!important;
 }
 .idaVariantCurrent .idaExplorerMiniRow em{
-  font-size:8.8px!important;
-  padding:3px 6px!important;
+  font-size:9.6px!important;
+  line-height:1.2!important;
+  padding:4px 7px!important;
+  font-weight:800!important;
 }
 
 /* Reports preview: enlarge captions and small labels while keeping the document feel compact. */
 .idaVariantCurrent .idaReportMini header>span{
-  width:33px!important;
-  height:33px!important;
-  font-size:10px!important;
+  width:34px!important;
+  height:34px!important;
+  font-size:10.5px!important;
 }
 .idaVariantCurrent .idaReportMini header small{
-  font-size:9px!important;
-  letter-spacing:.09em!important;
+  font-size:10px!important;
+  letter-spacing:.085em!important;
+  color:#70849b!important;
 }
-.idaVariantCurrent .idaReportMini header strong{font-size:13px!important}
+.idaVariantCurrent .idaReportMini header strong{font-size:13.5px!important}
 .idaVariantCurrent .idaReportMini>p{
-  font-size:12px!important;
-  line-height:1.68!important;
-  color:#5c748f!important;
+  font-size:12.6px!important;
+  line-height:1.66!important;
+  color:#58718c!important;
 }
-.idaVariantCurrent .idaReportMini>div b{font-size:14.8px!important}
+.idaVariantCurrent .idaReportMini>div b{
+  font-size:15.5px!important;
+  line-height:1.2!important;
+}
 .idaVariantCurrent .idaReportMini>div small{
-  font-size:9.2px!important;
-  color:#70849c!important;
+  font-size:10.2px!important;
+  line-height:1.25!important;
+  color:#667d96!important;
+  font-weight:650!important;
 }
 
 @media(max-width:1180px){
