@@ -1,0 +1,5 @@
+/* Main navigation destinations use the title itself as the page identifier.
+   Eyebrows remain available for sections where they add context instead of repeating the title. */
+.workspace > .pageHead > div > .eyebrow {
+  display: none !important;
+}
