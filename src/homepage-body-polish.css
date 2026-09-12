@@ -102,6 +102,28 @@
 .idaExampleStack article:nth-child(3)>b{color:#5d4ac8!important;border-color:#ddd6f5!important}
 .idaExampleStack article:nth-child(4)>b{color:#147e91!important;border-color:#cee6eb!important}
 
+/* Hero refinement: center the action cluster and use a stronger value-oriented label. */
+.idaEyebrow{
+  font-size:0!important;
+}
+.idaEyebrow::after{
+  content:"FROM INTUNE INVENTORY TO INSIGHT";
+  font-size:11.5px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.12em!important;
+  color:#2e6fc1!important;
+}
+.idaHeroActions{
+  width:100%!important;
+  justify-content:center!important;
+}
+.idaHeroMeta{
+  width:100%!important;
+  justify-content:center!important;
+  text-align:center!important;
+}
+
 /* Footer legal/version line: keep it secondary, but not tiny. */
 .productFooterBottom{
   font-size:11.5px!important;
