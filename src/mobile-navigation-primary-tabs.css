@@ -1,0 +1,111 @@
+/* Mobile header: keep Dashboard / Device Explorer / Reports as the primary navigation.
+   Only the three utility actions (FAQ, Share, GitHub) move into the hamburger menu. */
+@media (max-width: 820px) {
+  .topbar,
+  .topbar.publicTopbar,
+  .topbar:not(.publicTopbar) {
+    height: 112px !important;
+  }
+
+  .topbar .topbarInner,
+  .topbar.publicTopbar .topbarInner,
+  .topbar:not(.publicTopbar) .topbarInner {
+    height: 112px !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-rows: 68px 44px !important;
+    column-gap: 12px !important;
+    row-gap: 0 !important;
+    align-items: center !important;
+  }
+
+  .topbar .brand {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  .topbar .idaMobileNavigation {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  .topbar .topbarInner > .idaHeaderUtilities {
+    display: none !important;
+  }
+
+  .topbar .topbarInner > .mainNav,
+  .topbar .topbarInner > .publicNav,
+  .topbar .mainNav,
+  .topbar .publicNav {
+    display: flex !important;
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    height: 44px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 2px !important;
+    gap: 2px !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none;
+    border-top: 1px solid #edf2f7 !important;
+  }
+
+  .topbar .mainNav::-webkit-scrollbar { display: none; }
+
+  .topbar .mainNav button,
+  .topbar .publicNav button,
+  .topbar .mainNav button:first-child,
+  .topbar .mainNav button.active {
+    flex: 0 0 auto !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 9px !important;
+    font-size: 11.5px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .topbar .mainNav button.active:after {
+    left: 9px !important;
+    right: 9px !important;
+    bottom: 4px !important;
+  }
+
+  /* The disclosure opens below both mobile header rows instead of covering the primary tabs. */
+  .topbar .idaMobileMenuPanel {
+    top: calc(100% + 52px) !important;
+    width: min(250px, calc(100vw - 32px)) !important;
+    max-height: calc(100vh - 128px) !important;
+    max-height: calc(100dvh - 128px) !important;
+  }
+
+  .topbar .idaMobileMenuUtilitiesOnly {
+    display: grid;
+    gap: 2px;
+  }
+
+  .topbar .idaMobileMenuUtilitiesOnly > .idaShare {
+    width: 100%;
+  }
+
+  .topbar .idaMobileMenuUtilitiesOnly .idaMobileMenuLink,
+  .topbar .idaMobileMenuUtilitiesOnly .idaShareToggle,
+  .topbar .idaMobileMenuUtilitiesOnly .idaMobileProjectLink {
+    min-height: 48px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .topbar .mainNav button,
+  .topbar .publicNav button,
+  .topbar .mainNav button:first-child,
+  .topbar .mainNav button.active {
+    padding-left: 7px !important;
+    padding-right: 7px !important;
+    font-size: 11px !important;
+  }
+}
