@@ -41,6 +41,8 @@
     grid-row: 2 !important;
     justify-self: stretch !important;
     width: 100% !important;
+    /* Remove the legacy mobile max-width so neither end of the tab row is clipped. */
+    max-width: none !important;
     height: 44px !important;
     min-width: 0 !important;
     margin: 0 !important;
@@ -56,15 +58,18 @@
 
   .topbar .mainNav::-webkit-scrollbar { display: none; }
 
-  .topbar .mainNav button,
-  .topbar .publicNav button,
+  /* Match the specificity of the earlier public/private header rules on every tab,
+     not just the active or first button. */
+  .topbar .topbarInner > .mainNav button,
+  .topbar.publicTopbar .mainNav button,
+  .topbar:not(.publicTopbar) .mainNav button,
   .topbar .mainNav button:first-child,
   .topbar .mainNav button.active {
     flex: 0 0 auto !important;
     height: 44px !important;
     min-height: 44px !important;
     padding: 0 9px !important;
-    font-size: 11.5px !important;
+    font-size: 13.5px !important;
     line-height: 1 !important;
     white-space: nowrap !important;
   }
@@ -75,12 +80,12 @@
     bottom: 4px !important;
   }
 
-  /* The disclosure opens below both mobile header rows instead of covering the primary tabs. */
+  /* Toggle ends at 56px; leave 8px below the full 112px mobile header. */
   .topbar .idaMobileMenuPanel {
-    top: calc(100% + 52px) !important;
+    top: calc(100% + 64px) !important;
     width: min(250px, calc(100vw - 32px)) !important;
-    max-height: calc(100vh - 128px) !important;
-    max-height: calc(100dvh - 128px) !important;
+    max-height: calc(100vh - 136px) !important;
+    max-height: calc(100dvh - 136px) !important;
   }
 
   .topbar .idaMobileMenuUtilitiesOnly {
@@ -100,12 +105,13 @@
 }
 
 @media (max-width: 390px) {
-  .topbar .mainNav button,
-  .topbar .publicNav button,
+  .topbar .topbarInner > .mainNav button,
+  .topbar.publicTopbar .mainNav button,
+  .topbar:not(.publicTopbar) .mainNav button,
   .topbar .mainNav button:first-child,
   .topbar .mainNav button.active {
     padding-left: 7px !important;
     padding-right: 7px !important;
-    font-size: 11px !important;
+    font-size: 13px !important;
   }
 }
