@@ -25,11 +25,7 @@ export default function LandingContent({onOpenExport=()=>document.querySelector<
       <p>The Analyzer keeps overview, investigation and communication connected. Every high-level signal can lead back to the devices behind it.</p>
     </section>
 
-    <section className="idaCapabilityGrid">
-      <CapabilityCard className="dashboard" eyebrow="01 · DASHBOARD" title="See the estate before you start digging" text="Compliance, encryption, activity, hardware, users, OS versions and lifecycle are organized into focused sections instead of one giant export." action="Explore dashboard" onClick={onOpenDemo}><DashboardMini/></CapabilityCard>
-      <CapabilityCard className="explorer" eyebrow="02 · DEVICE EXPLORER" title="Move from a percentage to the exact devices" text="Use fixed filters, dashboard drill-through, search and original Intune fields to inspect the inventory without losing the context behind the finding." action="Open Device Explorer" onClick={onOpenDemo}><ExplorerMini/></CapabilityCard>
-      <CapabilityCard className="reports" eyebrow="03 · REPORTS" title="Turn findings into a story, not another screenshot" text="Reports are being built around three reusable stories that combine plain-language interpretation with the graph or diagram that proves the point." action="Preview Reports" onClick={onOpenReports}><ReportMini/></CapabilityCard>
-    </section>
+    <CardStyleComparison onOpenDemo={onOpenDemo} onOpenReports={onOpenReports}/>
 
     <section className="idaRealExamples">
       <div className="idaRealExamplesCopy"><span>REAL ANALYZER BUILDING BLOCKS</span><h2>Examples come straight from the workspace.</h2><p>The homepage now reflects the same concepts you see after importing an inventory. No generic product mockups.</p><button onClick={onOpenDemo}>Open the complete demo <span>→</span></button></div>
@@ -51,6 +47,25 @@ export default function LandingContent({onOpenExport=()=>document.querySelector<
       <TrustFact title="Local processing" text="Open and analyze the export on the device in front of you."/><TrustFact title="Transparent" text="The project is open source and the processing logic can be reviewed."/><TrustFact title="Portable" text="No tenant connection, account or service database is required to start analyzing."/>
     </section>
   </div>;
+}
+
+function CardStyleComparison({onOpenDemo,onOpenReports}:{onOpenDemo:()=>void;onOpenReports:()=>void}){
+  return <section className="idaCardStyleCompare" aria-label="Temporary card style comparison">
+    <VariantBlock label="CURRENT" name="Current style" className="idaVariantCurrent" onOpenDemo={onOpenDemo} onOpenReports={onOpenReports}/>
+    <VariantBlock label="OPTION 1" name="Calm" className="idaVariantCalm" onOpenDemo={onOpenDemo} onOpenReports={onOpenReports}/>
+    <VariantBlock label="OPTION 3" name="Tooling" className="idaVariantTooling" onOpenDemo={onOpenDemo} onOpenReports={onOpenReports}/>
+  </section>;
+}
+
+function VariantBlock({label,name,className,onOpenDemo,onOpenReports}:{label:string;name:string;className:string;onOpenDemo:()=>void;onOpenReports:()=>void}){
+  return <section className={`idaVariantBlock ${className}`}>
+    <header className="idaVariantHeader"><span>{label}</span><strong>{name}</strong></header>
+    <div className="idaCapabilityGrid idaCapabilityGridCompare">
+      <CapabilityCard className="dashboard" eyebrow="01 · DASHBOARD" title="See the estate before you start digging" text="Compliance, encryption, activity, hardware, users, OS versions and lifecycle are organized into focused sections instead of one giant export." action="Explore dashboard" onClick={onOpenDemo}><DashboardMini/></CapabilityCard>
+      <CapabilityCard className="explorer" eyebrow="02 · DEVICE EXPLORER" title="Move from a percentage to the exact devices" text="Use fixed filters, dashboard drill-through, search and original Intune fields to inspect the inventory without losing the context behind the finding." action="Open Device Explorer" onClick={onOpenDemo}><ExplorerMini/></CapabilityCard>
+      <CapabilityCard className="reports" eyebrow="03 · REPORTS" title="Turn findings into a story, not another screenshot" text="Reports are being built around three reusable stories that combine plain-language interpretation with the graph or diagram that proves the point." action="Preview Reports" onClick={onOpenReports}><ReportMini/></CapabilityCard>
+    </div>
+  </section>;
 }
 
 function HeroProductPreview(){return <div className="idaHeroProduct"><div className="idaProductWindow"><header><span><i/><i/><i/></span><strong>Inventory dashboard</strong><small>Example inventory</small></header><div className="idaPreviewNav"><b>Dashboard</b><span>Device Explorer</span><span>Reports</span><em>All platforms⌄</em></div><div className="idaPreviewKpis"><MiniKpi label="Managed devices" value="6,541"/><MiniKpi label="Compliant" value="82.1%"/><MiniKpi label="Lifecycle risk" value="128"/><MiniKpi label="No check-in 30+ days" value="923"/></div><div className="idaPreviewMain"><div className="idaPreviewCard"><span>Encryption status</span><small>Reported device encryption state</small><div className="idaPreviewDonut"><div><strong>95.0%</strong><small>encrypted</small></div></div><p><i className="good"/>Encrypted <b>6,214</b><em>95.0%</em></p><p><i className="bad"/>Not encrypted <b>196</b><em>3.0%</em></p><p><i/>Unknown <b>131</b><em>2.0%</em></p></div><div className="idaPreviewCard versions"><span>Windows versions</span><small>90 devices · 4 reported versions</small><PreviewBar label="Windows 11 25H2" value="63" width="70%"/><PreviewBar label="Windows 11 24H2" value="24" width="26.7%"/><PreviewBar label="Windows 11 23H2" value="3" width="3.3%"/></div></div></div><div className="idaExplorerFloat"><header><strong>Device Explorer</strong><span>171 of 180 devices</span></header><div className="idaFloatFilters"><span>Platform · Windows⌄</span><span>Encryption · Encrypted⌄</span></div><p><b>ADMIN-SL7-01</b><span>Windows 11 25H2</span><em>Compliant</em></p><p><b>LAPTOP-042</b><span>Windows 11 24H2</span><em>Compliant</em></p></div></div>}
