@@ -65,6 +65,7 @@ import './homepage-body-polish.css';
 import './homepage-card-variants.css';
 import './homepage-scroll-reveal.css';
 import './homepage-scroll-reveal';
+import './mobile-navigation.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
