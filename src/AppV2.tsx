@@ -9,6 +9,7 @@ import LandingContent from './LandingContent';
 import FaqPage from './FaqPage';
 import ReportsPage from './ReportsPage';
 import ShareMenu from './ShareMenu';
+import MobileNavigation from './MobileNavigation';
 import DeviceDetailPanel from './DeviceDetail';
 import { describeOsVersion } from './deviceIntelligence';
 import { lifecycleRiskSummary } from './lifecycleRisk';
@@ -145,6 +146,7 @@ export default function AppV2(){
         <ShareMenu/>
         <a className="idaGithubButton" href="https://github.com/roryvossepoel/Intune-Device-Inventory-Analyzer" target="_blank" rel="noreferrer" aria-label="Open GitHub repository" title="GitHub"><GithubIcon/></a>
       </div>
+      <MobileNavigation activeView={view==='faq'?'faq':data?view:'home'} onNavigate={navigate}/>
       {data&&<button className="primarySmall idaHeaderOpen" onClick={()=>input.current?.click()}>Open export</button>}
       <input ref={input} hidden type="file" accept=".zip,.csv" onChange={event=>open(event.target.files?.[0])}/>
     </div></header>
