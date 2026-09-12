@@ -156,6 +156,18 @@
   font-weight:820!important;
 }
 
+/* Let the Windows version list remain fully readable while preserving the layered card effect. */
+.idaHeroProduct{
+  min-height:555px!important;
+  padding-bottom:74px!important;
+}
+.idaHeroProduct .idaExplorerFloat{
+  bottom:-24px!important;
+}
+
 @media(max-width:1180px){
-  .idaHeroProduct .idaExplorerFloat{width:min(410px,calc(100% - 24px))!important}
+  .idaHeroProduct .idaExplorerFloat{
+    width:min(410px,calc(100% - 24px))!important;
+    bottom:-18px!important;
+  }
 }
