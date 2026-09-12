@@ -1,0 +1,213 @@
+/* Mobile-only disclosure navigation. Desktop header styling is deliberately untouched. */
+.topbar .idaMobileNavigation { display: none; }
+
+@media (max-width: 820px) {
+  .topbar .topbarInner,
+  .topbar.publicTopbar .topbarInner,
+  .topbar:not(.publicTopbar) .topbarInner {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 12px !important;
+    width: calc(100% - 28px) !important;
+    position: static;
+  }
+  .topbar .topbarInner > .mainNav,
+  .topbar .topbarInner > .idaHeaderUtilities {
+    display: none !important;
+  }
+  .topbar .topbarInner .brand > span:last-child {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 3px !important;
+  }
+  .topbar .topbarInner .brand strong {
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+  }
+  .topbar .topbarInner .brand small {
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+  }
+  .topbar .idaMobileNavigation {
+    display: block;
+    grid-column: 2;
+    justify-self: end;
+  }
+  .topbar .idaMobileMenuToggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: #24456e;
+    background: #f8fbff;
+    border: 1px solid #d6e3f1;
+    border-radius: 12px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .topbar .idaMobileMenuToggle[aria-expanded="true"] {
+    color: #2563eb;
+    background: #eef5ff;
+    border-color: #b9d2f5;
+  }
+  .topbar .idaMobileMenuToggle svg {
+    display: block;
+    width: 23px;
+    height: 23px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+  }
+  .idaMobileMenuToggle path {
+    transform-origin: 12px 12px;
+    transition: transform 160ms ease, opacity 160ms ease;
+  }
+  .idaMobileMenuToggle[aria-expanded="true"] .idaMenuLineTop {
+    transform: rotate(45deg) translateY(6px);
+  }
+  .idaMobileMenuToggle[aria-expanded="true"] .idaMenuLineMiddle { opacity: 0; }
+  .idaMobileMenuToggle[aria-expanded="true"] .idaMenuLineBottom {
+    transform: rotate(-45deg) translateY(-6px);
+  }
+  .topbar .idaMobileMenuPanel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 12px;
+    right: 12px;
+    z-index: 150;
+    max-height: calc(100vh - 88px);
+    max-height: calc(100dvh - 88px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 10px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    border: 1px solid #d6e3f1;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 18px 42px rgba(16, 45, 83, .16);
+    animation: ida-mobile-menu-enter 160ms ease-out;
+  }
+  .topbar .idaMobileMenuPanel[hidden] { display: none !important; }
+  .topbar .idaMobileMenuLinks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+  }
+  .topbar .idaMobileMenuLinks li { margin: 0; padding: 0; }
+  .topbar .idaMobileMenuLink {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr) 18px;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 50px;
+    padding: 12px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: #213f64;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.4;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .topbar .idaMobileMenuLink[aria-current="page"] {
+    color: #175fc2;
+    background: #eef5ff;
+    border-color: #d6e6fb;
+    font-weight: 750;
+  }
+  .topbar .idaMobileMenuLink:hover { background: #f3f7fd; }
+  .idaMobileNavigation .idaMobileNavIcon,
+  .idaMobileNavigation .idaMobileNavChevron,
+  .idaMobileNavigation .idaMobileProjectLink svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .idaMobileNavigation .idaMobileNavChevron {
+    width: 18px;
+    height: 18px;
+    color: #7c94af;
+  }
+  .topbar .idaMobileMenuUtilities {
+    display: grid;
+    gap: 4px;
+    margin-top: 9px;
+    padding-top: 9px;
+    border-top: 1px solid #e3ebf5;
+  }
+  .idaMobileNavigation .idaShare { display: block; min-width: 0; }
+  .topbar .idaMobileNavigation .idaShareToggle,
+  .topbar .idaMobileProjectLink {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    min-height: 48px;
+    height: auto;
+    padding: 12px;
+    color: #415d7e;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 650;
+    line-height: 1.4;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .topbar .idaMobileNavigation .idaShareToggle span { display: inline; }
+  .topbar .idaMobileNavigation .idaShareToggle svg { width: 22px; height: 22px; }
+  .topbar .idaMobileProjectLink:hover,
+  .topbar .idaMobileNavigation .idaShareToggle:hover { background: #f3f7fd; }
+  .idaMobileNavigation .idaMobileProjectLink .idaMobileExternalIcon {
+    margin-left: auto;
+    width: 18px;
+    height: 18px;
+    color: #7c94af;
+  }
+  /* Reuse the existing sharing actions, expanding inline so no popup is clipped. */
+  .topbar .idaMobileNavigation .idaShareMenu {
+    position: static;
+    width: 100%;
+    margin: 4px 0;
+    padding: 8px;
+    box-shadow: none;
+    background: #f8fbff;
+    border-radius: 12px;
+  }
+  .topbar .idaMobileNavigation .idaShareMenu::before { display: none; }
+  .topbar .idaMobileNavigation .idaShareMenu > button { min-height: 46px; }
+  .topbar .idaMobileNavigation .idaShareMenu > button strong { font-size: 14px; }
+  .topbar .idaMobileNavigation .idaShareHeading strong { font-size: 14px; }
+  .topbar .idaMobileNavigation .idaShareHeading span { font-size: 13px; }
+  .topbar .idaMobileNavigation :is(button, a):focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+}
+
+@keyframes ida-mobile-menu-enter {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .topbar .idaMobileMenuPanel { animation: none; }
+  .idaMobileMenuToggle path { transition: none; }
+}
