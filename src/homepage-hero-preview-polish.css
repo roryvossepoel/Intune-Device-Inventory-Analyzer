@@ -119,55 +119,11 @@
   margin-top:8px!important;
 }
 
-/* Floating Device Explorer: direct-to-results rather than tiny filter pills. */
+/* The dashboard preview now stands on its own. Device Explorer is demonstrated in the dedicated card below. */
 .idaHeroProduct .idaExplorerFloat{
-  width:410px!important;
-  padding:15px!important;
+  display:none!important;
 }
-.idaHeroProduct .idaExplorerFloat>header{
-  padding-bottom:7px!important;
-}
-.idaHeroProduct .idaExplorerFloat header strong{
-  font-size:13px!important;
-  font-weight:870!important;
-}
-.idaHeroProduct .idaExplorerFloat header span{
-  font-size:11px!important;
-  font-weight:700!important;
-  color:#6d8298!important;
-}
-.idaHeroProduct .idaExplorerFloat p{
-  grid-template-columns:1.25fr 1.35fr auto!important;
-  gap:10px!important;
-  padding:11px 5px!important;
-  font-size:11px!important;
-  line-height:1.35!important;
-  color:#4e6984!important;
-}
-.idaHeroProduct .idaExplorerFloat p b{
-  font-size:11.3px!important;
-  font-weight:870!important;
-  color:#12365e!important;
-}
-.idaHeroProduct .idaExplorerFloat p em{
-  padding:4px 8px!important;
-  border-radius:7px!important;
-  font-size:10px!important;
-  font-weight:820!important;
-}
-
-/* Let the Windows version list remain fully readable while preserving the layered card effect. */
 .idaHeroProduct{
-  min-height:555px!important;
-  padding-bottom:74px!important;
-}
-.idaHeroProduct .idaExplorerFloat{
-  bottom:-24px!important;
-}
-
-@media(max-width:1180px){
-  .idaHeroProduct .idaExplorerFloat{
-    width:min(410px,calc(100% - 24px))!important;
-    bottom:-18px!important;
-  }
+  min-height:0!important;
+  padding:18px 0!important;
 }
