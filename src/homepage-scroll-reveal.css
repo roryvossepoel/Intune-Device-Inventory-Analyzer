@@ -1,0 +1,36 @@
+/* Subtle one-time reveal as homepage sections enter the viewport. */
+.idaReveal{
+  opacity:0;
+  transform:translateY(22px);
+  transition:
+    opacity .62s cubic-bezier(.2,.72,.28,1),
+    transform .62s cubic-bezier(.2,.72,.28,1);
+  transition-delay:var(--ida-reveal-delay,0ms);
+  will-change:opacity,transform;
+}
+.idaReveal.idaRevealVisible{
+  opacity:1;
+  transform:translateY(0);
+  will-change:auto;
+}
+
+/* Small stagger where multiple cards belong to one section. */
+.idaCapability:nth-child(2){--ida-reveal-delay:70ms}
+.idaCapability:nth-child(3){--ida-reveal-delay:140ms}
+.idaExampleStack article:nth-child(2){--ida-reveal-delay:55ms}
+.idaExampleStack article:nth-child(3){--ida-reveal-delay:110ms}
+.idaExampleStack article:nth-child(4){--ida-reveal-delay:165ms}
+.idaTrustPanel>article:nth-child(3){--ida-reveal-delay:55ms}
+.idaTrustPanel>article:nth-child(4){--ida-reveal-delay:110ms}
+.idaTrustPanel>article:nth-child(5){--ida-reveal-delay:165ms}
+
+/* The document preview can come in just after the report copy. */
+.idaReportDoc{--ida-reveal-delay:90ms}
+
+@media(prefers-reduced-motion:reduce){
+  .idaReveal{
+    opacity:1!important;
+    transform:none!important;
+    transition:none!important;
+  }
+}
