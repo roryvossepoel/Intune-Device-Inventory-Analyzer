@@ -1,11 +1,11 @@
 export {};
 
-type SortMode='version-desc'|'version-asc'|'devices-desc'|'devices-asc';
+type SortField='version'|'devices';
+type SortDirection='asc'|'desc';
 type VersionRecord={label:string;count:number;element:HTMLElement;version:number[]};
-type CardState={records:VersionRecord[];platform:string;list:HTMLElement;renderKey?:string};
+type CardState={records:VersionRecord[];platform:string;list:HTMLElement;sortField:SortField;direction:SortDirection;renderKey?:string};
 
 const cardStates=new WeakMap<HTMLElement,CardState>();
-let sortMode:SortMode='version-desc';
 let scheduled=false;
 
 const number=(value:string)=>Number(value.replace(/[^0-9]/g,''))||0;
@@ -31,10 +31,10 @@ function versionParts(label:string,platform:string){
   return values.length?values:[-1];
 }
 
-function compareVersionDesc(a:number[],b:number[]){
+function compareVersionAscending(a:number[],b:number[]){
   const length=Math.max(a.length,b.length);
   for(let i=0;i<length;i++){
-    const difference=(b[i]??0)-(a[i]??0);
+    const difference=(a[i]??0)-(b[i]??0);
     if(difference)return difference;
   }
   return 0;
@@ -53,26 +53,24 @@ function platformOf(card:HTMLElement){
 function capture(card:HTMLElement):CardState|null{
   const list=card.querySelector<HTMLElement>('.distributionList');
   if(!list)return null;
+  const previous=cardStates.get(card);
   const platform=platformOf(card);
   const rows=[...list.children].filter((node):node is HTMLElement=>node instanceof HTMLElement&&!node.dataset.osSortGenerated);
-  if(!rows.length)return cardStates.get(card)??null;
+  if(!rows.length)return previous??null;
   const records=rows.map(element=>{
     const rawLabel=labelOf(element);
     const label=platform==='windows'?windowsReleaseLabel(rawLabel):rawLabel;
     return {label,count:countOf(element),element,version:versionParts(label,platform)};
   });
-  const state:CardState={records,platform,list};
+  const state:CardState={
+    records,
+    platform,
+    list,
+    sortField:previous?.sortField??'version',
+    direction:previous?.direction??'desc'
+  };
   cardStates.set(card,state);
   return state;
-}
-
-function sorted(records:VersionRecord[],mode:SortMode=sortMode){
-  return [...records].sort((a,b)=>{
-    if(mode==='devices-desc')return b.count-a.count||compareVersionDesc(a.version,b.version);
-    if(mode==='devices-asc')return a.count-b.count||compareVersionDesc(a.version,b.version);
-    const byVersion=compareVersionDesc(a.version,b.version);
-    return mode==='version-asc'?-byVersion:byVersion||b.count-a.count;
-  });
 }
 
 function groupedWindows(records:VersionRecord[]){
@@ -85,9 +83,17 @@ function groupedWindows(records:VersionRecord[]){
   return [...grouped.values()];
 }
 
-function rowsForState(state:CardState){return state.platform==='windows'?groupedWindows(state.records):state.records}
+function sorted(records:VersionRecord[],state:CardState){
+  const direction=state.direction==='asc'?1:-1;
+  return [...records].sort((a,b)=>{
+    const primary=state.sortField==='devices'?(a.count-b.count):compareVersionAscending(a.version,b.version);
+    if(primary)return primary*direction;
+    const secondary=state.sortField==='devices'?compareVersionAscending(a.version,b.version):(a.count-b.count);
+    return secondary*direction;
+  });
+}
 
-function updateRow(row:HTMLElement,label:string,count:number,total:number,index:number){
+function updateRow(row:HTMLElement,label:string,count:number,total:number){
   row.dataset.osSortGenerated='1';
   const labelNode=row.querySelector<HTMLElement>('.truncate');
   const countNode=row.querySelector<HTMLElement>('strong');
@@ -95,25 +101,24 @@ function updateRow(row:HTMLElement,label:string,count:number,total:number,index:
   const bar=row.querySelector<HTMLElement>('i > b');
   const percentage=total?count/total*100:0;
   const rounded=Math.round(percentage*10)/10;
-  const formatted=`${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`;
+  const pct=`${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`;
   if(labelNode){labelNode.textContent=label;labelNode.title=label}
   if(countNode)countNode.textContent=count.toLocaleString();
-  if(percentNode)percentNode.textContent=formatted;
-  if(bar)bar.style.width=formatted;
-  row.style.setProperty('--os-row-order',String(index));
+  if(percentNode)percentNode.textContent=pct;
+  if(bar)bar.style.width=pct;
 }
 
 function renderWindows(card:HTMLElement,state:CardState){
-  const rows=sorted(groupedWindows(state.records));
+  const rows=sorted(groupedWindows(state.records),state);
   const total=state.records.reduce((sum,row)=>sum+row.count,0);
-  const renderKey=`${sortMode}|${rows.map(row=>`${row.label}:${row.count}`).join('|')}`;
+  const renderKey=`${state.sortField}:${state.direction}|${rows.map(row=>`${row.label}:${row.count}`).join('|')}`;
   const allGenerated=[...state.list.children].every(node=>node instanceof HTMLElement&&node.dataset.osSortGenerated==='1');
   if(state.renderKey===renderKey&&allGenerated)return;
-  state.list.replaceChildren(...rows.map((record,index)=>{
+  state.list.replaceChildren(...rows.map(record=>{
     const row=document.createElement('div');
     row.innerHTML=record.element.innerHTML;
     row.className='osVersionSummaryRow';
-    updateRow(row,record.label,record.count,total,index);
+    updateRow(row,record.label,record.count,total);
     return row;
   }));
   state.renderKey=renderKey;
@@ -122,22 +127,63 @@ function renderWindows(card:HTMLElement,state:CardState){
 }
 
 function renderStandard(state:CardState){
-  const desired=sorted(state.records).map(record=>record.element);
+  const desired=sorted(state.records,state).map(record=>record.element);
   const current=[...state.list.children];
   if(current.length===desired.length&&desired.every((element,index)=>current[index]===element))return;
   state.list.append(...desired);
 }
 
-function polishPlatformIcon(card:HTMLElement,platform:string){
-  const icon=card.querySelector<HTMLElement>('.platformCardLogo');
-  if(!icon||icon.dataset.osIconPolished)return;
-  if(platform==='applemobile'){
-    icon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="10" height="17" rx="2"/><path d="M7.5 17.5h2M16 6.5h4.5v11H16"/></svg>';
-    icon.dataset.osIconPolished='1';
-  }else if(platform==='macos'){
-    icon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2.5 19h19M9.5 16h5"/></svg>';
-    icon.dataset.osIconPolished='1';
+function directionTitle(state:CardState){
+  if(state.sortField==='version')return state.direction==='desc'?'Newest first':'Oldest first';
+  return state.direction==='desc'?'Most devices first':'Fewest devices first';
+}
+
+function updateControl(card:HTMLElement,state:CardState){
+  const control=card.querySelector<HTMLElement>('.osCardSort');
+  if(!control)return;
+  const select=control.querySelector<HTMLSelectElement>('select');
+  const button=control.querySelector<HTMLButtonElement>('button');
+  if(select)select.value=state.sortField;
+  if(button){
+    const title=directionTitle(state);
+    button.title=title;
+    button.setAttribute('aria-label',title);
+    button.dataset.direction=state.direction;
   }
+}
+
+function addControl(card:HTMLElement,state:CardState){
+  const header=card.querySelector<HTMLElement>('.insightCardHead');
+  if(!header)return;
+  if(!header.querySelector('.osCardSort')){
+    const control=document.createElement('div');
+    control.className='osCardSort';
+    control.innerHTML='<select aria-label="Sort this OS card by"><option value="version">Version</option><option value="devices">Devices</option></select><button type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M4.5 6 8 2.5 11.5 6"/><path class="down" d="m4.5 10 3.5 3.5 3.5-3.5"/></svg></button>';
+    const select=control.querySelector<HTMLSelectElement>('select')!;
+    const button=control.querySelector<HTMLButtonElement>('button')!;
+    select.addEventListener('change',()=>{
+      const current=cardStates.get(card);
+      if(!current)return;
+      current.sortField=select.value as SortField;
+      current.direction='desc';
+      current.renderKey=undefined;
+      renderCard(card,current);
+    });
+    button.addEventListener('click',()=>{
+      const current=cardStates.get(card);
+      if(!current)return;
+      current.direction=current.direction==='desc'?'asc':'desc';
+      current.renderKey=undefined;
+      renderCard(card,current);
+    });
+    header.append(control);
+  }
+  updateControl(card,state);
+}
+
+function renderCard(card:HTMLElement,state:CardState){
+  if(state.platform==='windows')renderWindows(card,state);else renderStandard(state);
+  updateControl(card,state);
 }
 
 function enhanceCard(card:HTMLElement){
@@ -146,34 +192,8 @@ function enhanceCard(card:HTMLElement){
   const hasFresh=current.some(row=>!row.dataset.osSortGenerated);
   if(!state||hasFresh&&!state.records.every(record=>current.includes(record.element)))state=capture(card);
   if(!state)return;
-  polishPlatformIcon(card,state.platform);
-  if(state.platform==='windows')renderWindows(card,state);else renderStandard(state);
-}
-
-function orderSignature(state:CardState,mode:SortMode){return sorted(rowsForState(state),mode).map(row=>row.label).join('|')}
-
-function updateHint(section:HTMLElement){
-  const hint=section.querySelector<HTMLElement>('.osVersionSortHint');
-  if(!hint)return;
-  const states=[...section.querySelectorAll<HTMLElement>('.osVersionsGrid .platformSpecificCard')].map(card=>cardStates.get(card)).filter((state):state is CardState=>!!state);
-  if(sortMode!=='devices-desc'){hint.textContent='';hint.hidden=true;return}
-  const identical=states.length>0&&states.every(state=>orderSignature(state,'version-desc')===orderSignature(state,'devices-desc'));
-  hint.textContent=identical?'Same order in this inventory':'';
-  hint.hidden=!identical;
-}
-
-function addControl(section:HTMLElement){
-  if(section.querySelector('.osVersionSortControl'))return;
-  section.classList.add('osVersionSortEnhanced');
-  const header=section.querySelector<HTMLElement>('.dashboardCategoryHead');
-  if(!header)return;
-  const wrap=document.createElement('div');
-  wrap.className='osVersionSortWrap';
-  wrap.innerHTML='<label class="osVersionSortControl"><span>Sort</span><select aria-label="Sort OS versions"><option value="version-desc">Newest version</option><option value="version-asc">Oldest version</option><option value="devices-desc">Most devices</option><option value="devices-asc">Fewest devices</option></select></label><span class="osVersionSortHint" hidden></span>';
-  const select=wrap.querySelector('select')!;
-  select.value=sortMode;
-  select.addEventListener('change',()=>{sortMode=select.value as SortMode;apply()});
-  header.append(wrap);
+  addControl(card,state);
+  renderCard(card,state);
 }
 
 function normalizePercentageText(root:HTMLElement){
@@ -196,12 +216,7 @@ function normalizePercentageText(root:HTMLElement){
 function apply(){
   const dashboard=document.querySelector<HTMLElement>('.inventoryDashboard');
   if(dashboard)normalizePercentageText(dashboard);
-  const sections=[...document.querySelectorAll<HTMLElement>('.dashboardCategory')];
-  const section=sections.find(item=>item.querySelector('.osVersionsGrid'));
-  if(!section)return;
-  addControl(section);
-  section.querySelectorAll<HTMLElement>('.osVersionsGrid .platformSpecificCard').forEach(enhanceCard);
-  updateHint(section);
+  document.querySelectorAll<HTMLElement>('.osVersionsGrid .platformSpecificCard').forEach(enhanceCard);
 }
 
 function schedule(){
