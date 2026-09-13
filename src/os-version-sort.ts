@@ -3,9 +3,11 @@ export {};
 type SortField='version'|'devices';
 type SortDirection='asc'|'desc';
 type VersionRecord={label:string;count:number;element:HTMLElement;version:number[]};
-type CardState={records:VersionRecord[];platform:string;list:HTMLElement;sortField:SortField;direction:SortDirection;renderKey?:string};
+type CardState={records:VersionRecord[];platform:string;list:HTMLElement;renderKey?:string};
 
 const cardStates=new WeakMap<HTMLElement,CardState>();
+let sortField:SortField='version';
+let direction:SortDirection='desc';
 let scheduled=false;
 
 const number=(value:string)=>Number(value.replace(/[^0-9]/g,''))||0;
@@ -62,13 +64,7 @@ function capture(card:HTMLElement):CardState|null{
     const label=platform==='windows'?windowsReleaseLabel(rawLabel):rawLabel;
     return {label,count:countOf(element),element,version:versionParts(label,platform)};
   });
-  const state:CardState={
-    records,
-    platform,
-    list,
-    sortField:previous?.sortField??'version',
-    direction:previous?.direction??'desc'
-  };
+  const state:CardState={records,platform,list};
   cardStates.set(card,state);
   return state;
 }
@@ -83,13 +79,13 @@ function groupedWindows(records:VersionRecord[]){
   return [...grouped.values()];
 }
 
-function sorted(records:VersionRecord[],state:CardState){
-  const direction=state.direction==='asc'?1:-1;
+function sorted(records:VersionRecord[]){
+  const factor=direction==='asc'?1:-1;
   return [...records].sort((a,b)=>{
-    const primary=state.sortField==='devices'?(a.count-b.count):compareVersionAscending(a.version,b.version);
-    if(primary)return primary*direction;
-    const secondary=state.sortField==='devices'?compareVersionAscending(a.version,b.version):(a.count-b.count);
-    return secondary*direction;
+    const primary=sortField==='devices'?(a.count-b.count):compareVersionAscending(a.version,b.version);
+    if(primary)return primary*factor;
+    const secondary=sortField==='devices'?compareVersionAscending(a.version,b.version):(a.count-b.count);
+    return secondary*factor;
   });
 }
 
@@ -109,9 +105,9 @@ function updateRow(row:HTMLElement,label:string,count:number,total:number){
 }
 
 function renderWindows(card:HTMLElement,state:CardState){
-  const rows=sorted(groupedWindows(state.records),state);
+  const rows=sorted(groupedWindows(state.records));
   const total=state.records.reduce((sum,row)=>sum+row.count,0);
-  const renderKey=`${state.sortField}:${state.direction}|${rows.map(row=>`${row.label}:${row.count}`).join('|')}`;
+  const renderKey=`${sortField}:${direction}|${rows.map(row=>`${row.label}:${row.count}`).join('|')}`;
   const allGenerated=[...state.list.children].every(node=>node instanceof HTMLElement&&node.dataset.osSortGenerated==='1');
   if(state.renderKey===renderKey&&allGenerated)return;
   state.list.replaceChildren(...rows.map(record=>{
@@ -127,63 +123,14 @@ function renderWindows(card:HTMLElement,state:CardState){
 }
 
 function renderStandard(state:CardState){
-  const desired=sorted(state.records,state).map(record=>record.element);
+  const desired=sorted(state.records).map(record=>record.element);
   const current=[...state.list.children];
   if(current.length===desired.length&&desired.every((element,index)=>current[index]===element))return;
   state.list.append(...desired);
 }
 
-function directionTitle(state:CardState){
-  if(state.sortField==='version')return state.direction==='desc'?'Newest first':'Oldest first';
-  return state.direction==='desc'?'Most devices first':'Fewest devices first';
-}
-
-function updateControl(card:HTMLElement,state:CardState){
-  const control=card.querySelector<HTMLElement>('.osCardSort');
-  if(!control)return;
-  const select=control.querySelector<HTMLSelectElement>('select');
-  const button=control.querySelector<HTMLButtonElement>('button');
-  if(select)select.value=state.sortField;
-  if(button){
-    const title=directionTitle(state);
-    button.title=title;
-    button.setAttribute('aria-label',title);
-    button.dataset.direction=state.direction;
-  }
-}
-
-function addControl(card:HTMLElement,state:CardState){
-  const header=card.querySelector<HTMLElement>('.insightCardHead');
-  if(!header)return;
-  if(!header.querySelector('.osCardSort')){
-    const control=document.createElement('div');
-    control.className='osCardSort';
-    control.innerHTML='<select aria-label="Sort this OS card by"><option value="version">Version</option><option value="devices">Devices</option></select><button type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M4.5 6 8 2.5 11.5 6"/><path class="down" d="m4.5 10 3.5 3.5 3.5-3.5"/></svg></button>';
-    const select=control.querySelector<HTMLSelectElement>('select')!;
-    const button=control.querySelector<HTMLButtonElement>('button')!;
-    select.addEventListener('change',()=>{
-      const current=cardStates.get(card);
-      if(!current)return;
-      current.sortField=select.value as SortField;
-      current.direction='desc';
-      current.renderKey=undefined;
-      renderCard(card,current);
-    });
-    button.addEventListener('click',()=>{
-      const current=cardStates.get(card);
-      if(!current)return;
-      current.direction=current.direction==='desc'?'asc':'desc';
-      current.renderKey=undefined;
-      renderCard(card,current);
-    });
-    header.append(control);
-  }
-  updateControl(card,state);
-}
-
 function renderCard(card:HTMLElement,state:CardState){
   if(state.platform==='windows')renderWindows(card,state);else renderStandard(state);
-  updateControl(card,state);
 }
 
 function enhanceCard(card:HTMLElement){
@@ -192,8 +139,50 @@ function enhanceCard(card:HTMLElement){
   const hasFresh=current.some(row=>!row.dataset.osSortGenerated);
   if(!state||hasFresh&&!state.records.every(record=>current.includes(record.element)))state=capture(card);
   if(!state)return;
-  addControl(card,state);
   renderCard(card,state);
+}
+
+function directionTitle(){
+  if(sortField==='version')return direction==='desc'?'Newest version first':'Oldest version first';
+  return direction==='desc'?'Most devices first':'Fewest devices first';
+}
+
+function updateGlobalControl(section:HTMLElement){
+  const control=section.querySelector<HTMLElement>('.osVersionSortGlobal');
+  if(!control)return;
+  const select=control.querySelector<HTMLSelectElement>('select');
+  const button=control.querySelector<HTMLButtonElement>('button');
+  if(select)select.value=sortField;
+  if(button){
+    const title=directionTitle();
+    button.title=title;
+    button.setAttribute('aria-label',title);
+    button.dataset.direction=direction;
+  }
+}
+
+function addGlobalControl(section:HTMLElement){
+  section.classList.add('osVersionSortEnhanced');
+  const header=section.querySelector<HTMLElement>('.dashboardCategoryHead');
+  if(!header)return;
+  if(!header.querySelector('.osVersionSortGlobal')){
+    const control=document.createElement('div');
+    control.className='osVersionSortGlobal';
+    control.innerHTML='<span>Sort</span><select aria-label="Sort OS version cards"><option value="version">Version</option><option value="devices">Devices</option></select><button type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11"/><path d="m4.75 6 3.25-3.5L11.25 6"/></svg></button>';
+    const select=control.querySelector<HTMLSelectElement>('select')!;
+    const button=control.querySelector<HTMLButtonElement>('button')!;
+    select.addEventListener('change',()=>{
+      sortField=select.value as SortField;
+      direction='desc';
+      apply();
+    });
+    button.addEventListener('click',()=>{
+      direction=direction==='desc'?'asc':'desc';
+      apply();
+    });
+    header.append(control);
+  }
+  updateGlobalControl(section);
 }
 
 function normalizePercentageText(root:HTMLElement){
@@ -216,7 +205,11 @@ function normalizePercentageText(root:HTMLElement){
 function apply(){
   const dashboard=document.querySelector<HTMLElement>('.inventoryDashboard');
   if(dashboard)normalizePercentageText(dashboard);
-  document.querySelectorAll<HTMLElement>('.osVersionsGrid .platformSpecificCard').forEach(enhanceCard);
+  const section=[...document.querySelectorAll<HTMLElement>('.dashboardCategory')].find(item=>item.querySelector('.osVersionsGrid'));
+  if(!section)return;
+  addGlobalControl(section);
+  section.querySelectorAll<HTMLElement>('.osVersionsGrid .platformSpecificCard').forEach(enhanceCard);
+  updateGlobalControl(section);
 }
 
 function schedule(){
