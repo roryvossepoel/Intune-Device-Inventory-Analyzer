@@ -58,9 +58,15 @@
 .platformCategory-windows .distributionList>div>i,.platformCategory-windows .distributionList>button.distributionAction>i{grid-column:1/-1!important}
 .platformCategory-windows .windowsLifecycleGrid{order:-1}
 .platformCategory-windows .windowsCompositionCard .hardwareDonutLayout{align-items:center}
+.platformCategory-windows .twoInsightGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+@media(max-width:1100px){
+  .platformCategory-windows .twoInsightGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 
 @media(max-width:760px){
   .osVersionSortEnhanced>.dashboardCategoryHead{padding-right:0}
   .osVersionSortGlobal{position:static;margin-top:12px;justify-content:flex-start}
   .osVersionSortGlobal select{min-width:98px}
+  .platformCategory-windows .twoInsightGrid{grid-template-columns:1fr}
 }
