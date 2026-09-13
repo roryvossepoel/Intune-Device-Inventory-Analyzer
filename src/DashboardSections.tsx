@@ -76,7 +76,6 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const apple=platformDevices(allDevices,platform,'applemobile',devices);
   const macos=platformDevices(allDevices,platform,'macos',devices);
   const linux=platformDevices(allDevices,platform,'linux',devices);
-  const mobile=[...apple,...android];
 
   const staleBuckets:Row[]=[
     ['0–7 days',devices.filter(d=>{const age=daysSince(d.lastCheckIn);return age!==null&&age<=7}).length],
@@ -156,9 +155,10 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const androidOldPatch=android.filter(d=>{const age=daysOld(patchLevel(d));return age!==null&&age>90}).length;
   const androidUnknownPatch=android.filter(d=>!patchLevel(d)).length;
   const androidModes=countValues(android.map(androidMode));
+  const androidCellular=countValues(android.map(cellularCapability));
 
   const appleFamilies=countValues(apple.map(appleDeviceFamily));
-  const cellularRows=countValues(mobile.map(cellularCapability));
+  const appleCellular=countValues(apple.map(cellularCapability));
   const appleSupervision=countValues(apple.map(supervision));
   const appleCert=certificateBuckets(apple);
   const macArch=countValues(macos.map(architecture));
@@ -210,12 +210,11 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
       </div>
     </DashboardSection>
 
-    <DashboardSection icon="fleet" title="Fleet & Hardware" subtitle="Cross-platform form factor, vendor, model and hardware capability overview.">
+    <DashboardSection icon="fleet" title="Fleet & Hardware" subtitle="Cross-platform form factor, vendor and model overview.">
       <div className="extendedInsightGrid twoInsightGrid">
         <Card title="Device types" subtitle="Form factor inferred from inventory and known model families"><Distribution rows={types} total={total} onClick={label=>drill('deviceType','Device type',label)}/></Card>
         <Card title="Manufacturers" subtitle="Largest device vendors in the current scope"><Distribution rows={manufacturers} total={total} limit={manufacturers.length} onClick={label=>drill('manufacturer','Manufacturer',label)}/></Card>
         <Card title="Models" subtitle="Most common reported models in the current scope"><Distribution rows={models} total={total} limit={models.length} onClick={label=>drill('model','Model',label)}/></Card>
-        {mobile.length>0&&<PlatformCard platform="cellular" title="Cellular capability" subtitle="Cellular support across iOS, iPadOS and Android devices"><div className="hardwareDonutLayout"><Donut total={mobile.length} items={cellularRows} center={fmt(mobile.length)} label="devices"/><Distribution rows={cellularRows} total={mobile.length} onClick={label=>drill('cellularCapability','Cellular capability',label)}/></div></PlatformCard>}
       </div>
     </DashboardSection>
 
@@ -247,20 +246,22 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
       <div className="extendedInsightGrid" style={{gridTemplateColumns:'1fr'}}><WindowsLifecycle devices={windows} title="Windows lifecycle"/></div>
     </DashboardSection>}
 
-    {android.length>0&&<DashboardSection icon="lifecycle" title="Android" subtitle={`${fmt(android.length)} Android devices · versions, patch freshness and management intelligence.`} className="platformCategory platformCategory-android">
+    {android.length>0&&<DashboardSection icon="lifecycle" title="Android" subtitle={`${fmt(android.length)} Android devices · versions, patch freshness, hardware and management intelligence.`} className="platformCategory platformCategory-android">
       <div className="extendedInsightGrid twoInsightGrid">
         <PlatformCard className="osVersionCard" platform="android" title="Android versions" subtitle={`${fmt(android.length)} devices · ${androidVersions.length} reported version${androidVersions.length===1?'':'s'}`}><Distribution rows={androidVersions} total={android.length} limit={androidVersions.length} onClick={label=>drill('osVersion','OS version',label)}/></PlatformCard>
         <PlatformCard platform="android" title="Android security patch" subtitle="Reported security patch level and freshness"><Distribution rows={androidPatch} total={android.length}/><SignalList rows={[[androidOldPatch,'Patch older than 90 days','bad',undefined],[androidUnknownPatch,'Patch level not reported','warn',undefined]]}/></PlatformCard>
+        <PlatformCard platform="android" title="Cellular capability" subtitle="Cellular support reported for Android devices"><div className="hardwareDonutLayout"><Donut total={android.length} items={androidCellular} center={fmt(android.length)} label="devices"/><Distribution rows={androidCellular} total={android.length}/></div></PlatformCard>
         <PlatformCard platform="android" title="Android management type" subtitle="COPE, COBO, Dedicated, BYOD and other reported modes"><Distribution rows={androidModes} total={android.length}/></PlatformCard>
         <PlatformCard platform="android" title="Managed by" subtitle="Management authority reported for Android devices"><Distribution rows={countValues(android.map(managedBy))} total={android.length}/></PlatformCard>
       </div>
     </DashboardSection>}
 
-    {apple.length>0&&<DashboardSection icon="lifecycle" title="iOS / iPadOS" subtitle={`${fmt(apple.length)} Apple mobile devices · versions, device family and management intelligence.`} className="platformCategory platformCategory-applemobile">
+    {apple.length>0&&<DashboardSection icon="lifecycle" title="iOS / iPadOS" subtitle={`${fmt(apple.length)} Apple mobile devices · versions, hardware and management intelligence.`} className="platformCategory platformCategory-applemobile">
       <div className="extendedInsightGrid twoInsightGrid">
         <PlatformCard className="osVersionCard" platform="applemobile" title="iOS/iPadOS versions" subtitle={`${fmt(apple.length)} devices · ${appleVersions.length} reported version${appleVersions.length===1?'':'s'}`}><Distribution rows={appleVersions} total={apple.length} limit={appleVersions.length} onClick={label=>drill('osVersion','OS version',label)}/></PlatformCard>
         <PlatformCard platform="applemobile" title="Version position" subtitle="Relative to the newest version observed in this inventory"><Distribution rows={applePosition} total={apple.length}/></PlatformCard>
         <PlatformCard platform="applemobile" title="Device family" subtitle="iPhone and iPad distribution"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleFamilies} center={fmt(apple.length)} label="devices"/><Distribution rows={appleFamilies} total={apple.length} onClick={label=>drill('appleDeviceFamily','Device family',label)}/></div></PlatformCard>
+        <PlatformCard platform="applemobile" title="Cellular capability" subtitle="Cellular support reported for iPhone and iPad devices"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleCellular} center={fmt(apple.length)} label="devices"/><Distribution rows={appleCellular} total={apple.length}/></div></PlatformCard>
         <PlatformCard platform="applemobile" title="Supervision" subtitle="Supervision state reported by Intune"><Distribution rows={appleSupervision} total={apple.length}/></PlatformCard>
         <PlatformCard platform="applemobile" title="Management certificate" subtitle="Time remaining on the Intune management certificate"><Distribution rows={appleCert} total={apple.length}/></PlatformCard>
         <PlatformCard platform="applemobile" title="Managed by" subtitle="Management authority reported for iOS and iPadOS devices"><Distribution rows={countValues(apple.map(managedBy))} total={apple.length}/></PlatformCard>
