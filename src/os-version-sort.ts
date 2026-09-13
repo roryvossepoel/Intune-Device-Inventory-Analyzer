@@ -119,7 +119,7 @@ function renderStandard(state:CardState){
 }
 
 function enhanceCard(card:HTMLElement){
-  let state=cardStates.get(card);
+  let state:CardState|null|undefined=cardStates.get(card);
   const current=[...card.querySelectorAll<HTMLElement>('.distributionList > *')];
   const hasFresh=current.some(row=>!row.dataset.osSortGenerated);
   if(!state||hasFresh&&!state.records.every(record=>current.includes(record.element)))state=capture(card);
