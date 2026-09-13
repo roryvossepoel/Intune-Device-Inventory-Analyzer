@@ -11,10 +11,12 @@
 /* OS cards use the same icon scale and visual weight as the rest of the dashboard. */
 .osVersionsGrid .platformSpecificCard .insightCardHead{gap:12px}
 .osVersionsGrid .platformCardLogo{width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:#f2f7fd;border:1px solid #dce8f5}
-.osVersionsGrid .platformCardLogo svg{width:20px;height:20px;stroke-width:1.8}
+.osVersionsGrid .platformCardLogo svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .osVersionsGrid .platformCardLogo-windows{color:#2563eb;background:#eef5ff;border-color:#d7e6fa}
+.osVersionsGrid .platformCardLogo-windows svg{fill:currentColor;stroke:none}
 .osVersionsGrid .platformCardLogo-android{color:#27845c;background:#eef8f4;border-color:#d3ece2}
 .osVersionsGrid .platformCardLogo-applemobile,.osVersionsGrid .platformCardLogo-macos{color:#45566c;background:#f4f6f8;border-color:#dfe5eb}
+.osVersionsGrid .platformCardLogo-applemobile svg,.osVersionsGrid .platformCardLogo-macos svg{fill:none!important;stroke:currentColor!important;stroke-width:1.8!important}
 .osVersionsGrid .platformCardLogo-linux{color:#4f6074;background:#f3f6f9;border-color:#dfe6ed}
 
 /* Position-colored dots do not add meaning here; the bar already carries the visual signal. */
