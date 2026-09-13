@@ -4,8 +4,10 @@ type SortField='version'|'devices';
 type SortDirection='asc'|'desc';
 type VersionRecord={label:string;count:number;element:HTMLElement;version:number[]};
 type CardState={records:VersionRecord[];platform:string;list:HTMLElement;renderKey?:string};
+type PositionRow=[string,number];
 
 const cardStates=new WeakMap<HTMLElement,CardState>();
+const lifecycleSplitSignatures=new WeakMap<HTMLElement,string>();
 let sortField:SortField='version';
 let direction:SortDirection='desc';
 let scheduled=false;
@@ -13,6 +15,7 @@ let scheduled=false;
 const number=(value:string)=>Number(value.replace(/[^0-9]/g,''))||0;
 const labelOf=(row:HTMLElement)=>row.querySelector<HTMLElement>('.truncate')?.textContent?.trim()||'';
 const countOf=(row:HTMLElement)=>number(row.querySelector<HTMLElement>('strong')?.textContent||'0');
+const formatPercent=(value:number)=>{const rounded=Math.round(value*10)/10;return `${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`};
 
 function windowsReleaseLabel(label:string){
   const release=label.match(/Windows\s+11(?:,\s*version)?\s*(23H2|24H2|25H2)/i)?.[1]?.toUpperCase();
@@ -96,8 +99,7 @@ function updateRow(row:HTMLElement,label:string,count:number,total:number){
   const percentNode=row.querySelector<HTMLElement>('small');
   const bar=row.querySelector<HTMLElement>('i > b');
   const percentage=total?count/total*100:0;
-  const rounded=Math.round(percentage*10)/10;
-  const pct=`${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`;
+  const pct=formatPercent(percentage);
   if(labelNode){labelNode.textContent=label;labelNode.title=label}
   if(countNode)countNode.textContent=count.toLocaleString();
   if(percentNode)percentNode.textContent=pct;
@@ -171,18 +173,98 @@ function addGlobalControl(section:HTMLElement){
     control.innerHTML='<span>Sort</span><select aria-label="Sort OS version cards"><option value="version">Version</option><option value="devices">Devices</option></select><button type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11"/><path d="m4.75 6 3.25-3.5L11.25 6"/></svg></button>';
     const select=control.querySelector<HTMLSelectElement>('select')!;
     const button=control.querySelector<HTMLButtonElement>('button')!;
-    select.addEventListener('change',()=>{
-      sortField=select.value as SortField;
-      direction='desc';
-      apply();
-    });
-    button.addEventListener('click',()=>{
-      direction=direction==='desc'?'asc':'desc';
-      apply();
-    });
+    select.addEventListener('change',()=>{sortField=select.value as SortField;direction='desc';apply()});
+    button.addEventListener('click',()=>{direction=direction==='desc'?'asc':'desc';apply()});
     header.append(control);
   }
   updateGlobalControl(section);
+}
+
+function versionPositionRows(card:HTMLElement):{rows:PositionRow[];total:number}{
+  const map=new Map<string,number>();
+  let unknown=0;
+  for(const element of card.querySelectorAll<HTMLElement>('.distributionList > *')){
+    const label=labelOf(element);
+    const count=countOf(element);
+    if(!label||/^unknown$/i.test(label)){unknown+=count;continue}
+    map.set(label,(map.get(label)??0)+count);
+  }
+  const versions=[...map.entries()].sort((a,b)=>compareVersionAscending(versionParts(b[0],''),versionParts(a[0],'')));
+  const rows:PositionRow[]=[
+    ['Newest observed version',versions[0]?.[1]??0],
+    ['1 version behind',versions[1]?.[1]??0],
+    ['Older versions',versions.slice(2).reduce((sum,[,count])=>sum+count,0)],
+    ['Unknown',unknown]
+  ];
+  return {rows,total:versions.reduce((sum,[,count])=>sum+count,0)+unknown};
+}
+
+function positionCard(platform:'applemobile'|'macos',title:string,source:HTMLElement){
+  const {rows,total}=versionPositionRows(source);
+  const card=document.createElement('article');
+  card.className='dashboardCard extendedInsightCard platformSpecificCard versionPositionCard';
+  const logoClass=platform==='applemobile'?'platformCardLogo-applemobile':'platformCardLogo-macos';
+  card.innerHTML=`<header class="dashboardCardHead insightCardHead"><span class="platformCardLogo ${logoClass}" aria-hidden="true"></span><div><h2>${title}</h2><p>Relative to the newest version observed in this inventory</p></div></header>`;
+  const list=document.createElement('div');
+  list.className='distributionList';
+  rows.filter(([,count])=>count>0).forEach(([label,count],index)=>{
+    const row=document.createElement('div');
+    const percentage=total?count/total*100:0;
+    const pct=formatPercent(percentage);
+    row.innerHTML=`<span class="distributionDot dot${index%6}"></span><span class="truncate" title="${label}">${label}</span><strong>${count.toLocaleString()}</strong><small>${pct}</small><i><b style="width:${pct}"></b></i>`;
+    list.append(row);
+  });
+  card.append(list);
+  return card;
+}
+
+function splitUpdatesAndLifecycle(section:HTMLElement){
+  const header=section.querySelector<HTMLElement>('.dashboardCategoryHead');
+  const heading=header?.querySelector<HTMLElement>('div>span');
+  const subtitle=header?.querySelector<HTMLElement>('p');
+  if(heading)heading.textContent='Operating Systems';
+  if(subtitle)subtitle.textContent='OS version distribution across the current inventory.';
+
+  const content=section.querySelector<HTMLElement>('.dashboardCategoryContent');
+  if(!content)return;
+  const lifecycleCard=content.querySelector<HTMLElement>('.windowsLifecycleCard');
+  const lifecycleGrid=lifecycleCard?.closest<HTMLElement>('.extendedInsightGrid')??null;
+  const servicingCard=[...content.querySelectorAll<HTMLElement>('.platformSpecificCard')].find(card=>card.querySelector('h2')?.textContent?.trim()==='Windows edition & servicing')??null;
+  const androidPatchCard=[...content.querySelectorAll<HTMLElement>('.platformSpecificCard')].find(card=>card.querySelector('h2')?.textContent?.trim()==='Android security patch')??null;
+  const sourceUpdateGrid=servicingCard?.closest<HTMLElement>('.extendedInsightGrid')??androidPatchCard?.closest<HTMLElement>('.extendedInsightGrid')??null;
+  if(lifecycleGrid)lifecycleGrid.classList.add('osLifecycleSplitSource');
+  if(sourceUpdateGrid)sourceUpdateGrid.classList.add('osLifecycleSplitSource');
+
+  const appleVersionCard=content.querySelector<HTMLElement>('.osVersionsGrid .platformCardLogo-applemobile')?.closest<HTMLElement>('.platformSpecificCard')??null;
+  const macVersionCard=content.querySelector<HTMLElement>('.osVersionsGrid .platformCardLogo-macos')?.closest<HTMLElement>('.platformSpecificCard')??null;
+  const signature=[lifecycleGrid?.textContent,servicingCard?.textContent,androidPatchCard?.textContent,appleVersionCard?.textContent,macVersionCard?.textContent].join('|');
+  if(lifecycleSplitSignatures.get(section)===signature&&section.nextElementSibling?.classList.contains('updatesLifecycleCategory'))return;
+  lifecycleSplitSignatures.set(section,signature);
+
+  let updatesSection=section.nextElementSibling as HTMLElement|null;
+  if(!updatesSection?.classList.contains('updatesLifecycleCategory')){
+    updatesSection=document.createElement('section');
+    updatesSection.className='dashboardCategory updatesLifecycleCategory';
+    section.insertAdjacentElement('afterend',updatesSection);
+  }
+  updatesSection.innerHTML='<header class="dashboardCategoryHead"><div><span>Updates & Lifecycle</span><p>Support lifecycle, servicing position and update freshness across platforms.</p></div></header><div class="dashboardCategoryContent"></div>';
+  const updatesContent=updatesSection.querySelector<HTMLElement>('.dashboardCategoryContent')!;
+
+  if(lifecycleGrid)updatesContent.append(lifecycleGrid.cloneNode(true));
+  const grid=document.createElement('div');
+  grid.className='extendedInsightGrid twoInsightGrid updatesLifecycleGrid';
+  if(servicingCard){
+    const clone=servicingCard.cloneNode(true) as HTMLElement;
+    const title=clone.querySelector('h2');
+    const sub=clone.querySelector('.insightCardHead p');
+    if(title)title.textContent='Windows servicing';
+    if(sub)sub.textContent='Edition mix and Windows servicing signals';
+    grid.append(clone);
+  }
+  if(androidPatchCard)grid.append(androidPatchCard.cloneNode(true));
+  if(appleVersionCard)grid.append(positionCard('applemobile','iOS/iPadOS version position',appleVersionCard));
+  if(macVersionCard)grid.append(positionCard('macos','macOS version position',macVersionCard));
+  if(grid.children.length)updatesContent.append(grid);
 }
 
 function normalizePercentageText(root:HTMLElement){
@@ -210,6 +292,7 @@ function apply(){
   addGlobalControl(section);
   section.querySelectorAll<HTMLElement>('.osVersionsGrid .platformSpecificCard').forEach(enhanceCard);
   updateGlobalControl(section);
+  splitUpdatesAndLifecycle(section);
 }
 
 function schedule(){
