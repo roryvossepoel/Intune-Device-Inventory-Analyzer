@@ -44,6 +44,11 @@
 .osVersionCard .osVersionSummaryRow>i{grid-column:1/-1;height:6px;background:#e9eff6;border-radius:999px;overflow:hidden}
 .osVersionCard .osVersionSummaryRow>i>b{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
 
+/* Windows lifecycle already contains the release/version distribution, so a second versions card would duplicate the same information. */
+.platformCategory-windows .osVersionCard{display:none!important}
+.platformCategory-windows>.dashboardCategoryHead .osVersionSortGlobal{display:none!important}
+.platformCategory-windows.osVersionSortEnhanced>.dashboardCategoryHead{padding-right:0}
+
 /* Windows cards use cleaner rows without decorative position dots. */
 .platformCategory-windows .distributionDot{display:none!important}
 .platformCategory-windows .distributionList>div,.platformCategory-windows .distributionList>button.distributionAction{grid-template-columns:minmax(0,1fr) auto 54px!important;column-gap:10px!important}
