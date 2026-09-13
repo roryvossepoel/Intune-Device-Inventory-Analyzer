@@ -69,6 +69,8 @@ import './mobile-navigation.css';
 import './homepage-hero-preview-polish.css';
 import './homepage-hero-preview-data';
 import './main-page-heading-unity.css';
+import './os-version-sort.css';
+import './os-version-sort';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
