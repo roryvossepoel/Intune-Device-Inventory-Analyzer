@@ -1,11 +1,11 @@
 export {};
 
-type SortMode='version'|'devices';
+type SortMode='version-desc'|'version-asc'|'devices-desc'|'devices-asc';
 type VersionRecord={label:string;count:number;element:HTMLElement;version:number[]};
 type CardState={records:VersionRecord[];platform:string;list:HTMLElement;renderKey?:string};
 
 const cardStates=new WeakMap<HTMLElement,CardState>();
-let sortMode:SortMode='version';
+let sortMode:SortMode='version-desc';
 let scheduled=false;
 
 const number=(value:string)=>Number(value.replace(/[^0-9]/g,''))||0;
@@ -31,7 +31,7 @@ function versionParts(label:string,platform:string){
   return values.length?values:[-1];
 }
 
-function compareVersion(a:number[],b:number[]){
+function compareVersionDesc(a:number[],b:number[]){
   const length=Math.max(a.length,b.length);
   for(let i=0;i<length;i++){
     const difference=(b[i]??0)-(a[i]??0);
@@ -67,7 +67,12 @@ function capture(card:HTMLElement):CardState|null{
 }
 
 function sorted(records:VersionRecord[],mode:SortMode=sortMode){
-  return [...records].sort((a,b)=>mode==='devices'?(b.count-a.count||compareVersion(a.version,b.version)):(compareVersion(a.version,b.version)||b.count-a.count));
+  return [...records].sort((a,b)=>{
+    if(mode==='devices-desc')return b.count-a.count||compareVersionDesc(a.version,b.version);
+    if(mode==='devices-asc')return a.count-b.count||compareVersionDesc(a.version,b.version);
+    const byVersion=compareVersionDesc(a.version,b.version);
+    return mode==='version-asc'?-byVersion:byVersion||b.count-a.count;
+  });
 }
 
 function groupedWindows(records:VersionRecord[]){
@@ -87,16 +92,15 @@ function updateRow(row:HTMLElement,label:string,count:number,total:number,index:
   const labelNode=row.querySelector<HTMLElement>('.truncate');
   const countNode=row.querySelector<HTMLElement>('strong');
   const percentNode=row.querySelector<HTMLElement>('small');
-  const dot=row.querySelector<HTMLElement>('.distributionDot');
   const bar=row.querySelector<HTMLElement>('i > b');
   const percentage=total?count/total*100:0;
   const rounded=Math.round(percentage*10)/10;
-  const pct=`${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`;
+  const formatted=`${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`;
   if(labelNode){labelNode.textContent=label;labelNode.title=label}
   if(countNode)countNode.textContent=count.toLocaleString();
-  if(percentNode)percentNode.textContent=pct;
-  if(dot)dot.className=`distributionDot dot${index%6}`;
-  if(bar)bar.style.width=pct;
+  if(percentNode)percentNode.textContent=formatted;
+  if(bar)bar.style.width=formatted;
+  row.style.setProperty('--os-row-order',String(index));
 }
 
 function renderWindows(card:HTMLElement,state:CardState){
@@ -124,12 +128,25 @@ function renderStandard(state:CardState){
   state.list.append(...desired);
 }
 
+function polishPlatformIcon(card:HTMLElement,platform:string){
+  const icon=card.querySelector<HTMLElement>('.platformCardLogo');
+  if(!icon||icon.dataset.osIconPolished)return;
+  if(platform==='applemobile'){
+    icon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="10" height="17" rx="2"/><path d="M7.5 17.5h2M16 6.5h4.5v11H16"/></svg>';
+    icon.dataset.osIconPolished='1';
+  }else if(platform==='macos'){
+    icon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2.5 19h19M9.5 16h5"/></svg>';
+    icon.dataset.osIconPolished='1';
+  }
+}
+
 function enhanceCard(card:HTMLElement){
   let state:CardState|null|undefined=cardStates.get(card);
   const current=[...card.querySelectorAll<HTMLElement>('.distributionList > *')];
   const hasFresh=current.some(row=>!row.dataset.osSortGenerated);
   if(!state||hasFresh&&!state.records.every(record=>current.includes(record.element)))state=capture(card);
   if(!state)return;
+  polishPlatformIcon(card,state.platform);
   if(state.platform==='windows')renderWindows(card,state);else renderStandard(state);
 }
 
@@ -138,9 +155,9 @@ function orderSignature(state:CardState,mode:SortMode){return sorted(rowsForStat
 function updateHint(section:HTMLElement){
   const hint=section.querySelector<HTMLElement>('.osVersionSortHint');
   if(!hint)return;
-  if(sortMode!=='devices'){hint.textContent='';hint.hidden=true;return}
   const states=[...section.querySelectorAll<HTMLElement>('.osVersionsGrid .platformSpecificCard')].map(card=>cardStates.get(card)).filter((state):state is CardState=>!!state);
-  const identical=states.length>0&&states.every(state=>orderSignature(state,'version')===orderSignature(state,'devices'));
+  if(sortMode!=='devices-desc'){hint.textContent='';hint.hidden=true;return}
+  const identical=states.length>0&&states.every(state=>orderSignature(state,'version-desc')===orderSignature(state,'devices-desc'));
   hint.textContent=identical?'Same order in this inventory':'';
   hint.hidden=!identical;
 }
@@ -152,7 +169,7 @@ function addControl(section:HTMLElement){
   if(!header)return;
   const wrap=document.createElement('div');
   wrap.className='osVersionSortWrap';
-  wrap.innerHTML='<label class="osVersionSortControl"><span>Sort</span><select aria-label="Sort OS versions"><option value="version">Newest version</option><option value="devices">Most devices</option></select></label><span class="osVersionSortHint" hidden></span>';
+  wrap.innerHTML='<label class="osVersionSortControl"><span>Sort</span><select aria-label="Sort OS versions"><option value="version-desc">Newest version</option><option value="version-asc">Oldest version</option><option value="devices-desc">Most devices</option><option value="devices-asc">Fewest devices</option></select></label><span class="osVersionSortHint" hidden></span>';
   const select=wrap.querySelector('select')!;
   select.value=sortMode;
   select.addEventListener('change',()=>{sortMode=select.value as SortMode;apply()});
