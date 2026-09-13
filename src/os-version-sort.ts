@@ -2,7 +2,7 @@ export {};
 
 type SortMode='version'|'devices';
 type VersionRecord={label:string;count:number;element:HTMLElement;version:number[]};
-type CardState={records:VersionRecord[];platform:string;list:HTMLElement};
+type CardState={records:VersionRecord[];platform:string;list:HTMLElement;renderKey?:string};
 
 const cardStates=new WeakMap<HTMLElement,CardState>();
 let sortMode:SortMode='version';
@@ -61,7 +61,7 @@ function capture(card:HTMLElement):CardState|null{
     const label=platform==='windows'?windowsReleaseLabel(rawLabel):rawLabel;
     return {label,count:countOf(element),element,version:versionParts(label,platform)};
   });
-  const state={records,platform,list};
+  const state:CardState={records,platform,list};
   cardStates.set(card,state);
   return state;
 }
@@ -83,7 +83,7 @@ function updateRow(row:HTMLElement,label:string,count:number,total:number,index:
   if(labelNode){labelNode.textContent=label;labelNode.title=label}
   if(countNode)countNode.textContent=count.toLocaleString();
   if(percentNode)percentNode.textContent=pct;
-  if(dot){dot.className=`distributionDot dot${index%6}`}
+  if(dot)dot.className=`distributionDot dot${index%6}`;
   if(bar)bar.style.width=pct;
 }
 
@@ -96,6 +96,9 @@ function renderWindows(card:HTMLElement,state:CardState){
   }
   const rows=sorted([...grouped.values()]);
   const total=state.records.reduce((sum,row)=>sum+row.count,0);
+  const renderKey=`${sortMode}|${rows.map(row=>`${row.label}:${row.count}`).join('|')}`;
+  const allGenerated=[...state.list.children].every(node=>node instanceof HTMLElement&&node.dataset.osSortGenerated==='1');
+  if(state.renderKey===renderKey&&allGenerated)return;
   state.list.replaceChildren(...rows.map((record,index)=>{
     const row=document.createElement('div');
     row.innerHTML=record.element.innerHTML;
@@ -103,12 +106,16 @@ function renderWindows(card:HTMLElement,state:CardState){
     updateRow(row,record.label,record.count,total,index);
     return row;
   }));
+  state.renderKey=renderKey;
   const subtitle=card.querySelector<HTMLElement>('.insightCardHead p');
   if(subtitle)subtitle.textContent=`${total.toLocaleString()} devices · ${rows.length} reported version${rows.length===1?'':'s'}`;
 }
 
 function renderStandard(state:CardState){
-  state.list.append(...sorted(state.records).map(record=>record.element));
+  const desired=sorted(state.records).map(record=>record.element);
+  const current=[...state.list.children];
+  if(current.length===desired.length&&desired.every((element,index)=>current[index]===element))return;
+  state.list.append(...desired);
 }
 
 function enhanceCard(card:HTMLElement){
