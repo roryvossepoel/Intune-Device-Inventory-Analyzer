@@ -44,6 +44,16 @@
 .osVersionCard .osVersionSummaryRow>i{grid-column:1/-1;height:6px;background:#e9eff6;border-radius:999px;overflow:hidden}
 .osVersionCard .osVersionSummaryRow>i>b{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#06b6d4)}
 
+/* Windows cards use cleaner rows without decorative position dots. */
+.platformCategory-windows .distributionDot{display:none!important}
+.platformCategory-windows .distributionList>div,.platformCategory-windows .distributionList>button.distributionAction{grid-template-columns:minmax(0,1fr) auto 54px!important;column-gap:10px!important}
+.platformCategory-windows .distributionList>div>.truncate,.platformCategory-windows .distributionList>button.distributionAction>.truncate{grid-column:1!important}
+.platformCategory-windows .distributionList>div>strong,.platformCategory-windows .distributionList>button.distributionAction>strong{grid-column:2!important}
+.platformCategory-windows .distributionList>div>small,.platformCategory-windows .distributionList>button.distributionAction>small{grid-column:3!important}
+.platformCategory-windows .distributionList>div>i,.platformCategory-windows .distributionList>button.distributionAction>i{grid-column:1/-1!important}
+.platformCategory-windows .windowsLifecycleGrid{order:-1}
+.platformCategory-windows .windowsCompositionCard .hardwareDonutLayout{align-items:center}
+
 @media(max-width:760px){
   .osVersionSortEnhanced>.dashboardCategoryHead{padding-right:0}
   .osVersionSortGlobal{position:static;margin-top:12px;justify-content:flex-start}
