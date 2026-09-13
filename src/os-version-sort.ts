@@ -66,9 +66,21 @@ function capture(card:HTMLElement):CardState|null{
   return state;
 }
 
-function sorted(records:VersionRecord[]){
-  return [...records].sort((a,b)=>sortMode==='devices'?(b.count-a.count||compareVersion(a.version,b.version)):(compareVersion(a.version,b.version)||b.count-a.count));
+function sorted(records:VersionRecord[],mode:SortMode=sortMode){
+  return [...records].sort((a,b)=>mode==='devices'?(b.count-a.count||compareVersion(a.version,b.version)):(compareVersion(a.version,b.version)||b.count-a.count));
 }
+
+function groupedWindows(records:VersionRecord[]){
+  const grouped=new Map<string,VersionRecord>();
+  for(const record of records){
+    const existing=grouped.get(record.label);
+    if(existing){existing.count+=record.count;continue}
+    grouped.set(record.label,{...record});
+  }
+  return [...grouped.values()];
+}
+
+function rowsForState(state:CardState){return state.platform==='windows'?groupedWindows(state.records):state.records}
 
 function updateRow(row:HTMLElement,label:string,count:number,total:number,index:number){
   row.dataset.osSortGenerated='1';
@@ -88,13 +100,7 @@ function updateRow(row:HTMLElement,label:string,count:number,total:number,index:
 }
 
 function renderWindows(card:HTMLElement,state:CardState){
-  const grouped=new Map<string,VersionRecord>();
-  for(const record of state.records){
-    const existing=grouped.get(record.label);
-    if(existing){existing.count+=record.count;continue}
-    grouped.set(record.label,{...record});
-  }
-  const rows=sorted([...grouped.values()]);
+  const rows=sorted(groupedWindows(state.records));
   const total=state.records.reduce((sum,row)=>sum+row.count,0);
   const renderKey=`${sortMode}|${rows.map(row=>`${row.label}:${row.count}`).join('|')}`;
   const allGenerated=[...state.list.children].every(node=>node instanceof HTMLElement&&node.dataset.osSortGenerated==='1');
@@ -127,26 +133,58 @@ function enhanceCard(card:HTMLElement){
   if(state.platform==='windows')renderWindows(card,state);else renderStandard(state);
 }
 
+function orderSignature(state:CardState,mode:SortMode){return sorted(rowsForState(state),mode).map(row=>row.label).join('|')}
+
+function updateHint(section:HTMLElement){
+  const hint=section.querySelector<HTMLElement>('.osVersionSortHint');
+  if(!hint)return;
+  if(sortMode!=='devices'){hint.textContent='';hint.hidden=true;return}
+  const states=[...section.querySelectorAll<HTMLElement>('.osVersionsGrid .platformSpecificCard')].map(card=>cardStates.get(card)).filter((state):state is CardState=>!!state);
+  const identical=states.length>0&&states.every(state=>orderSignature(state,'version')===orderSignature(state,'devices'));
+  hint.textContent=identical?'Same order in this inventory':'';
+  hint.hidden=!identical;
+}
+
 function addControl(section:HTMLElement){
   if(section.querySelector('.osVersionSortControl'))return;
   section.classList.add('osVersionSortEnhanced');
   const header=section.querySelector<HTMLElement>('.dashboardCategoryHead');
   if(!header)return;
-  const control=document.createElement('label');
-  control.className='osVersionSortControl';
-  control.innerHTML='<span>Sort</span><select aria-label="Sort OS versions"><option value="version">Newest version</option><option value="devices">Devices</option></select>';
-  const select=control.querySelector('select')!;
+  const wrap=document.createElement('div');
+  wrap.className='osVersionSortWrap';
+  wrap.innerHTML='<label class="osVersionSortControl"><span>Sort</span><select aria-label="Sort OS versions"><option value="version">Newest version</option><option value="devices">Most devices</option></select></label><span class="osVersionSortHint" hidden></span>';
+  const select=wrap.querySelector('select')!;
   select.value=sortMode;
   select.addEventListener('change',()=>{sortMode=select.value as SortMode;apply()});
-  header.append(control);
+  header.append(wrap);
+}
+
+function normalizePercentageText(root:HTMLElement){
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const nodes:Text[]=[];
+  while(walker.nextNode())nodes.push(walker.currentNode as Text);
+  for(const node of nodes){
+    const value=node.nodeValue;
+    if(!value||!value.includes('%'))continue;
+    const next=value.replace(/\b(\d+(?:[.,]\d+)?)%/g,(_,raw:string)=>{
+      const numberValue=Number(raw.replace(',','.'));
+      if(!Number.isFinite(numberValue))return `${raw}%`;
+      const rounded=Math.round(numberValue*10)/10;
+      return `${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`;
+    });
+    if(next!==value)node.nodeValue=next;
+  }
 }
 
 function apply(){
+  const dashboard=document.querySelector<HTMLElement>('.inventoryDashboard');
+  if(dashboard)normalizePercentageText(dashboard);
   const sections=[...document.querySelectorAll<HTMLElement>('.dashboardCategory')];
   const section=sections.find(item=>item.querySelector('.osVersionsGrid'));
   if(!section)return;
   addControl(section);
   section.querySelectorAll<HTMLElement>('.osVersionsGrid .platformSpecificCard').forEach(enhanceCard);
+  updateHint(section);
 }
 
 function schedule(){
@@ -155,5 +193,5 @@ function schedule(){
   requestAnimationFrame(()=>{scheduled=false;apply()});
 }
 
-new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
+new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 schedule();
