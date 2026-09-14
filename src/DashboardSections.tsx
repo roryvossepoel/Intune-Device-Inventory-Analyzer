@@ -146,6 +146,9 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
 
   const windowsSkus=countValues(windows.map(sku));
   const windowsArch=countValues(windows.map(architecture));
+  const windowsOwnership=countValues(windows.map(d=>clean(d.ownership)));
+  const windowsJoin=countValues(windows.map(joinType));
+  const windowsManaged=countValues(windows.map(managedBy));
   const windowsBehind=windows.filter(d=>getWindowsIntelligence(d.osVersion)?.updateHealth==='behind').length;
   const windowsEditionReview=windows.filter(d=>getWindowsIntelligence(d.osVersion)?.updateHealth==='edition-review').length;
 
@@ -232,13 +235,14 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
       </div>
     </DashboardSection>
 
-    {windows.length>0&&<DashboardSection icon="lifecycle" title="Windows" subtitle={`${fmt(windows.length)} Windows devices · versions, lifecycle, architecture and management intelligence.`} className="platformCategory platformCategory-windows">
+    {windows.length>0&&<DashboardSection icon="lifecycle" title="Windows" subtitle={`${fmt(windows.length)} Windows devices · lifecycle, edition, architecture, ownership and management intelligence.`} className="platformCategory platformCategory-windows">
       <div className="extendedInsightGrid windowsLifecycleGrid" style={{gridTemplateColumns:'1fr'}}><WindowsLifecycle devices={windows} title="Windows lifecycle"/></div>
-      <div className="extendedInsightGrid twoInsightGrid">
-        <PlatformCard className="osVersionCard" platform="windows" title="Windows versions" subtitle={`${fmt(windows.length)} devices · ${windowsVersions.length} reported version${windowsVersions.length===1?'':'s'}`}><Distribution rows={windowsVersions} total={windows.length} limit={windowsVersions.length} onClick={label=>drill('osVersion','OS version',label)}/></PlatformCard>
-        <PlatformCard className="windowsCompositionCard" platform="windows" title="Windows edition / SKU" subtitle="Reported Windows edition and SKU mix"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsSkus} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsSkus} total={windows.length}/></div></PlatformCard>
-        <PlatformCard className="windowsCompositionCard" platform="windows" title="Windows architecture" subtitle="Processor architecture across Windows devices"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsArch} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsArch} total={windows.length}/></div></PlatformCard>
-        <PlatformCard platform="windows" title="Windows join type" subtitle="Microsoft Entra registration and join state"><Distribution rows={countValues(windows.map(joinType))} total={windows.length}/></PlatformCard>
+      <div className="extendedInsightGrid twoInsightGrid windowsSummaryGrid">
+        <PlatformCard className="windowsCompositionCard windowsEditionCard" platform="windows" title="Windows edition" subtitle="Reported Windows edition mix"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsSkus} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsSkus} total={windows.length}/></div></PlatformCard>
+        <PlatformCard className="windowsCompositionCard windowsArchitectureCard" platform="windows" title="Windows architecture" subtitle="Processor architecture across Windows devices"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsArch} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsArch} total={windows.length}/></div></PlatformCard>
+        <PlatformCard className="windowsCompositionCard windowsOwnershipCard" platform="windows" title="Ownership" subtitle="Corporate and personal Windows devices"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsOwnership} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsOwnership} total={windows.length}/></div></PlatformCard>
+        <PlatformCard className="windowsCompositionCard windowsJoinTypeCard" platform="windows" title="Windows join type" subtitle="Microsoft Entra registration and join state"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsJoin} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsJoin} total={windows.length}/></div></PlatformCard>
+        <PlatformCard className="windowsCompositionCard windowsManagedByCard" platform="windows" title="Managed by" subtitle="Management agent reported for Windows devices"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsManaged} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsManaged} total={windows.length}/></div></PlatformCard>
       </div>
     </DashboardSection>}
 
