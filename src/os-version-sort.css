@@ -49,25 +49,54 @@
 .platformCategory-windows.osVersionSortEnhanced>.dashboardCategoryHead{padding-right:0}
 .platformCategory-windows .distributionDot{display:none!important}
 .platformCategory-windows .windowsLifecycleGrid{order:-1}
-.platformCategory-windows .windowsSummaryGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
-.platformCategory-windows .windowsSummaryGrid>.platformSpecificCard>.insightCardHead{min-height:58px}
-.platformCategory-windows .windowsCompositionCard .hardwareDonutLayout{display:grid!important;grid-template-columns:126px minmax(0,1fr);column-gap:20px;align-items:center;margin-top:6px;min-height:148px}
-.platformCategory-windows .windowsCompositionCard .donut{width:116px;height:116px;margin:0 auto}
-.platformCategory-windows .windowsCompositionCard .donut>div{width:72px;height:72px}
-.platformCategory-windows .windowsCompositionCard .distributionList{width:100%;min-width:0;display:flex;flex-direction:column;gap:14px;margin:0}
-.platformCategory-windows .windowsCompositionCard .distributionList>div{display:grid!important;grid-template-columns:minmax(80px,1fr) 34px 52px!important;column-gap:10px!important;align-items:baseline;padding:0!important;min-width:0}
-.platformCategory-windows .windowsCompositionCard .distributionList>div>.truncate{grid-column:1!important;min-width:0;text-align:left;font-size:14px}
-.platformCategory-windows .windowsCompositionCard .distributionList>div>strong{grid-column:2!important;text-align:right;font-size:14px;font-variant-numeric:tabular-nums}
-.platformCategory-windows .windowsCompositionCard .distributionList>div>small{grid-column:3!important;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;color:#70849d}
+.platformCategory-windows .windowsSummaryGrid{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
+.platformCategory-windows .windowsSummaryGrid>.platformSpecificCard{padding:21px!important;min-height:320px}
+.platformCategory-windows .windowsSummaryGrid>.platformSpecificCard>.insightCardHead{min-height:52px;margin-bottom:18px!important;align-items:center!important;gap:12px!important}
+.platformCategory-windows .windowsSummaryGrid>.platformSpecificCard>.insightCardHead h2{margin:0!important;font-size:19px!important;line-height:1.2!important;font-weight:760!important;letter-spacing:-.15px!important;color:#0b1f44}
+.platformCategory-windows .windowsSummaryGrid>.platformSpecificCard>.insightCardHead p{margin:4px 0 0!important;font-size:14px!important;line-height:1.4!important;font-weight:500!important;color:#7a8da5!important}
+
+/* Summary-card icons describe the insight, not the Windows category. */
+.platformCategory-windows .windowsSummaryGrid .platformCardLogo-windows{display:grid;place-items:center;color:#2563eb;background:#eef5ff;border-color:#d7e6fa}
+.platformCategory-windows .windowsSummaryGrid .platformCardLogo-windows svg{display:none!important}
+.platformCategory-windows .windowsSummaryGrid .platformCardLogo-windows:before{content:"";display:block;width:20px;height:20px;background-repeat:no-repeat;background-position:center;background-size:20px 20px}
+.platformCategory-windows .windowsEditionCard .platformCardLogo-windows:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='16' height='16' rx='2'/%3E%3Cpath d='M8 8h8M8 12h8M8 16h5'/%3E%3C/svg%3E")}
+.platformCategory-windows .windowsArchitectureCard .platformCardLogo-windows:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='7' y='7' width='10' height='10' rx='2'/%3E%3Cpath d='M9.5 9.5h5v5h-5zM9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4'/%3E%3C/svg%3E")}
+.platformCategory-windows .windowsOwnershipCard .platformCardLogo-windows:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='7' width='16' height='12' rx='2'/%3E%3Cpath d='M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M4 12h16M10 12v2h4v-2'/%3E%3C/svg%3E")}
+.platformCategory-windows .windowsJoinTypeCard .platformCardLogo-windows:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='7' cy='12' r='3'/%3E%3Ccircle cx='17' cy='7' r='3'/%3E%3Ccircle cx='17' cy='17' r='3'/%3E%3Cpath d='m9.7 10.7 4.6-2.3M9.7 13.3l4.6 2.3'/%3E%3C/svg%3E")}
+.platformCategory-windows .windowsManagedByCard .platformCardLogo-windows:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h10M18 7h2M4 12h2M10 12h10M4 17h7M15 17h5'/%3E%3Ccircle cx='16' cy='7' r='2'/%3E%3Ccircle cx='8' cy='12' r='2'/%3E%3Ccircle cx='13' cy='17' r='2'/%3E%3C/svg%3E")}
+
+/* Windows lifecycle gets a lifecycle icon; the Windows logo belongs to the category, not the card. */
+.platformCategory-windows .windowsLifecycleLogo{width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:#eef5ff;border-color:#d7e6fa;color:#2563eb}
+.platformCategory-windows .windowsLifecycleLogo svg{display:none!important}
+.platformCategory-windows .windowsLifecycleLogo:before{content:"";display:block;width:20px;height:20px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Cpath d='M12 7.5V12l3 2M8 3.8 6.5 2.5M16 3.8l1.5-1.3'/%3E%3C/svg%3E") center/20px 20px no-repeat}
+.platformCategory-windows .windowsLifecycleTitle{align-items:center!important}
+
+.platformCategory-windows .windowsCompositionCard .hardwareDonutLayout{display:grid!important;grid-template-columns:138px minmax(0,1fr);column-gap:24px;align-items:center;margin-top:2px;min-height:158px;padding:0!important}
+.platformCategory-windows .windowsCompositionCard .donut{width:126px!important;height:126px!important;margin:0 auto!important}
+.platformCategory-windows .windowsCompositionCard .donut>div{width:78px!important;height:78px!important}
+.platformCategory-windows .windowsCompositionCard .donut strong{font-size:21px!important;line-height:1!important;font-variant-numeric:tabular-nums}
+.platformCategory-windows .windowsCompositionCard .donut span{font-size:11px!important;line-height:1.2!important;margin-top:5px!important}
+.platformCategory-windows .windowsCompositionCard .distributionList{width:100%;min-width:0;display:flex;flex-direction:column;gap:13px;margin:0}
+.platformCategory-windows .windowsCompositionCard .distributionList>div{display:grid!important;grid-template-columns:minmax(100px,1fr) 42px 58px!important;column-gap:12px!important;align-items:center;padding:4px 6px!important;min-width:0;line-height:20px}
+.platformCategory-windows .windowsCompositionCard .distributionList>div>.truncate{grid-column:1!important;min-width:0;text-align:left;font-size:14px!important;line-height:20px!important;font-weight:500!important;color:#203b5a!important}
+.platformCategory-windows .windowsCompositionCard .distributionList>div>strong{grid-column:2!important;min-width:42px;text-align:right;font-size:14px!important;line-height:20px!important;font-weight:700!important;font-variant-numeric:tabular-nums;color:#0b1f44!important}
+.platformCategory-windows .windowsCompositionCard .distributionList>div>small{grid-column:3!important;min-width:58px;text-align:right;font-size:13px!important;line-height:20px!important;font-weight:500!important;font-variant-numeric:tabular-nums;white-space:nowrap;color:#70849d!important}
 .platformCategory-windows .windowsCompositionCard .distributionList>div>i{display:none!important}
 
 /* Dashboard summary and lifecycle rows drill into Device Explorer. */
 .platformCategory-windows .dashboardDrillRow{cursor:pointer;transition:background .14s ease,box-shadow .14s ease}
-.platformCategory-windows .windowsCompositionCard .dashboardDrillRow{border-radius:7px;padding:4px 6px!important;margin:-4px -6px}
+.platformCategory-windows .windowsCompositionCard .dashboardDrillRow{border-radius:7px;margin:0 -6px}
 .platformCategory-windows .windowsCompositionCard .dashboardDrillRow:hover{background:#f5f9fe}
 .platformCategory-windows .windowsCompositionCard .dashboardDrillRow:focus-visible{outline:2px solid #8ab8e5;outline-offset:2px}
 .platformCategory-windows .windowsLifecycleTable tbody tr.dashboardDrillRow:hover{box-shadow:inset 0 0 0 1px rgba(74,122,168,.2)}
 .platformCategory-windows .windowsLifecycleTable tbody tr.dashboardDrillRow:focus-visible{outline:2px solid #8ab8e5;outline-offset:-2px}
+
+/* Keep the dashboard platform menu above the KPI row while it is open. */
+.dashboardHead{position:relative;z-index:30}
+.dashboardPlatformFilter{position:relative;z-index:60}
+.dashboardPlatformFilter .multiFilterControl{position:relative;z-index:70}
+.dashboardPlatformFilter .multiFilterMenu{z-index:1000!important}
+.inventoryDashboard{position:relative;z-index:1}
 
 @media(max-width:1100px){
   .platformCategory-windows .windowsSummaryGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -78,5 +107,6 @@
   .osVersionSortGlobal{position:static;margin-top:12px;justify-content:flex-start}
   .osVersionSortGlobal select{min-width:98px}
   .platformCategory-windows .windowsSummaryGrid{grid-template-columns:1fr}
-  .platformCategory-windows .windowsCompositionCard .hardwareDonutLayout{grid-template-columns:112px minmax(0,1fr);column-gap:16px}
+  .platformCategory-windows .windowsCompositionCard .hardwareDonutLayout{grid-template-columns:122px minmax(0,1fr);column-gap:18px}
+  .platformCategory-windows .windowsCompositionCard .donut{width:116px!important;height:116px!important}
 }
