@@ -57,8 +57,20 @@
 .platformCategory-windows .distributionList>div>small,.platformCategory-windows .distributionList>button.distributionAction>small{grid-column:3!important}
 .platformCategory-windows .distributionList>div>i,.platformCategory-windows .distributionList>button.distributionAction>i{grid-column:1/-1!important}
 .platformCategory-windows .windowsLifecycleGrid{order:-1}
-.platformCategory-windows .windowsCompositionCard .hardwareDonutLayout{align-items:center}
 .platformCategory-windows .twoInsightGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.platformCategory-windows .twoInsightGrid>.platformSpecificCard>.insightCardHead{min-height:58px}
+
+/* Edition and architecture use the same compact composition layout. */
+.platformCategory-windows .windowsCompositionCard .hardwareDonutLayout{display:grid!important;grid-template-columns:124px minmax(0,1fr);column-gap:22px;align-items:center;margin-top:4px}
+.platformCategory-windows .windowsCompositionCard .donut{margin:0 auto}
+.platformCategory-windows .windowsCompositionCard .distributionList{width:100%;min-width:0;display:flex;flex-direction:column;gap:12px}
+.platformCategory-windows .windowsCompositionCard .distributionList>div{display:grid!important;grid-template-columns:minmax(82px,1fr) 36px 52px!important;column-gap:10px!important;align-items:baseline;padding:0!important}
+.platformCategory-windows .windowsCompositionCard .distributionList>div>.truncate{grid-column:1!important;min-width:0;text-align:left}
+.platformCategory-windows .windowsCompositionCard .distributionList>div>strong{grid-column:2!important;text-align:right;font-variant-numeric:tabular-nums}
+.platformCategory-windows .windowsCompositionCard .distributionList>div>small{grid-column:3!important;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.platformCategory-windows .windowsCompositionCard .distributionList>div>i{display:none!important}
+.platformCategory-windows .windowsJoinCard .distributionList{margin-top:4px}
+.platformCategory-windows .windowsJoinCard .distributionList strong,.platformCategory-windows .windowsJoinCard .distributionList small{font-variant-numeric:tabular-nums}
 
 @media(max-width:1100px){
   .platformCategory-windows .twoInsightGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -69,4 +81,5 @@
   .osVersionSortGlobal{position:static;margin-top:12px;justify-content:flex-start}
   .osVersionSortGlobal select{min-width:98px}
   .platformCategory-windows .twoInsightGrid{grid-template-columns:1fr}
+  .platformCategory-windows .windowsCompositionCard .hardwareDonutLayout{grid-template-columns:112px minmax(0,1fr);column-gap:16px}
 }
