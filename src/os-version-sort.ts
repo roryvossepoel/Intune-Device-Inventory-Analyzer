@@ -179,6 +179,23 @@ function addControl(section:HTMLElement,sort:SectionSortState){
   updateControl(section,sort);
 }
 
+function polishWindowsSummaryCards(){
+  const section=document.querySelector<HTMLElement>('.platformCategory-windows');
+  if(!section)return;
+  section.querySelectorAll<HTMLElement>('.platformSpecificCard').forEach(card=>{
+    const title=card.querySelector<HTMLElement>('.insightCardHead h2');
+    const subtitle=card.querySelector<HTMLElement>('.insightCardHead p');
+    const value=title?.textContent?.trim();
+    if(value==='Windows edition / SKU'||value==='Windows edition'){
+      card.classList.add('windowsEditionCard');
+      if(title)title.textContent='Windows edition';
+      if(subtitle)subtitle.textContent='Reported Windows edition mix';
+    }
+    if(value==='Windows architecture')card.classList.add('windowsArchitectureCard');
+    if(value==='Windows join type')card.classList.add('windowsJoinCard');
+  });
+}
+
 function normalizePercentageText(root:HTMLElement){
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   const nodes:Text[]=[];
@@ -199,6 +216,7 @@ function normalizePercentageText(root:HTMLElement){
 function apply(){
   const dashboard=document.querySelector<HTMLElement>('.inventoryDashboard');
   if(dashboard)normalizePercentageText(dashboard);
+  polishWindowsSummaryCards();
   document.querySelectorAll<HTMLElement>('.dashboardCategory.platformCategory').forEach(section=>{
     const card=section.querySelector<HTMLElement>('.osVersionCard');
     if(!card)return;
