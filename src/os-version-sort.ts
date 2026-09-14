@@ -179,20 +179,51 @@ function addControl(section:HTMLElement,sort:SectionSortState){
   updateControl(section,sort);
 }
 
-function polishWindowsSummaryCards(){
-  const section=document.querySelector<HTMLElement>('.platformCategory-windows');
-  if(!section)return;
-  section.querySelectorAll<HTMLElement>('.platformSpecificCard').forEach(card=>{
-    const title=card.querySelector<HTMLElement>('.insightCardHead h2');
-    const subtitle=card.querySelector<HTMLElement>('.insightCardHead p');
-    const value=title?.textContent?.trim();
-    if(value==='Windows edition / SKU'||value==='Windows edition'){
-      card.classList.add('windowsEditionCard');
-      if(title)title.textContent='Windows edition';
-      if(subtitle)subtitle.textContent='Reported Windows edition mix';
-    }
-    if(value==='Windows architecture')card.classList.add('windowsArchitectureCard');
-    if(value==='Windows join type')card.classList.add('windowsJoinCard');
+function findNavButton(label:string){return [...document.querySelectorAll<HTMLButtonElement>('.mainNav button')].find(button=>button.textContent?.trim()===label)??null}
+function findFixedFilter(label:string){return [...document.querySelectorAll<HTMLElement>('.hardwareFixedMultiFilter')].find(filter=>filter.querySelector<HTMLElement>(':scope > span')?.textContent?.trim()===label)??null}
+function selectFixedFilter(label:string,value:string,attempt=0){
+  const filter=findFixedFilter(label);
+  if(!filter){if(attempt<30)setTimeout(()=>selectFixedFilter(label,value,attempt+1),50);return}
+  const trigger=filter.querySelector<HTMLButtonElement>('.multiFilterTrigger');
+  if(!trigger)return;
+  if(trigger.getAttribute('aria-expanded')!=='true')trigger.click();
+  setTimeout(()=>{
+    const option=[...filter.querySelectorAll<HTMLLabelElement>('.multiFilterMenu label')].find(item=>item.querySelector('span')?.textContent?.trim()===value);
+    const input=option?.querySelector<HTMLInputElement>('input');
+    if(input&&!input.checked)input.click();
+    setTimeout(()=>{if(trigger.getAttribute('aria-expanded')==='true')trigger.click()},0);
+  },0);
+}
+function openExplorerWithFixedFilter(label:string,value:string){
+  const nav=findNavButton('Device Explorer');
+  if(!nav)return;
+  nav.click();
+  setTimeout(()=>selectFixedFilter(label,value),0);
+}
+function makeDrillRow(row:HTMLElement,filterLabel:string,value:string){
+  if(row.dataset.dashboardDrillBound==='1'||!value)return;
+  row.dataset.dashboardDrillBound='1';
+  row.classList.add('dashboardDrillRow');
+  row.tabIndex=0;
+  row.setAttribute('role','button');
+  row.setAttribute('aria-label',`Open ${value} in Device Explorer`);
+  row.title='Open in Device Explorer';
+  const open=()=>openExplorerWithFixedFilter(filterLabel,value);
+  row.addEventListener('click',open);
+  row.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();open()}});
+}
+function bindWindowsCardDrill(selector:string,filterLabel:string){
+  document.querySelectorAll<HTMLElement>(`.platformCategory-windows ${selector} .distributionList > *`).forEach(row=>makeDrillRow(row,filterLabel,labelOf(row)));
+}
+function bindWindowsDrillThrough(){
+  bindWindowsCardDrill('.windowsEditionCard','Windows edition');
+  bindWindowsCardDrill('.windowsArchitectureCard','Windows architecture');
+  bindWindowsCardDrill('.windowsOwnershipCard','Windows ownership');
+  bindWindowsCardDrill('.windowsJoinTypeCard','Windows join type');
+  bindWindowsCardDrill('.windowsManagedByCard','Windows managed by');
+  document.querySelectorAll<HTMLElement>('.platformCategory-windows .windowsLifecycleTable tbody tr').forEach(row=>{
+    const value=row.querySelector<HTMLElement>('td strong')?.textContent?.trim()||'';
+    makeDrillRow(row,'Windows release',value);
   });
 }
 
@@ -216,7 +247,6 @@ function normalizePercentageText(root:HTMLElement){
 function apply(){
   const dashboard=document.querySelector<HTMLElement>('.inventoryDashboard');
   if(dashboard)normalizePercentageText(dashboard);
-  polishWindowsSummaryCards();
   document.querySelectorAll<HTMLElement>('.dashboardCategory.platformCategory').forEach(section=>{
     const card=section.querySelector<HTMLElement>('.osVersionCard');
     if(!card)return;
@@ -225,6 +255,7 @@ function apply(){
     enhanceCard(card,sort);
     updateControl(section,sort);
   });
+  bindWindowsDrillThrough();
 }
 
 function schedule(){
