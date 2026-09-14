@@ -7,12 +7,12 @@ export type HardwareExplorerFilterState={
   deviceTypes:string[];
   appleFamilies:string[];
   cellularCapabilities:string[];
-  windowsReleases:string[];
-  windowsEditions:string[];
-  windowsArchitectures:string[];
-  windowsOwnerships:string[];
-  windowsJoinTypes:string[];
-  windowsManagedBy:string[];
+  windowsReleases?:string[];
+  windowsEditions?:string[];
+  windowsArchitectures?:string[];
+  windowsOwnerships?:string[];
+  windowsJoinTypes?:string[];
+  windowsManagedBy?:string[];
 };
 
 export const emptyHardwareExplorerFilters=():HardwareExplorerFilterState=>({
@@ -32,15 +32,21 @@ const windowsJoinType=(device:Device)=>rawValue(device,[/^JoinType$/i,/^Join typ
 const windowsManagedBy=(device:Device)=>device.managedBy?.trim()||'Unknown';
 
 export function hardwareExplorerFilterMatches(device:Device,filters:HardwareExplorerFilterState){
+  const releases=filters.windowsReleases??[];
+  const editions=filters.windowsEditions??[];
+  const architectures=filters.windowsArchitectures??[];
+  const ownerships=filters.windowsOwnerships??[];
+  const joinTypes=filters.windowsJoinTypes??[];
+  const managed=filters.windowsManagedBy??[];
   if(filters.deviceTypes.length&&!filters.deviceTypes.includes(hardwareType(device)))return false;
   if(filters.appleFamilies.length&&(!isAppleMobile(device)||!filters.appleFamilies.includes(appleDeviceFamily(device))))return false;
   if(filters.cellularCapabilities.length&&(!isMobile(device)||!filters.cellularCapabilities.includes(cellularCapability(device))))return false;
-  if(filters.windowsReleases.length&&(!isWindows(device)||!filters.windowsReleases.includes(windowsRelease(device))))return false;
-  if(filters.windowsEditions.length&&(!isWindows(device)||!filters.windowsEditions.includes(windowsEdition(device))))return false;
-  if(filters.windowsArchitectures.length&&(!isWindows(device)||!filters.windowsArchitectures.includes(windowsArchitecture(device))))return false;
-  if(filters.windowsOwnerships.length&&(!isWindows(device)||!filters.windowsOwnerships.includes(windowsOwnership(device))))return false;
-  if(filters.windowsJoinTypes.length&&(!isWindows(device)||!filters.windowsJoinTypes.includes(windowsJoinType(device))))return false;
-  if(filters.windowsManagedBy.length&&(!isWindows(device)||!filters.windowsManagedBy.includes(windowsManagedBy(device))))return false;
+  if(releases.length&&(!isWindows(device)||!releases.includes(windowsRelease(device))))return false;
+  if(editions.length&&(!isWindows(device)||!editions.includes(windowsEdition(device))))return false;
+  if(architectures.length&&(!isWindows(device)||!architectures.includes(windowsArchitecture(device))))return false;
+  if(ownerships.length&&(!isWindows(device)||!ownerships.includes(windowsOwnership(device))))return false;
+  if(joinTypes.length&&(!isWindows(device)||!joinTypes.includes(windowsJoinType(device))))return false;
+  if(managed.length&&(!isWindows(device)||!managed.includes(windowsManagedBy(device))))return false;
   return true;
 }
 
@@ -85,12 +91,12 @@ export default function HardwareExplorerFilters({devices,value,onChange}:{device
       <MultiSelect label="Device type" values={deviceTypes} selected={value.deviceTypes} onChange={deviceTypes=>onChange({...value,deviceTypes})} allLabel="All device types"/>
       {appleFamilies.length>0&&<MultiSelect label="Apple device family" values={appleFamilies} selected={value.appleFamilies} onChange={appleFamilies=>onChange({...value,appleFamilies})} allLabel="All Apple families"/>}
       {cellularCapabilities.length>0&&<MultiSelect label="Cellular capability" values={cellularCapabilities} selected={value.cellularCapabilities} onChange={cellularCapabilities=>onChange({...value,cellularCapabilities})} allLabel="All mobile devices"/>}
-      {windowsReleases.length>0&&<MultiSelect label="Windows release" values={windowsReleases} selected={value.windowsReleases} onChange={windowsReleases=>onChange({...value,windowsReleases})} allLabel="All releases"/>}
-      {windowsEditions.length>0&&<MultiSelect label="Windows edition" values={windowsEditions} selected={value.windowsEditions} onChange={windowsEditions=>onChange({...value,windowsEditions})} allLabel="All editions"/>}
-      {windowsArchitectures.length>0&&<MultiSelect label="Windows architecture" values={windowsArchitectures} selected={value.windowsArchitectures} onChange={windowsArchitectures=>onChange({...value,windowsArchitectures})} allLabel="All architectures"/>}
-      {windowsOwnerships.length>0&&<MultiSelect label="Windows ownership" values={windowsOwnerships} selected={value.windowsOwnerships} onChange={windowsOwnerships=>onChange({...value,windowsOwnerships})} allLabel="All ownership"/>}
-      {windowsJoinTypes.length>0&&<MultiSelect label="Windows join type" values={windowsJoinTypes} selected={value.windowsJoinTypes} onChange={windowsJoinTypes=>onChange({...value,windowsJoinTypes})} allLabel="All join types"/>}
-      {windowsManagedByValues.length>0&&<MultiSelect label="Windows managed by" values={windowsManagedByValues} selected={value.windowsManagedBy} onChange={windowsManagedBy=>onChange({...value,windowsManagedBy})} allLabel="All management agents"/>}
+      {windowsReleases.length>0&&<MultiSelect label="Windows release" values={windowsReleases} selected={value.windowsReleases??[]} onChange={windowsReleases=>onChange({...value,windowsReleases})} allLabel="All releases"/>}
+      {windowsEditions.length>0&&<MultiSelect label="Windows edition" values={windowsEditions} selected={value.windowsEditions??[]} onChange={windowsEditions=>onChange({...value,windowsEditions})} allLabel="All editions"/>}
+      {windowsArchitectures.length>0&&<MultiSelect label="Windows architecture" values={windowsArchitectures} selected={value.windowsArchitectures??[]} onChange={windowsArchitectures=>onChange({...value,windowsArchitectures})} allLabel="All architectures"/>}
+      {windowsOwnerships.length>0&&<MultiSelect label="Windows ownership" values={windowsOwnerships} selected={value.windowsOwnerships??[]} onChange={windowsOwnerships=>onChange({...value,windowsOwnerships})} allLabel="All ownership"/>}
+      {windowsJoinTypes.length>0&&<MultiSelect label="Windows join type" values={windowsJoinTypes} selected={value.windowsJoinTypes??[]} onChange={windowsJoinTypes=>onChange({...value,windowsJoinTypes})} allLabel="All join types"/>}
+      {windowsManagedByValues.length>0&&<MultiSelect label="Windows managed by" values={windowsManagedByValues} selected={value.windowsManagedBy??[]} onChange={windowsManagedBy=>onChange({...value,windowsManagedBy})} allLabel="All management agents"/>}
     </div>
   </section>;
 }
