@@ -227,6 +227,29 @@ function bindWindowsDrillThrough(){
   });
 }
 
+function conciseWindowsSummaryLabel(card:HTMLElement,label:string){
+  if(card.classList.contains('windowsJoinTypeCard')){
+    if(/^Azure AD joined$/i.test(label))return 'Entra joined';
+    if(/^Azure AD registered$/i.test(label))return 'Entra registered';
+    if(/^Hybrid Azure AD joined$/i.test(label))return 'Hybrid joined';
+  }
+  return label;
+}
+
+function updateWindowsDonutSummaries(){
+  document.querySelectorAll<HTMLElement>('.platformCategory-windows .windowsCompositionCard').forEach(card=>{
+    const rows=[...card.querySelectorAll<HTMLElement>('.distributionList > *')].map(row=>({label:labelOf(row),count:countOf(row)})).filter(row=>row.label&&row.count>=0);
+    if(!rows.length)return;
+    const total=rows.reduce((sum,row)=>sum+row.count,0);
+    if(!total)return;
+    const dominant=rows.reduce((best,row)=>row.count>best.count?row:best,rows[0]);
+    const center=card.querySelector<HTMLElement>('.donut strong');
+    const label=card.querySelector<HTMLElement>('.donut span');
+    if(center)center.textContent=formatPercent(dominant.count/total*100);
+    if(label){label.textContent=conciseWindowsSummaryLabel(card,dominant.label);label.title=dominant.label}
+  });
+}
+
 function normalizePercentageText(root:HTMLElement){
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   const nodes:Text[]=[];
@@ -256,6 +279,7 @@ function apply(){
     updateControl(section,sort);
   });
   bindWindowsDrillThrough();
+  updateWindowsDonutSummaries();
 }
 
 function schedule(){
