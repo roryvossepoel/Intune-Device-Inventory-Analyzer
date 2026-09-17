@@ -27,7 +27,7 @@ function ensureOverlay(){
   backdrop.className='importProgressBackdrop';
   backdrop.innerHTML=`<section class="importProgressPanel" role="dialog" aria-modal="true" aria-label="Processing inventory export">
     <header class="importProgressHead"><span class="importProgressFileIcon">${fileIcon()}</span><div><span class="importProgressEyebrow">LOCAL INVENTORY PROCESSING</span><h2>Analyzing your inventory</h2><p class="importProgressFileName"></p></div></header>
-    <div class="importProgressBody"><div class="importProgressCurrent"><div><strong></strong><span></span></div><b></b></div><div class="importProgressTrack" aria-hidden="true"><i></i></div><div class="importProgressSteps"></div><div class="importProgressReadyAction" hidden><button type="button"><span>Open dashboard</span>${arrowIcon()}</button><small>Opening dashboard automatically…</small></div></div>
+    <div class="importProgressBody"><div class="importProgressCurrent"><div><strong></strong><span></span></div><b></b></div><div class="importProgressTrack" aria-hidden="true"><i></i></div><div class="importProgressSteps"></div><div class="importProgressReadyAction" hidden><button type="button"><span>Open dashboard</span>${arrowIcon()}</button><small></small></div></div>
     <div class="importProgressError" hidden><strong>Import failed</strong><p></p><button type="button">Close</button></div>
     <footer class="importProgressPrivacy">${lockIcon()}<span>Processing stays local in this browser. Inventory data is not uploaded.</span></footer>
   </section>`;
@@ -93,6 +93,11 @@ function render(progress:ImportProgress){
   }
 }
 
+function setReadyCountdown(seconds:number){
+  const text=backdrop?.querySelector<HTMLElement>('.importProgressReadyAction small');
+  if(text)text.textContent=`Opening dashboard in ${seconds} second${seconds===1?'':'s'}…`;
+}
+
 function showReady(progress:ImportProgress){
   if(!backdrop||current?.stage!=='build')return;
   const panel=backdrop.querySelector<HTMLElement>('.importProgressPanel')!;
@@ -110,8 +115,17 @@ function showReady(progress:ImportProgress){
   track.style.width='100%';
   renderSteps(progress,true);
   readyAction.hidden=false;
+
+  let remaining=5;
+  setReadyCountdown(remaining);
   window.clearTimeout(closeTimer);
-  closeTimer=window.setTimeout(hideOverlay,1500);
+  const tick=()=>{
+    remaining-=1;
+    if(remaining<=0){hideOverlay();return}
+    setReadyCountdown(remaining);
+    closeTimer=window.setTimeout(tick,1000);
+  };
+  closeTimer=window.setTimeout(tick,1000);
 }
 
 window.addEventListener(INVENTORY_IMPORT_PROGRESS_EVENT,event=>{
