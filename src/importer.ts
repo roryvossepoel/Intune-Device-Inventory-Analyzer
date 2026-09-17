@@ -3,6 +3,10 @@ import Papa from 'papaparse';
 import { describeOsVersion } from './deviceIntelligence';
 import type { Device, ImportResult, PlatformFamily } from './types';
 
+export type ImportProgressStage='read'|'extract'|'parse'|'process';
+export type ImportProgress={stage:ImportProgressStage;label:string;detail:string;progress:number};
+export type ImportProgressHandler=(progress:ImportProgress)=>void;
+
 const value = (row: Record<string, string>, ...keys: string[]) => {
   for (const key of keys) {
     const match = Object.keys(row).find(k => k.trim().toLowerCase() === key.toLowerCase());
@@ -10,6 +14,10 @@ const value = (row: Record<string, string>, ...keys: string[]) => {
   }
   return null;
 };
+
+const report=(handler:ImportProgressHandler|undefined,progress:ImportProgress)=>handler?.(progress);
+const allowUiPaint=()=>new Promise<void>(resolve=>setTimeout(resolve,0));
+const fileSize=(bytes:number)=>bytes<1024?`${bytes} B`:bytes<1024*1024?`${(bytes/1024).toFixed(1)} KB`:`${(bytes/1024/1024).toFixed(1)} MB`;
 
 function normalizeManufacturer(input:string|null){
   if(!input) return null;
@@ -49,9 +57,6 @@ function normalizePlatform(os: string | null, model: string | null, productName:
   if (source.includes('mac')) return 'macos';
   if (source.includes('linux')) return 'linux';
 
-  // Intune can report the combined value "iOS/iPadOS" for both iPhones and iPads.
-  // Prefer hardware identity so iPads remain distinguishable while both families
-  // are still grouped together as Apple Mobile in the UI.
   if (hardware.includes('ipad')) return 'ipados';
   if (hardware.includes('iphone')) return 'ios';
   if (source.includes('ipad') && !source.includes('ios')) return 'ipados';
@@ -85,19 +90,24 @@ function normalizeRow(row: Record<string, string>, index: number, sourceFileName
   };
 }
 
-function parseCsv(csv: string, sourceFileName: string, csvFileName: string): Promise<ImportResult> {
+async function parseCsv(csv: string, sourceFileName: string, csvFileName: string, onProgress?:ImportProgressHandler): Promise<ImportResult> {
+  report(onProgress,{stage:'parse',label:'Parsing inventory CSV',detail:`Reading columns and rows from ${csvFileName}`,progress:56});
+  await allowUiPaint();
   return new Promise((resolve, reject) => {
     Papa.parse<Record<string, string>>(csv, {
       header: true,
       skipEmptyLines: 'greedy',
       transformHeader: header => header.replace(/^\uFEFF/, '').trim(),
-      complete: result => {
+      complete: async result => {
         if (result.errors.length && result.data.length === 0) {
           reject(new Error(result.errors[0].message));
           return;
         }
         const columns = result.meta.fields ?? [];
+        report(onProgress,{stage:'process',label:'Processing device inventory',detail:`Normalizing ${result.data.length.toLocaleString()} inventory rows and ${columns.length.toLocaleString()} columns`,progress:75});
+        await allowUiPaint();
         const devices = result.data.map((row, index) => normalizeRow(row, index, sourceFileName));
+        report(onProgress,{stage:'process',label:'Processing device inventory',detail:`Processed ${devices.length.toLocaleString()} devices`,progress:88});
         resolve({ sourceFileName, sourceFileNames: [sourceFileName], csvFileName, csvFileNames: [csvFileName], devices, columns, duplicateCount: 0 });
       },
       error: (error: Error) => reject(error),
@@ -105,17 +115,32 @@ function parseCsv(csv: string, sourceFileName: string, csvFileName: string): Pro
   });
 }
 
-export async function importInventory(file: File): Promise<ImportResult> {
+export async function importInventory(file: File,onProgress?:ImportProgressHandler): Promise<ImportResult> {
   const lower = file.name.toLowerCase();
-  if (lower.endsWith('.csv')) return parseCsv(await file.text(), file.name, file.name);
+  report(onProgress,{stage:'read',label:'Reading export',detail:`${file.name} · ${fileSize(file.size)}`,progress:10});
+  await allowUiPaint();
+
+  if (lower.endsWith('.csv')) {
+    const csv=await file.text();
+    report(onProgress,{stage:'read',label:'Reading export',detail:`Loaded ${file.name} into local memory`,progress:32});
+    await allowUiPaint();
+    return parseCsv(csv, file.name, file.name,onProgress);
+  }
   if (!lower.endsWith('.zip')) throw new Error(`Unsupported file: ${file.name}. Select Intune inventory exports (.zip or .csv).`);
 
+  report(onProgress,{stage:'extract',label:'Opening ZIP archive',detail:'Inspecting the archive for an inventory CSV',progress:28});
+  await allowUiPaint();
   const zip = await JSZip.loadAsync(file);
   const csvFiles = Object.values(zip.files).filter(entry => !entry.dir && entry.name.toLowerCase().endsWith('.csv'));
   if (!csvFiles.length) throw new Error(`No CSV file was found inside ${file.name}.`);
   if (csvFiles.length > 1) throw new Error(`${file.name} contains ${csvFiles.length} CSV files. A single inventory CSV per ZIP is expected.`);
   const csvFile = csvFiles[0];
-  return parseCsv(await csvFile.async('text'), file.name, csvFile.name);
+  report(onProgress,{stage:'extract',label:'Extracting inventory CSV',detail:`Found ${csvFile.name}`,progress:42});
+  await allowUiPaint();
+  const csv=await csvFile.async('text');
+  report(onProgress,{stage:'extract',label:'Extracting inventory CSV',detail:`Loaded ${csvFile.name} from the archive`,progress:50});
+  await allowUiPaint();
+  return parseCsv(csv, file.name, csvFile.name,onProgress);
 }
 
 function newerDevice(a: Device, b: Device): Device {
@@ -153,5 +178,5 @@ export function mergeImportResults(results: ImportResult[]): ImportResult {
 
 export async function importInventories(files: File[]): Promise<ImportResult> {
   if (!files.length) throw new Error('Select one or more Intune inventory exports.');
-  return mergeImportResults(await Promise.all(files.map(importInventory)));
+  return mergeImportResults(await Promise.all(files.map(file=>importInventory(file))));
 }
