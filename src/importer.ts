@@ -4,7 +4,7 @@ import { describeOsVersion } from './deviceIntelligence';
 import type { Device, ImportResult, PlatformFamily } from './types';
 
 export type ImportProgressStage='read'|'extract'|'parse'|'process'|'build'|'error';
-export type ImportProgress={stage:ImportProgressStage;label:string;detail:string;progress:number;fileName:string;isZip:boolean};
+export type ImportProgress={stage:ImportProgressStage;label:string;detail:string;progress:number;fileName:string;isZip:boolean;deviceCount?:number};
 export type ImportProgressHandler=(progress:ImportProgress)=>void;
 
 export const INVENTORY_IMPORT_PROGRESS_EVENT='intune-inventory-import-progress';
@@ -108,10 +108,10 @@ async function parseCsv(csv: string, sourceFileName: string, csvFileName: string
           return;
         }
         const columns = result.meta.fields ?? [];
-        report(onProgress,{stage:'process',label:'Processing device inventory',detail:`Normalizing ${result.data.length.toLocaleString()} inventory rows and ${columns.length.toLocaleString()} columns`,progress:75,fileName:sourceFileName,isZip});
+        report(onProgress,{stage:'process',label:'Processing device inventory',detail:`Normalizing ${result.data.length.toLocaleString()} inventory rows and ${columns.length.toLocaleString()} columns`,progress:75,fileName:sourceFileName,isZip,deviceCount:result.data.length});
         await allowUiPaint();
         const devices = result.data.map((row, index) => normalizeRow(row, index, sourceFileName));
-        report(onProgress,{stage:'process',label:'Processing device inventory',detail:`Processed ${devices.length.toLocaleString()} devices`,progress:88,fileName:sourceFileName,isZip});
+        report(onProgress,{stage:'process',label:'Processing device inventory',detail:`Processed ${devices.length.toLocaleString()} devices`,progress:88,fileName:sourceFileName,isZip,deviceCount:devices.length});
         resolve({ sourceFileName, sourceFileNames: [sourceFileName], csvFileName, csvFileNames: [csvFileName], devices, columns, duplicateCount: 0 });
       },
       error: (error: Error) => reject(error),
@@ -120,7 +120,7 @@ async function parseCsv(csv: string, sourceFileName: string, csvFileName: string
 }
 
 async function finishImport(result:ImportResult,file:File,isZip:boolean,onProgress?:ImportProgressHandler){
-  report(onProgress,{stage:'build',label:'Building dashboard',detail:`Preparing insights, filters and reports for ${result.devices.length.toLocaleString()} devices`,progress:94,fileName:file.name,isZip});
+  report(onProgress,{stage:'build',label:'Building dashboard',detail:`Preparing insights, filters and reports for ${result.devices.length.toLocaleString()} devices`,progress:94,fileName:file.name,isZip,deviceCount:result.devices.length});
   await allowUiPaint();
   return result;
 }
