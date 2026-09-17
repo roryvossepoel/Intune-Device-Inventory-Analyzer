@@ -70,6 +70,7 @@ import './homepage-hero-preview-polish.css';
 import './homepage-hero-preview-data';
 import './main-page-heading-unity.css';
 import './os-version-sort.css';
+import './windows-summary-bars.css';
 import './os-version-sort';
 import './import-progress.css';
 import './import-progress-stability.css';
