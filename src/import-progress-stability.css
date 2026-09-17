@@ -9,6 +9,15 @@ html:has(.importProgressBackdrop){
   overscroll-behavior:contain;
 }
 
+/* Blur the application itself while the import dialog is open.
+   This is deliberately applied to #root rather than relying only on
+   backdrop-filter, so the effect stays obvious and consistent in browsers. */
+body:has(.importProgressBackdrop) #root{
+  filter:blur(9px) saturate(.9);
+  transform:scale(1.012);
+  transform-origin:center center;
+}
+
 /* The changing status copy keeps a consistent two-line rhythm. */
 .importProgressCurrent>div{
   min-height:42px;
@@ -40,6 +49,10 @@ html:has(.importProgressBackdrop){
 }
 
 @media(max-width:620px){
+  body:has(.importProgressBackdrop) #root{
+    filter:blur(7px) saturate(.9);
+    transform:scale(1.018);
+  }
   .importProgressStep small,
   .importProgressReadyAction small{
     font-size:12px!important;
