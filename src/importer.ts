@@ -3,9 +3,11 @@ import Papa from 'papaparse';
 import { describeOsVersion } from './deviceIntelligence';
 import type { Device, ImportResult, PlatformFamily } from './types';
 
-export type ImportProgressStage='read'|'extract'|'parse'|'process';
-export type ImportProgress={stage:ImportProgressStage;label:string;detail:string;progress:number};
+export type ImportProgressStage='read'|'extract'|'parse'|'process'|'build'|'error';
+export type ImportProgress={stage:ImportProgressStage;label:string;detail:string;progress:number;fileName:string;isZip:boolean};
 export type ImportProgressHandler=(progress:ImportProgress)=>void;
+
+export const INVENTORY_IMPORT_PROGRESS_EVENT='intune-inventory-import-progress';
 
 const value = (row: Record<string, string>, ...keys: string[]) => {
   for (const key of keys) {
@@ -15,7 +17,10 @@ const value = (row: Record<string, string>, ...keys: string[]) => {
   return null;
 };
 
-const report=(handler:ImportProgressHandler|undefined,progress:ImportProgress)=>handler?.(progress);
+const report=(handler:ImportProgressHandler|undefined,progress:ImportProgress)=>{
+  handler?.(progress);
+  if(typeof window!=='undefined')window.dispatchEvent(new CustomEvent<ImportProgress>(INVENTORY_IMPORT_PROGRESS_EVENT,{detail:progress}));
+};
 const allowUiPaint=()=>new Promise<void>(resolve=>setTimeout(resolve,0));
 const fileSize=(bytes:number)=>bytes<1024?`${bytes} B`:bytes<1024*1024?`${(bytes/1024).toFixed(1)} KB`:`${(bytes/1024/1024).toFixed(1)} MB`;
 
@@ -56,7 +61,6 @@ function normalizePlatform(os: string | null, model: string | null, productName:
   if (source.includes('android') || source.includes('aosp')) return 'android';
   if (source.includes('mac')) return 'macos';
   if (source.includes('linux')) return 'linux';
-
   if (hardware.includes('ipad')) return 'ipados';
   if (hardware.includes('iphone')) return 'ios';
   if (source.includes('ipad') && !source.includes('ios')) return 'ipados';
@@ -90,8 +94,8 @@ function normalizeRow(row: Record<string, string>, index: number, sourceFileName
   };
 }
 
-async function parseCsv(csv: string, sourceFileName: string, csvFileName: string, onProgress?:ImportProgressHandler): Promise<ImportResult> {
-  report(onProgress,{stage:'parse',label:'Parsing inventory CSV',detail:`Reading columns and rows from ${csvFileName}`,progress:56});
+async function parseCsv(csv: string, sourceFileName: string, csvFileName: string, isZip:boolean, onProgress?:ImportProgressHandler): Promise<ImportResult> {
+  report(onProgress,{stage:'parse',label:'Parsing inventory CSV',detail:`Reading columns and rows from ${csvFileName}`,progress:56,fileName:sourceFileName,isZip});
   await allowUiPaint();
   return new Promise((resolve, reject) => {
     Papa.parse<Record<string, string>>(csv, {
@@ -104,10 +108,10 @@ async function parseCsv(csv: string, sourceFileName: string, csvFileName: string
           return;
         }
         const columns = result.meta.fields ?? [];
-        report(onProgress,{stage:'process',label:'Processing device inventory',detail:`Normalizing ${result.data.length.toLocaleString()} inventory rows and ${columns.length.toLocaleString()} columns`,progress:75});
+        report(onProgress,{stage:'process',label:'Processing device inventory',detail:`Normalizing ${result.data.length.toLocaleString()} inventory rows and ${columns.length.toLocaleString()} columns`,progress:75,fileName:sourceFileName,isZip});
         await allowUiPaint();
         const devices = result.data.map((row, index) => normalizeRow(row, index, sourceFileName));
-        report(onProgress,{stage:'process',label:'Processing device inventory',detail:`Processed ${devices.length.toLocaleString()} devices`,progress:88});
+        report(onProgress,{stage:'process',label:'Processing device inventory',detail:`Processed ${devices.length.toLocaleString()} devices`,progress:88,fileName:sourceFileName,isZip});
         resolve({ sourceFileName, sourceFileNames: [sourceFileName], csvFileName, csvFileNames: [csvFileName], devices, columns, duplicateCount: 0 });
       },
       error: (error: Error) => reject(error),
@@ -115,32 +119,48 @@ async function parseCsv(csv: string, sourceFileName: string, csvFileName: string
   });
 }
 
-export async function importInventory(file: File,onProgress?:ImportProgressHandler): Promise<ImportResult> {
+async function finishImport(result:ImportResult,file:File,isZip:boolean,onProgress?:ImportProgressHandler){
+  report(onProgress,{stage:'build',label:'Building dashboard',detail:`Preparing insights, filters and reports for ${result.devices.length.toLocaleString()} devices`,progress:94,fileName:file.name,isZip});
+  await allowUiPaint();
+  return result;
+}
+
+async function importInventoryCore(file: File,onProgress?:ImportProgressHandler): Promise<ImportResult> {
   const lower = file.name.toLowerCase();
-  report(onProgress,{stage:'read',label:'Reading export',detail:`${file.name} · ${fileSize(file.size)}`,progress:10});
+  const isZip=lower.endsWith('.zip');
+  report(onProgress,{stage:'read',label:'Reading export',detail:`${file.name} · ${fileSize(file.size)}`,progress:10,fileName:file.name,isZip});
   await allowUiPaint();
 
   if (lower.endsWith('.csv')) {
     const csv=await file.text();
-    report(onProgress,{stage:'read',label:'Reading export',detail:`Loaded ${file.name} into local memory`,progress:32});
+    report(onProgress,{stage:'read',label:'Reading export',detail:`Loaded ${file.name} into local memory`,progress:32,fileName:file.name,isZip:false});
     await allowUiPaint();
-    return parseCsv(csv, file.name, file.name,onProgress);
+    return finishImport(await parseCsv(csv,file.name,file.name,false,onProgress),file,false,onProgress);
   }
-  if (!lower.endsWith('.zip')) throw new Error(`Unsupported file: ${file.name}. Select Intune inventory exports (.zip or .csv).`);
+  if (!isZip) throw new Error(`Unsupported file: ${file.name}. Select Intune inventory exports (.zip or .csv).`);
 
-  report(onProgress,{stage:'extract',label:'Opening ZIP archive',detail:'Inspecting the archive for an inventory CSV',progress:28});
+  report(onProgress,{stage:'extract',label:'Opening ZIP archive',detail:'Inspecting the archive for an inventory CSV',progress:28,fileName:file.name,isZip:true});
   await allowUiPaint();
   const zip = await JSZip.loadAsync(file);
   const csvFiles = Object.values(zip.files).filter(entry => !entry.dir && entry.name.toLowerCase().endsWith('.csv'));
   if (!csvFiles.length) throw new Error(`No CSV file was found inside ${file.name}.`);
   if (csvFiles.length > 1) throw new Error(`${file.name} contains ${csvFiles.length} CSV files. A single inventory CSV per ZIP is expected.`);
   const csvFile = csvFiles[0];
-  report(onProgress,{stage:'extract',label:'Extracting inventory CSV',detail:`Found ${csvFile.name}`,progress:42});
+  report(onProgress,{stage:'extract',label:'Extracting inventory CSV',detail:`Found ${csvFile.name}`,progress:42,fileName:file.name,isZip:true});
   await allowUiPaint();
   const csv=await csvFile.async('text');
-  report(onProgress,{stage:'extract',label:'Extracting inventory CSV',detail:`Loaded ${csvFile.name} from the archive`,progress:50});
+  report(onProgress,{stage:'extract',label:'Extracting inventory CSV',detail:`Loaded ${csvFile.name} from the archive`,progress:50,fileName:file.name,isZip:true});
   await allowUiPaint();
-  return parseCsv(csv, file.name, csvFile.name,onProgress);
+  return finishImport(await parseCsv(csv,file.name,csvFile.name,true,onProgress),file,true,onProgress);
+}
+
+export async function importInventory(file: File,onProgress?:ImportProgressHandler): Promise<ImportResult> {
+  try{return await importInventoryCore(file,onProgress)}
+  catch(error){
+    const message=error instanceof Error?error.message:'The export could not be read.';
+    report(onProgress,{stage:'error',label:'Import failed',detail:message,progress:100,fileName:file.name,isZip:file.name.toLowerCase().endsWith('.zip')});
+    throw error;
+  }
 }
 
 function newerDevice(a: Device, b: Device): Device {
