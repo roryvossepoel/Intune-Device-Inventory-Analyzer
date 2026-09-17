@@ -1,4 +1,4 @@
-/* Keep the import dialog completely still while status text and the ready action change. */
+/* Keep the page width stable while the local import overlay is open. */
 html:has(.importProgressBackdrop){
   overflow-y:scroll!important;
   scrollbar-gutter:stable;
@@ -9,34 +9,40 @@ html:has(.importProgressBackdrop){
   overscroll-behavior:contain;
 }
 
-/* The status block always reserves the same two-line rhythm. */
+/* The changing status copy keeps a consistent two-line rhythm. */
 .importProgressCurrent>div{
-  min-height:40px;
+  min-height:42px;
+}
+.importProgressCurrent span{
+  font-size:13px!important;
+  line-height:19px!important;
 }
 
-/* Reserve the ready hand-off area from the start instead of inserting it at 100%.
-   This prevents the centered panel from jumping upward when the button appears. */
-.importProgressReadyAction{
-  min-height:68px;
-  box-sizing:border-box;
-  visibility:hidden;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .18s ease,visibility 0s linear .18s,background .18s ease,border-color .18s ease;
-}
+/* Ready actions only take up space once the import is actually ready. */
 .importProgressReadyAction[hidden]{
-  display:flex!important;
-  visibility:hidden!important;
-  opacity:0!important;
-  pointer-events:none!important;
+  display:none!important;
 }
 .importProgressReadyAction:not([hidden]){
-  visibility:visible;
-  opacity:1;
-  pointer-events:auto;
-  transition-delay:0s;
+  display:flex;
+}
+
+/* Slightly larger supporting copy for easier scanning. */
+.importProgressStep small{
+  font-size:13px!important;
+  line-height:18px!important;
+}
+.importProgressReadyAction small{
+  font-size:13px!important;
+  line-height:18px!important;
+}
+.importProgressReadyAction button{
+  font-size:13px!important;
 }
 
 @media(max-width:620px){
-  .importProgressReadyAction{min-height:91px}
+  .importProgressStep small,
+  .importProgressReadyAction small{
+    font-size:12px!important;
+    line-height:17px!important;
+  }
 }
