@@ -72,6 +72,7 @@ import './main-page-heading-unity.css';
 import './os-version-sort.css';
 import './os-version-sort';
 import './import-progress.css';
+import './import-progress-stability.css';
 import './import-progress-runtime';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
