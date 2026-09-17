@@ -1,0 +1,42 @@
+/* Keep the import dialog completely still while status text and the ready action change. */
+html:has(.importProgressBackdrop){
+  overflow-y:scroll!important;
+  scrollbar-gutter:stable;
+}
+
+.importProgressBackdrop{
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+
+/* The status block always reserves the same two-line rhythm. */
+.importProgressCurrent>div{
+  min-height:40px;
+}
+
+/* Reserve the ready hand-off area from the start instead of inserting it at 100%.
+   This prevents the centered panel from jumping upward when the button appears. */
+.importProgressReadyAction{
+  min-height:68px;
+  box-sizing:border-box;
+  visibility:hidden;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s ease,visibility 0s linear .18s,background .18s ease,border-color .18s ease;
+}
+.importProgressReadyAction[hidden]{
+  display:flex!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+.importProgressReadyAction:not([hidden]){
+  visibility:visible;
+  opacity:1;
+  pointer-events:auto;
+  transition-delay:0s;
+}
+
+@media(max-width:620px){
+  .importProgressReadyAction{min-height:91px}
+}
