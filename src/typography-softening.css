@@ -1,0 +1,97 @@
+/* Softer typography pass: keep the native system stack, reduce excessive bold weights,
+   and let spacing/color create hierarchy instead of very heavy small text. */
+:root{
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+/* Hero actions already have strong visual treatment; they do not need heavy type as well. */
+.idaHeroActions button,
+.idaHeroActions .idaPrimary{
+  font-weight:650!important;
+}
+.idaHeroActions .idaSecondary{
+  font-weight:620!important;
+}
+.idaHeroMeta{
+  font-weight:560!important;
+}
+
+/* Homepage section headings remain prominent, but less dense. */
+.idaHomeIntro h2,
+.idaWorkflow h2,
+.idaReportsTeaserCopy h2{
+  font-weight:700!important;
+}
+
+/* Four-step workflow: soften the small bold labels that felt especially hard. */
+.idaWorkflow article>span{
+  font-weight:700!important;
+}
+.idaWorkflow article strong{
+  font-weight:680!important;
+}
+.idaWorkflowArrow{
+  font-weight:600!important;
+}
+
+/* Product preview: use color and the active underline for hierarchy rather than 800+ weights. */
+.idaHeroProduct .idaProductWindow>header strong{
+  font-weight:700!important;
+}
+.idaHeroProduct .idaProductWindow>header small{
+  font-weight:560!important;
+}
+.idaHeroProduct .idaPreviewNav{
+  font-weight:580!important;
+}
+.idaHeroProduct .idaPreviewNav b{
+  font-weight:700!important;
+}
+.idaHeroProduct .idaPreviewKpis span{
+  font-weight:600!important;
+}
+.idaHeroProduct .idaPreviewKpis strong{
+  font-weight:740!important;
+}
+.idaHeroProduct .idaPreviewCard>span{
+  font-weight:700!important;
+}
+.idaHeroProduct .idaPreviewCard>p b,
+.idaHeroProduct .idaPreviewBar strong{
+  font-weight:700!important;
+}
+
+/* Capability cards and their text-link CTAs. */
+.idaCapabilityCopy h3{
+  font-weight:700!important;
+}
+.idaVariantCurrent .idaCapabilityCopy button{
+  font-weight:680!important;
+}
+.idaVariantCurrent .idaCapabilityCopy button b{
+  font-weight:700!important;
+}
+
+/* Mini previews: keep figures distinct without making every label bold. */
+.idaVariantCurrent .idaDashboardMini strong,
+.idaVariantCurrent .idaDashboardMini p b,
+.idaVariantCurrent .idaDashboardMini .idaPreviewBar strong,
+.idaVariantCurrent .idaExplorerMiniRow strong,
+.idaVariantCurrent .idaReportMini header strong{
+  font-weight:700!important;
+}
+.idaVariantCurrent .idaExplorerMiniRow em{
+  font-weight:650!important;
+}
+
+/* Main product navigation gets a smaller weight jump between normal and active. */
+.topbar .mainNav button,
+.topbar.publicTopbar .mainNav button,
+.topbar:not(.publicTopbar) .mainNav button{
+  font-weight:590!important;
+}
+.topbar .mainNav button.active,
+.topbar.publicTopbar .mainNav button.active,
+.topbar:not(.publicTopbar) .mainNav button.active{
+  font-weight:670!important;
+}
