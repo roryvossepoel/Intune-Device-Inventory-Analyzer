@@ -69,6 +69,7 @@ import './mobile-navigation.css';
 import './homepage-hero-preview-polish.css';
 import './homepage-hero-preview-data';
 import './main-page-heading-unity.css';
+import './typography-softening.css';
 import './os-version-sort.css';
 import './windows-summary-bars.css';
 import './os-version-sort';
