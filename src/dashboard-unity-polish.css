@@ -1,8 +1,8 @@
 /* Final dashboard unity pass: one typographic and spacing rhythm for Inventory & Activity and Fleet & Hardware. */
 .inventoryActivityGrid,
 [data-hardware-summary-grid="true"]{
-  --unity-title-size:19px;
-  --unity-subtitle-size:14px;
+  --unity-title-size:var(--dash-final-card-title,19px);
+  --unity-subtitle-size:var(--dash-final-body,14px);
   --unity-label-size:14px;
   --unity-count-size:14px;
   --unity-percent-size:13px;
@@ -22,7 +22,7 @@
   margin:0!important;
   font-size:var(--unity-title-size)!important;
   line-height:1.2!important;
-  font-weight:760!important;
+  font-weight:700!important;
   letter-spacing:-.15px!important;
   color:#0b1f44;
 }
@@ -31,7 +31,7 @@
   margin:4px 0 0!important;
   font-size:var(--unity-subtitle-size)!important;
   line-height:1.45!important;
-  font-weight:500!important;
+  font-weight:400!important;
   color:#7a8da5!important;
 }
 
@@ -254,8 +254,6 @@
 @media(max-width:760px){
   .inventoryActivityGrid,
   [data-hardware-summary-grid="true"]{
-    --unity-title-size:18px;
-    --unity-subtitle-size:13px;
     --unity-label-size:14px;
     --unity-count-size:14px;
     --unity-percent-size:13px;

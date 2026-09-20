@@ -33,10 +33,6 @@
 }
 
 /* Remove legacy Fleet-specific presentation hacks so every category header is rendered from the same markup. */
-.inventoryDashboard .dashboardCategoryHead .category-fleet+div>span,
-.inventoryDashboard .dashboardCategoryHead .category-fleet+div>p{
-  font-size:inherit!important;
-}
 .inventoryDashboard .dashboardCategoryHead .category-fleet+div>span:after,
 .inventoryDashboard .dashboardCategoryHead .category-fleet+div>p:after{
   content:none!important;
