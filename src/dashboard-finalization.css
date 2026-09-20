@@ -1,0 +1,178 @@
+/* Dashboard finalization pass.
+   Keep one readable native-font hierarchy across KPI, section, card, row and control layers. */
+
+.inventoryDashboard{
+  --dash-final-section-title:14px;
+  --dash-final-card-title:19px;
+  --dash-final-body:14px;
+  --dash-final-meta:13px;
+}
+
+/* Section hierarchy: title case, readable size, no tiny heavy uppercase labels. */
+.inventoryDashboard .dashboardCategoryHead>div>span{
+  font-size:var(--dash-final-section-title)!important;
+  line-height:1.3!important;
+  font-weight:700!important;
+  letter-spacing:-.01em!important;
+  text-transform:none!important;
+  color:#244b75!important;
+}
+.inventoryDashboard .dashboardCategoryHead p{
+  margin-top:4px!important;
+  font-size:var(--dash-final-body)!important;
+  line-height:1.5!important;
+  font-weight:500!important;
+  color:#7489a1!important;
+}
+
+/* One card-title scale across generic and platform cards. */
+.inventoryDashboard .dashboardCardHead h2,
+.inventoryDashboard .platformSpecificCard .insightCardHead h2,
+.platformCategory-windows .windowsSummaryGrid>.platformSpecificCard>.insightCardHead h2{
+  font-size:var(--dash-final-card-title)!important;
+  line-height:1.22!important;
+  font-weight:700!important;
+  letter-spacing:-.015em!important;
+}
+.inventoryDashboard .dashboardCardHead p,
+.inventoryDashboard .platformSpecificCard .insightCardHead p,
+.platformCategory-windows .windowsSummaryGrid>.platformSpecificCard>.insightCardHead p{
+  font-size:var(--dash-final-body)!important;
+  line-height:1.45!important;
+  font-weight:500!important;
+  color:#7489a1!important;
+}
+
+/* KPI typography uses emphasis through scale, not extreme weight. */
+.inventoryDashboard .healthKpi>div>span{
+  font-size:14px!important;
+  line-height:1.3!important;
+  font-weight:600!important;
+  color:#58718e!important;
+}
+.inventoryDashboard .healthKpi>div>strong{
+  font-size:28px!important;
+  line-height:1.05!important;
+  font-weight:700!important;
+  letter-spacing:-.55px!important;
+}
+.inventoryDashboard .healthKpi>div>small{
+  font-size:13px!important;
+  line-height:1.45!important;
+  font-weight:500!important;
+  color:#7b8fa5!important;
+}
+
+/* Distribution rows and legends use one label/count/percentage rhythm. */
+.inventoryDashboard .distributionList .truncate,
+.inventoryDashboard .securityLegend span,
+.inventoryDashboard .platformSignalList span{
+  font-size:14px!important;
+  line-height:20px!important;
+  font-weight:500!important;
+}
+.inventoryDashboard .distributionList strong,
+.inventoryDashboard .securityLegend strong,
+.inventoryDashboard .platformSignalList strong{
+  font-size:14px!important;
+  line-height:20px!important;
+  font-weight:700!important;
+}
+.inventoryDashboard .distributionList small,
+.inventoryDashboard .securityLegend small{
+  font-size:13px!important;
+  line-height:20px!important;
+  font-weight:500!important;
+}
+
+/* Keep donut center values strong but not visually aggressive. */
+.inventoryDashboard .donut strong,
+.inventoryDashboard .securityDonut strong{
+  font-weight:700!important;
+}
+.inventoryDashboard .donut span,
+.inventoryDashboard .securityDonut span{
+  font-size:12.5px!important;
+  font-weight:500!important;
+}
+
+/* Supporting dashboard copy should remain readable. */
+.inventoryDashboard .inventoryQualitySummary strong{
+  font-weight:700!important;
+}
+.inventoryDashboard .inventoryQualitySummary span,
+.inventoryDashboard .insightFootnote{
+  font-size:13px!important;
+  line-height:1.5!important;
+  font-weight:500!important;
+}
+.dashboardListNote{
+  margin:12px 0 0!important;
+  padding-top:10px;
+  border-top:1px solid #edf2f7;
+  font-size:12.5px!important;
+  line-height:1.5!important;
+  font-weight:500!important;
+  color:#7a8da4;
+}
+.platformSubLabel{
+  display:block;
+  margin:13px 0 6px;
+  font-size:12.5px;
+  line-height:18px;
+  font-weight:650;
+  color:#4e6782;
+}
+.platformSubLabel:first-of-type{margin-top:0}
+
+/* Dashboard controls: nothing important should collapse into 10–11px microcopy. */
+.dashboardPlatformFilter>span{
+  font-size:12.5px!important;
+  line-height:18px!important;
+  font-weight:600!important;
+}
+.dashboardPlatformFilter .multiFilterTrigger{
+  font-size:13px!important;
+  font-weight:600!important;
+}
+.osVersionSortGlobal{
+  font-size:12px!important;
+  font-weight:600!important;
+}
+.dashboardCategoryHead .osVersionSortGlobal>span{
+  font-size:12px!important;
+  font-weight:500!important;
+}
+.osVersionSortGlobal select{
+  min-width:104px!important;
+  font-size:12.5px!important;
+  font-weight:600!important;
+}
+
+/* Windows comparison cards follow the same weight scale as the rest of the dashboard. */
+.platformCategory-windows .windowsCompositionCard .distributionList .truncate{
+  font-weight:500!important;
+}
+.platformCategory-windows .windowsCompositionCard .distributionList strong{
+  font-weight:700!important;
+}
+
+/* Page-level dashboard copy. */
+.dashboardHead>div:first-child h1{
+  font-weight:700!important;
+}
+.dashboardHead>div:first-child p{
+  font-size:15px!important;
+  line-height:1.5!important;
+  font-weight:500!important;
+}
+
+@media(max-width:760px){
+  .inventoryDashboard{
+    --dash-final-section-title:14px;
+    --dash-final-card-title:18px;
+    --dash-final-body:13.5px;
+  }
+  .dashboardPlatformFilter>span{font-size:12px!important}
+  .dashboardPlatformFilter .multiFilterTrigger{font-size:12.5px!important}
+}
