@@ -1,4 +1,5 @@
 import { describeOsVersion } from './deviceIntelligence';
+import { resolveDeviceModel } from './deviceModelLookup';
 import type { Device, ImportResult, PlatformFamily } from './types';
 
 type Template={platform:PlatformFamily;manufacturer:string;model:string;os:string;versions:string[];weight:number;productName?:string;architecture?:string};
@@ -21,16 +22,16 @@ const templates:Template[]=[
   {platform:'macos',manufacturer:'Apple',model:'MacBook Pro 14-inch (M4)',os:'macOS',versions:['26.6.1','26.5'],weight:3,architecture:'ARM64'},
   {platform:'macos',manufacturer:'Apple',model:'MacBook Pro 13-inch (2020, Intel)',os:'macOS',versions:['26.6','26.5'],weight:2,architecture:'X64'},
 
-  {platform:'ios',manufacturer:'Apple',model:'iPhone 16e',os:'iOS/iPadOS',versions:['26.6.1','26.6'],weight:8,productName:'iPhone17,5'},
-  {platform:'ios',manufacturer:'Apple',model:'iPhone 16',os:'iOS/iPadOS',versions:['26.6.1','26.6'],weight:6,productName:'iPhone17,3'},
-  {platform:'ios',manufacturer:'Apple',model:'iPhone SE (3rd generation)',os:'iOS/iPadOS',versions:['26.6.1','26.5.2'],weight:4,productName:'iPhone14,6'},
-  {platform:'ipados',manufacturer:'Apple',model:'iPad Pro 11-inch (M4)',os:'iOS/iPadOS',versions:['26.6.1','26.6'],weight:6,productName:'iPad16,3'},
-  {platform:'ipados',manufacturer:'Apple',model:'iPad Air 11-inch (M3)',os:'iOS/iPadOS',versions:['26.6.1','26.6'],weight:5,productName:'iPad15,3'},
-  {platform:'ipados',manufacturer:'Apple',model:'iPad (10th generation)',os:'iOS/iPadOS',versions:['26.6.1','26.5.2'],weight:4,productName:'iPad13,18'},
+  {platform:'ios',manufacturer:'Apple',model:'iPhone',os:'iOS/iPadOS',versions:['26.6.1','26.6'],weight:8,productName:'iPhone17,5'},
+  {platform:'ios',manufacturer:'Apple',model:'iPhone',os:'iOS/iPadOS',versions:['26.6.1','26.6'],weight:6,productName:'iPhone17,3'},
+  {platform:'ios',manufacturer:'Apple',model:'iPhone',os:'iOS/iPadOS',versions:['26.6.1','26.5.2'],weight:4,productName:'iPhone14,6'},
+  {platform:'ipados',manufacturer:'Apple',model:'iPad',os:'iOS/iPadOS',versions:['26.6.1','26.6'],weight:6,productName:'iPad16,3'},
+  {platform:'ipados',manufacturer:'Apple',model:'iPad',os:'iOS/iPadOS',versions:['26.6.1','26.6'],weight:5,productName:'iPad15,3'},
+  {platform:'ipados',manufacturer:'Apple',model:'iPad',os:'iOS/iPadOS',versions:['26.6.1','26.5.2'],weight:4,productName:'iPad13,18'},
 
-  {platform:'android',manufacturer:'Samsung',model:'Galaxy A56 5G',os:'Android (Corporate-Owned Work Profile)',versions:['16','15'],weight:8},
-  {platform:'android',manufacturer:'Samsung',model:'Galaxy S25',os:'Android (Corporate-Owned Work Profile)',versions:['16','15'],weight:5},
-  {platform:'android',manufacturer:'Samsung',model:'Galaxy XCover7',os:'Android (Fully Managed)',versions:['16','15'],weight:4},
+  {platform:'android',manufacturer:'Samsung',model:'SM-A566B',os:'Android (Corporate-Owned Work Profile)',versions:['16','15'],weight:8},
+  {platform:'android',manufacturer:'Samsung',model:'SM-S931B',os:'Android (Corporate-Owned Work Profile)',versions:['16','15'],weight:5},
+  {platform:'android',manufacturer:'Samsung',model:'SM-G556B',os:'Android (Fully Managed)',versions:['16','15'],weight:4},
   {platform:'android',manufacturer:'Google',model:'Pixel 9',os:'Android (Corporate-Owned Work Profile)',versions:['16','15'],weight:5},
   {platform:'android',manufacturer:'Google',model:'Pixel 9a',os:'Android (Corporate-Owned Work Profile)',versions:['16','15'],weight:4},
   {platform:'android',manufacturer:'Google',model:'Pixel Tablet',os:'Android (Dedicated)',versions:['16','15'],weight:2},
@@ -100,6 +101,8 @@ function device(i:number,t:Template):Device{
   const freeStorage=(isWindows||isAppleMobile)&&totalStorage?String(Math.round(Number(totalStorage)*storageFreeRatio)):'';
   const certificateExpiry=(isWindows||isMac||isAppleMobile||i%10===0)?futureIntuneDate(40+(i%250)):'';
   const managementName=`${deviceId}_${isAppleMobile?'IPhone':isAndroid?'Android':isWindows?'Windows':t.os}_${new Date(now-(120+i%500)*86400000).toLocaleDateString('en-US')}`;
+  const modelMatch=resolveDeviceModel({manufacturer:t.manufacturer,model:t.model,productName:t.productName??null,platform:t.platform});
+  const displayModel=modelMatch.displayModel||t.model;
   const raw:Record<string,string>={
     'Device ID':deviceId,
     'Device name':name,
@@ -164,7 +167,7 @@ function device(i:number,t:Template):Device{
     sourceOS:t.os,
     osVersion:describeOsVersion(t.platform,version),
     manufacturer:t.manufacturer,
-    model:t.model,
+    model:displayModel,
     userDisplayName:noUser?null:person,
     userUpn:noUser?null:userUpn,
     compliance:raw['Compliance'],
