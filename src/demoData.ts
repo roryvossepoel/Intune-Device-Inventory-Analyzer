@@ -92,7 +92,7 @@ function device(i:number,t:Template):Device{
   const serial=`DM${String(100000+i)}`;
   const architecture=isWindows?(i%12===0?'ARM64':'X64'):isMac?(t.architecture||'ARM64'):isLinux?'X64':'Unknown';
   const join=isWindows?(i%16===0?'Hybrid Azure AD joined':'Azure AD joined'):(isMac||isLinux||isAppleMobile||isAndroid?'Azure AD registered':'Unknown');
-  const ownership=isWindows?(i%10===0?'Personal':'Company'):(i%37===0?'Personal':'Corporate');
+  const ownership=isWindows?(i%10===0?'Personal':'Corporate'):(i%37===0?'Personal':'Corporate');
   const managementAuthority=isWindows&&i%4===0?'Co-managed':'Intune';
   const cellular=(isAppleMobile||isAndroid)&&i%4!==0;
   const totalStorage=isWindows?(i%5===0?'976562':'487119'):isMac?'485869':isAppleMobile?(i%3===0?'262144':'131072'):'';
