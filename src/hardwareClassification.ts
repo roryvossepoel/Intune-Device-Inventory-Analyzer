@@ -1,3 +1,4 @@
+import { resolveDeviceModel } from './deviceModelLookup';
 import type { Device } from './types';
 
 function rawValue(device:Device,patterns:RegExp[]){
@@ -24,6 +25,10 @@ export function appleDeviceFamily(device:Device){
 }
 
 export function hardwareType(device:Device){
+  const productName=rawValue(device,[/^ProductName$/i,/^Product name$/i])||null;
+  const sourceModel=rawValue(device,[/^Model$/i])||device.model;
+  const modelMatch=resolveDeviceModel({manufacturer:device.manufacturer,model:sourceModel,productName,platform:device.platform});
+  if(modelMatch.deviceType)return modelMatch.deviceType;
   const explicit=rawValue(device,[/chassis/i,/form.?factor/i,/device.?type/i,/hardware.?type/i,/device.?category/i]).toLowerCase();
   const model=(device.model||'').toLowerCase();
   const manufacturer=(device.manufacturer||'').toLowerCase();
