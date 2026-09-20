@@ -5,6 +5,7 @@ type Destination = 'overview' | 'devices' | 'reports' | 'faq';
 type Props = {
   activeView: Destination | 'home';
   onNavigate: (view: Destination) => void;
+  onOpenExport?: () => void;
 };
 
 const primaryItems: { id: Destination; label: string; icon: 'dashboard' | 'devices' | 'reports' }[] = [
@@ -13,7 +14,7 @@ const primaryItems: { id: Destination; label: string; icon: 'dashboard' | 'devic
   { id: 'reports', label: 'Reports', icon: 'reports' },
 ];
 
-export default function MobileNavigation({ activeView, onNavigate }: Props) {
+export default function MobileNavigation({ activeView, onNavigate, onOpenExport }: Props) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const toggle = useRef<HTMLButtonElement>(null);
@@ -102,6 +103,18 @@ export default function MobileNavigation({ activeView, onNavigate }: Props) {
         </nav>
 
         <div className="idaMobileMenuDivider" />
+        {onOpenExport && <>
+          <div className="idaMobileMenuSectionLabel">Inventory</div>
+          <button
+            type="button"
+            className="idaMobileOpenExport"
+            onClick={() => { setOpen(false); onOpenExport(); }}
+          >
+            <MobileNavIcon name="open" />
+            <span>Open export</span>
+          </button>
+          <div className="idaMobileMenuDivider" />
+        </>}
         <div className="idaMobileMenuSectionLabel">More</div>
         <div className="idaMobileMenuUtilities">
           <button
@@ -138,11 +151,12 @@ function NavChevron() {
   return <svg className="idaMobileNavChevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 6 6 6-6 6" /></svg>;
 }
 
-function MobileNavIcon({ name }: { name: 'dashboard' | 'devices' | 'reports' | 'faq' | 'github' }) {
+function MobileNavIcon({ name }: { name: 'dashboard' | 'devices' | 'reports' | 'faq' | 'github' | 'open' }) {
   return <svg className="idaMobileNavIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     {name === 'dashboard' && <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>}
     {name === 'devices' && <><rect x="3" y="4" width="14" height="10" rx="2" /><path d="M7 19h6m-3-5v5" /><rect x="16" y="9" width="5" height="11" rx="1.4" /></>}
     {name === 'reports' && <><path d="M6 3h9l4 4v14H6zM14 3v5h5" /><path d="M9 17v-3m4 3v-6m3 6v-4" /></>}
+    {name === 'open' && <><path d="M3 7h6l2 2h10v10H3z" /><path d="M3 7V5h6l2 2" /></>}
     {name === 'faq' && <><circle cx="12" cy="12" r="9" /><path d="M9.4 9a2.6 2.6 0 0 1 5.1.8c0 1.9-2.5 2.1-2.5 3.7M12 17h.01" /></>}
     {name === 'github' && <path d="M9 19c-4.3 1.3-4.3-2.5-6-3m12 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 19 4.77 5.07 5.07 0 0 0 18.91 1S17.73.65 15 2.48a13.38 13.38 0 0 0-7 0C5.27.65 4.09 1 4.09 1A5.07 5.07 0 0 0 4 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 8 18.13V22" />}
   </svg>;
