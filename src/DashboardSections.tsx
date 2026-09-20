@@ -258,7 +258,6 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
         {hasKnownRows(androidPatchFreshness)&&<PlatformCard platform="android" title="Security patch freshness" subtitle="Age of the reported Android security patch level"><Distribution rows={androidPatchFreshness} total={android.length}/></PlatformCard>}
         {hasKnownRows(androidCellular)&&<PlatformCard platform="android" title="Cellular capability" subtitle="Cellular support reported for Android devices"><div className="hardwareDonutLayout"><Donut total={android.length} items={androidCellular} center={fmt(android.length)} label="devices"/><Distribution rows={androidCellular} total={android.length}/></div></PlatformCard>}
         {hasKnownRows(androidModes)&&<PlatformCard platform="android" title="Android management type" subtitle="COPE, COBO, Dedicated, BYOD and other reported modes"><Distribution rows={androidModes} total={android.length}/></PlatformCard>}
-        {hasKnownRows(countValues(android.map(managedBy)))&&<PlatformCard platform="android" title="Managed by" subtitle="Management authority reported for Android devices"><Distribution rows={countValues(android.map(managedBy))} total={android.length}/></PlatformCard>}
       </div>
     </DashboardSection>}
 
@@ -269,7 +268,6 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
         {hasKnownRows(appleFamilies)&&<PlatformCard platform="applemobile" title="Device family" subtitle="iPhone and iPad distribution"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleFamilies} center={fmt(apple.length)} label="devices"/><Distribution rows={appleFamilies} total={apple.length} onClick={label=>drill('appleDeviceFamily','Device family',label)}/></div></PlatformCard>}
         {hasKnownRows(appleCellular)&&<PlatformCard platform="applemobile" title="Cellular capability" subtitle="Cellular support reported for iPhone and iPad devices"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleCellular} center={fmt(apple.length)} label="devices"/><Distribution rows={appleCellular} total={apple.length}/></div></PlatformCard>}
         {hasKnownRows(appleSupervision)&&<PlatformCard platform="applemobile" title="Supervision" subtitle="Supervision state reported by Intune"><Distribution rows={appleSupervision} total={apple.length}/></PlatformCard>}
-        {hasKnownRows(countValues(apple.map(managedBy)))&&<PlatformCard platform="applemobile" title="Managed by" subtitle="Management authority reported for iOS and iPadOS devices"><Distribution rows={countValues(apple.map(managedBy))} total={apple.length}/></PlatformCard>}
       </div>
     </DashboardSection>}
 
@@ -279,7 +277,6 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
         <PlatformCard platform="macos" title="Version position" subtitle="Relative to the newest version observed in this inventory"><Distribution rows={macPosition} total={macos.length}/></PlatformCard>
         {hasKnownRows(macArch)&&<PlatformCard platform="macos" title="Architecture" subtitle="Apple Silicon and Intel architecture reported by inventory"><Distribution rows={macArch} total={macos.length}/></PlatformCard>}
         {(hasKnownRows(macJoin)||hasKnownRows(macCert))&&<PlatformCard platform="macos" title="Join & enrollment" subtitle="Identity and management-certificate state">{hasKnownRows(macJoin)&&<><span className="platformSubLabel">Join state</span><Distribution rows={macJoin} total={macos.length}/></>}{hasKnownRows(macCert)&&<><span className="platformSubLabel">Management certificate</span><Distribution rows={macCert} total={macos.length}/></>}</PlatformCard>}
-        {hasKnownRows(countValues(macos.map(managedBy)))&&<PlatformCard platform="macos" title="Managed by" subtitle="Management authority reported for macOS devices"><Distribution rows={countValues(macos.map(managedBy))} total={macos.length}/></PlatformCard>}
       </div>
     </DashboardSection>}
 
@@ -288,7 +285,6 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
         <PlatformCard className="osVersionCard" platform="linux" title="Linux versions" subtitle={`${fmt(linux.length)} devices · ${linuxVersions.length} reported version${linuxVersions.length===1?'':'s'}`}><Distribution rows={linuxVersions} total={linux.length} limit={linuxVersions.length} onClick={label=>drill('osVersion','OS version',label)}/></PlatformCard>
         {hasKnownRows(linuxArch)&&<PlatformCard platform="linux" title="Architecture" subtitle="Reported processor architecture"><Distribution rows={linuxArch} total={linux.length}/></PlatformCard>}
         {hasKnownRows(linuxJoin)&&<PlatformCard platform="linux" title="Join state" subtitle="Reported Microsoft Entra registration or join state"><Distribution rows={linuxJoin} total={linux.length}/></PlatformCard>}
-        {hasKnownRows(countValues(linux.map(managedBy)))&&<PlatformCard platform="linux" title="Managed by" subtitle="Management authority reported for Linux devices"><Distribution rows={countValues(linux.map(managedBy))} total={linux.length}/></PlatformCard>}
       </div>
     </DashboardSection>}
   </>;
