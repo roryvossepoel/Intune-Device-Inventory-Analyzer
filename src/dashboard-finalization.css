@@ -2,7 +2,7 @@
    Keep one readable native-font hierarchy across KPI, section, card, row and control layers. */
 
 .inventoryDashboard{
-  --dash-final-section-title:14px;
+  --dash-final-section-title:16px;
   --dash-final-card-title:19px;
   --dash-final-body:14px;
   --dash-final-meta:13px;
@@ -15,14 +15,21 @@
   font-weight:700!important;
   letter-spacing:-.01em!important;
   text-transform:none!important;
-  color:#244b75!important;
+  color:#173a63!important;
 }
 .inventoryDashboard .dashboardCategoryHead p{
-  margin-top:4px!important;
-  font-size:var(--dash-final-body)!important;
+  margin-top:5px!important;
+  font-size:15px!important;
   line-height:1.5!important;
   font-weight:500!important;
-  color:#7489a1!important;
+  color:#667f99!important;
+}
+.inventoryDashboard .dashboardCategoryHead:after{
+  width:34px!important;
+  height:3px!important;
+  margin-top:10px!important;
+  background:#86add8!important;
+  opacity:.95!important;
 }
 
 /* One card-title scale across generic and platform cards. */
@@ -149,6 +156,11 @@
   font-weight:600!important;
 }
 
+/* Windows lifecycle rows are data labels, not headings. */
+.inventoryDashboard .windowsLifecycleTable td strong{
+  font-weight:500!important;
+}
+
 /* Windows comparison cards follow the same weight scale as the rest of the dashboard. */
 .platformCategory-windows .windowsCompositionCard .distributionList .truncate{
   font-weight:500!important;
@@ -169,7 +181,7 @@
 
 @media(max-width:760px){
   .inventoryDashboard{
-    --dash-final-section-title:14px;
+    --dash-final-section-title:15px;
     --dash-final-card-title:18px;
     --dash-final-body:13.5px;
   }
