@@ -54,6 +54,14 @@ function normalizeManufacturer(input:string|null){
   return value;
 }
 
+function normalizeOwnership(input:string|null){
+  if(!input)return null;
+  const value=input.trim();
+  if(/^company$|^corporate$/i.test(value))return 'Corporate';
+  if(/^personal$/i.test(value))return 'Personal';
+  return value;
+}
+
 function normalizePlatform(os: string | null, model: string | null, productName: string | null): PlatformFamily {
   const source = (os ?? '').toLowerCase();
   const hardware = `${model ?? ''} ${productName ?? ''}`.toLowerCase();
@@ -87,7 +95,7 @@ function normalizeRow(row: Record<string, string>, index: number, sourceFileName
     userDisplayName: value(row, 'Primary user display name'),
     userUpn: value(row, 'Primary user UPN'),
     compliance: value(row, 'Compliance'),
-    ownership: value(row, 'Ownership'),
+    ownership: normalizeOwnership(value(row, 'Ownership')),
     managedBy: value(row, 'Managed by'),
     lastCheckIn: value(row, 'Last check-in'),
     raw: row,
