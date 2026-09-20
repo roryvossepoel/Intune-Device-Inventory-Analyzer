@@ -64,6 +64,17 @@
 .platformCategory-windows .windowsOwnershipCard .platformCardLogo-windows:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='7' width='16' height='12' rx='2'/%3E%3Cpath d='M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M4 12h16M10 12v2h4v-2'/%3E%3C/svg%3E")}
 .platformCategory-windows .windowsJoinTypeCard .platformCardLogo-windows:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='7' cy='12' r='3'/%3E%3Ccircle cx='17' cy='7' r='3'/%3E%3Ccircle cx='17' cy='17' r='3'/%3E%3Cpath d='m9.7 10.7 4.6-2.3M9.7 13.3l4.6 2.3'/%3E%3C/svg%3E")}
 .platformCategory-windows .windowsManagedByCard .platformCardLogo-windows:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h10M18 7h2M4 12h2M10 12h10M4 17h7M15 17h5'/%3E%3Ccircle cx='16' cy='7' r='2'/%3E%3Ccircle cx='8' cy='12' r='2'/%3E%3Ccircle cx='13' cy='17' r='2'/%3E%3C/svg%3E")}
+.platformCategory-windows .windowsStorageCard .platformCardLogo-windows:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='14' rx='2'/%3E%3Cpath d='M3.5 10h17M7 15h.01M10 15h4'/%3E%3C/svg%3E")}
+
+/* Storage availability is a health-like signal: enough headroom is green, low space is amber/red. */
+.storageAvailabilityCard .distributionList>div:has(.truncate[title="20%+ free"]) .distributionDot,
+.storageAvailabilityCard .distributionList>div:has(.truncate[title="20%+ free"])>i>b{background:#18a873!important}
+.storageAvailabilityCard .distributionList>div:has(.truncate[title="10–20% free"]) .distributionDot,
+.storageAvailabilityCard .distributionList>div:has(.truncate[title="10–20% free"])>i>b{background:#d4a72c!important}
+.storageAvailabilityCard .distributionList>div:has(.truncate[title="< 10% free"]) .distributionDot,
+.storageAvailabilityCard .distributionList>div:has(.truncate[title="< 10% free"])>i>b{background:#e45d61!important}
+.storageAvailabilityCard .distributionList>div:has(.truncate[title="Unknown"]) .distributionDot,
+.storageAvailabilityCard .distributionList>div:has(.truncate[title="Unknown"])>i>b{background:#9aa9ba!important}
 
 /* Windows lifecycle gets a lifecycle icon; the Windows logo belongs to the category, not the card. */
 .platformCategory-windows .windowsLifecycleLogo{width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:#eef5ff;border-color:#d7e6fa;color:#2563eb}
