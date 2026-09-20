@@ -8,9 +8,6 @@
       "productNames": [
         "iPad13,18"
       ],
-      "models": [
-        "iPad"
-      ],
       "displayModel": "iPad (10th generation)",
       "family": "iPad",
       "deviceType": "Tablet"
@@ -19,9 +16,6 @@
       "manufacturer": "Apple",
       "productNames": [
         "iPad15,3"
-      ],
-      "models": [
-        "iPad"
       ],
       "displayModel": "iPad Air 11-inch (M3)",
       "family": "iPad Air",
@@ -32,9 +26,6 @@
       "productNames": [
         "iPad16,3"
       ],
-      "models": [
-        "iPad"
-      ],
       "displayModel": "iPad Pro 11-inch (M4)",
       "family": "iPad Pro",
       "deviceType": "Tablet"
@@ -43,9 +34,6 @@
       "manufacturer": "Apple",
       "productNames": [
         "iPhone17,3"
-      ],
-      "models": [
-        "iPhone"
       ],
       "displayModel": "iPhone 16",
       "family": "iPhone",
@@ -56,9 +44,6 @@
       "productNames": [
         "iPhone17,5"
       ],
-      "models": [
-        "iPhone"
-      ],
       "displayModel": "iPhone 16e",
       "family": "iPhone",
       "deviceType": "Smartphone"
@@ -67,9 +52,6 @@
       "manufacturer": "Apple",
       "productNames": [
         "iPhone14,6"
-      ],
-      "models": [
-        "iPhone"
       ],
       "displayModel": "iPhone SE (3rd generation)",
       "family": "iPhone",
