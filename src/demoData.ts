@@ -1,7 +1,7 @@
 import { describeOsVersion } from './deviceIntelligence';
 import type { Device, ImportResult, PlatformFamily } from './types';
 
-type Template={platform:PlatformFamily;manufacturer:string;model:string;os:string;versions:string[];weight:number;productName?:string};
+type Template={platform:PlatformFamily;manufacturer:string;model:string;os:string;versions:string[];weight:number;productName?:string;architecture?:string};
 const templates:Template[]=[
   {platform:'windows',manufacturer:'Dell',model:'Dell Pro 16 PC16250',os:'Windows',versions:['10.0.26200.9106','10.0.26200.8893'],weight:10},
   {platform:'windows',manufacturer:'Dell',model:'Latitude 3550',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:7},
@@ -16,9 +16,10 @@ const templates:Template[]=[
   {platform:'windows',manufacturer:'Microsoft',model:'Surface Pro 11',os:'Windows',versions:['10.0.26200.9106','10.0.26100.9106'],weight:5},
   {platform:'windows',manufacturer:'Microsoft',model:'Surface Laptop 5',os:'Windows',versions:['10.0.22631.7517'],weight:3},
 
-  {platform:'macos',manufacturer:'Apple',model:'MacBook Air 13-inch (M3)',os:'macOS',versions:['26.6.1','26.6'],weight:5},
-  {platform:'macos',manufacturer:'Apple',model:'MacBook Air 15-inch (M4)',os:'macOS',versions:['26.6.1','26.5'],weight:4},
-  {platform:'macos',manufacturer:'Apple',model:'MacBook Pro 14-inch (M4)',os:'macOS',versions:['26.6.1','26.5'],weight:3},
+  {platform:'macos',manufacturer:'Apple',model:'MacBook Air 13-inch (M3)',os:'macOS',versions:['26.6.1','26.6'],weight:5,architecture:'ARM64'},
+  {platform:'macos',manufacturer:'Apple',model:'MacBook Air 15-inch (M4)',os:'macOS',versions:['26.6.1','26.5'],weight:4,architecture:'ARM64'},
+  {platform:'macos',manufacturer:'Apple',model:'MacBook Pro 14-inch (M4)',os:'macOS',versions:['26.6.1','26.5'],weight:3,architecture:'ARM64'},
+  {platform:'macos',manufacturer:'Apple',model:'MacBook Pro 13-inch (2020, Intel)',os:'macOS',versions:['26.6','26.5'],weight:2,architecture:'X64'},
 
   {platform:'ios',manufacturer:'Apple',model:'iPhone 16e',os:'iOS/iPadOS',versions:['26.6.1','26.6'],weight:8,productName:'iPhone17,5'},
   {platform:'ios',manufacturer:'Apple',model:'iPhone 16',os:'iOS/iPadOS',versions:['26.6.1','26.6'],weight:6,productName:'iPhone17,3'},
@@ -89,7 +90,7 @@ function device(i:number,t:Template):Device{
   const aadDeviceId=fakeGuid(i,23);
   const userId=noUser?'':fakeGuid(i%people.length,41);
   const serial=`DM${String(100000+i)}`;
-  const architecture=isWindows?(i%12===0?'ARM64':'X64'):isMac?'ARM64':isLinux?'X64':'Unknown';
+  const architecture=isWindows?(i%12===0?'ARM64':'X64'):isMac?(t.architecture||'ARM64'):isLinux?'X64':'Unknown';
   const join=isWindows?(i%16===0?'Hybrid Azure AD joined':'Azure AD joined'):(isMac||isLinux||isAppleMobile||isAndroid?'Azure AD registered':'Unknown');
   const ownership=isWindows?(i%10===0?'Personal':'Company'):(i%37===0?'Personal':'Corporate');
   const managementAuthority=isWindows&&i%4===0?'Co-managed':'Intune';
