@@ -25,11 +25,22 @@
   color:#70859c!important;
 }
 .inventoryDashboard .dashboardCategoryHead:after{
-  width:34px!important;
-  height:3px!important;
+  width:44px!important;
+  height:2px!important;
   margin-top:10px!important;
-  background:#86add8!important;
-  opacity:.95!important;
+  background:#9bbbdc!important;
+  opacity:.72!important;
+}
+
+/* Remove legacy Fleet-specific presentation hacks so every category header is rendered from the same markup. */
+.inventoryDashboard .dashboardCategoryHead .category-fleet+div>span,
+.inventoryDashboard .dashboardCategoryHead .category-fleet+div>p{
+  font-size:inherit!important;
+}
+.inventoryDashboard .dashboardCategoryHead .category-fleet+div>span:after,
+.inventoryDashboard .dashboardCategoryHead .category-fleet+div>p:after{
+  content:none!important;
+  display:none!important;
 }
 
 /* One card-title scale across generic and platform cards. */
