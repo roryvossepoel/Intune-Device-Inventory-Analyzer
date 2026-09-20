@@ -134,7 +134,7 @@ function device(i:number,t:Template):Device{
     'Ownership':ownership,
     'Device state':i===44?'WipePending':'Managed',
     'Intune registered':i===57?'ApprovalPending':'Registered',
-    'Supervised':String(isAppleMobile),
+    'Supervised':String(isAppleMobile ? i%5!==0 : false),
     'Encrypted':encryptionReported?String(encrypted):'',
     'OS':t.os,
     'SkuFamily':isWindows?(i%8===0?'Pro':'Enterprise'):'',

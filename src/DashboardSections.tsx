@@ -168,7 +168,6 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const appleFamilies=countValues(apple.map(appleDeviceFamily));
   const appleCellular=countValues(apple.map(cellularCapability));
   const appleSupervision=countValues(apple.map(supervision));
-  const appleCert=certificateBuckets(apple);
   const macArch=countValues(macos.map(architecture));
   const macJoin=countValues(macos.map(joinType));
   const macCert=certificateBuckets(macos);
@@ -270,7 +269,6 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
         {hasKnownRows(appleFamilies)&&<PlatformCard platform="applemobile" title="Device family" subtitle="iPhone and iPad distribution"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleFamilies} center={fmt(apple.length)} label="devices"/><Distribution rows={appleFamilies} total={apple.length} onClick={label=>drill('appleDeviceFamily','Device family',label)}/></div></PlatformCard>}
         {hasKnownRows(appleCellular)&&<PlatformCard platform="applemobile" title="Cellular capability" subtitle="Cellular support reported for iPhone and iPad devices"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleCellular} center={fmt(apple.length)} label="devices"/><Distribution rows={appleCellular} total={apple.length}/></div></PlatformCard>}
         {hasKnownRows(appleSupervision)&&<PlatformCard platform="applemobile" title="Supervision" subtitle="Supervision state reported by Intune"><Distribution rows={appleSupervision} total={apple.length}/></PlatformCard>}
-        {hasKnownRows(appleCert)&&<PlatformCard platform="applemobile" title="Management certificate" subtitle="Time remaining on the Intune management certificate"><Distribution rows={appleCert} total={apple.length}/></PlatformCard>}
         {hasKnownRows(countValues(apple.map(managedBy)))&&<PlatformCard platform="applemobile" title="Managed by" subtitle="Management authority reported for iOS and iPadOS devices"><Distribution rows={countValues(apple.map(managedBy))} total={apple.length}/></PlatformCard>}
       </div>
     </DashboardSection>}
