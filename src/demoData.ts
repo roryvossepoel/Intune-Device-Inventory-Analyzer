@@ -91,6 +91,7 @@ function device(i:number,t:Template):Device{
   const serial=`DM${String(100000+i)}`;
   const architecture=isWindows?(i%12===0?'ARM64':'X64'):isMac?'ARM64':isLinux?'X64':'Unknown';
   const join=isWindows?(i%16===0?'Hybrid Azure AD joined':'Azure AD joined'):(isMac||isLinux||isAppleMobile||isAndroid?'Azure AD registered':'Unknown');
+  const ownership=isWindows?(i%10===0?'Personal':'Company'):(i%37===0?'Personal':'Corporate');
   const cellular=(isAppleMobile||isAndroid)&&i%4!==0;
   const totalStorage=isWindows?'487119':isMac||isLinux?'485869':isAppleMobile?'131072':'242931';
   const freeStorage=String(Math.max(1200,Number(totalStorage)-((i*3571)%Math.floor(Number(totalStorage)*.72))));
@@ -130,7 +131,7 @@ function device(i:number,t:Template):Device{
     'WiFiSubnetID':i%3===0?'192.168.178.0':i%3===1?'192.168.2.0':'10.18.8.0',
     'Compliance':compliant?'Compliant':grace?'InGracePeriod':'Noncompliant',
     'Managed by':'Intune',
-    'Ownership':i%37===0?'Personal':'Corporate',
+    'Ownership':ownership,
     'Device state':i===44?'WipePending':'Managed',
     'Intune registered':i===57?'ApprovalPending':'Registered',
     'Supervised':String(isAppleMobile),
