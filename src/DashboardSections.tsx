@@ -43,49 +43,8 @@ function androidMode(device:Device){
 function supervision(device:Device){const value=rawValue(device,[/^Supervised$/i]);if(/^true$/i.test(value))return 'Supervised';if(/^false$/i.test(value))return 'Not supervised';return 'Unknown'}
 
 function storageNumber(device:Device,name:'Total storage'|'Free storage'){
-  const value=rawValue(device,[new RegExp(`^${name}import DashboardSection from './DashboardSection';
-import WindowsLifecycle from './WindowsLifecycle';
-import EncryptionCard, { securityAttention } from './SecurityInsights';
-import { getWindowsIntelligence } from './deviceIntelligence';
-import { appleDeviceFamily, cellularCapability, hardwareType } from './hardwareClassification';
-import type { Device } from './types';
-
-type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability'|'primaryUser'|'userDensity'|'ownership';
-type Drill=(field:DrillField,label:string,value:string)=>void;
-type Row=[string,number];
-type SecurityTone='good'|'warn'|'bad';
-
-const fmt=(n:number)=>n.toLocaleString();
-const pct=(n:number,total:number)=>{const value=total?n/total*100:0;const rounded=Math.round(value*10)/10;return `${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`};
-const clean=(v:string|null|undefined)=>v?.trim()||'Unknown';
-const platformKey=(value:string)=>value==='ios'||value==='ipados'?'applemobile':value;
-
-function rawValue(device:Device,patterns:RegExp[]){for(const [name,value] of Object.entries(device.raw)){if(patterns.some(p=>p.test(name))&&value?.trim())return value.trim()}return ''}
-function countValues(values:string[]){return Object.entries(values.reduce<Record<string,number>>((a,v)=>{a[v]=(a[v]??0)+1;return a},{})).sort((a,b)=>b[1]-a[1]) as Row[]}
-function daysSince(value:string|null){if(!value)return null;const time=Date.parse(value);return Number.isFinite(time)?(Date.now()-time)/86400000:null}
-function daysOld(value:string){const time=Date.parse(value);return Number.isFinite(time)?(Date.now()-time)/86400000:null}
-function architecture(device:Device){return rawValue(device,[/^ProcessorArchitecture$/i,/^Architecture$/i])||'Unknown'}
-function macArchitecture(device:Device){const value=architecture(device).toLowerCase();if(/arm64|aarch64/.test(value))return 'Apple Silicon';if(/x64|x86_64|amd64/.test(value))return 'Intel';return 'Unknown'}
-function joinType(device:Device){return rawValue(device,[/^JoinType$/i,/^Join type$/i])||'Unknown'}
-function sku(device:Device){return rawValue(device,[/^SkuFamily$/i,/^OS SKU$/i,/^SKU$/i])||'Unknown'}
-function patchLevel(device:Device){return rawValue(device,[/^Security patch level$/i])}
-function managedBy(device:Device){return clean(device.managedBy)}
-function enrollmentDate(device:Device){return rawValue(device,[/^Enrollment date$/i,/^EnrollmentDateTime$/i,/^Enrolled date$/i])}
-
-function androidMode(device:Device){
-  const source=clean(device.sourceOS);
-  const raw=rawValue(device,[/^ManagementMode$/i,/^Management mode$/i,/^EnrollmentType$/i,/^Enrollment type$/i]);
-  const value=raw||source;
-  const match=value.match(/\((.+)\)/);
-  if(match)return match[1];
-  if(/corporate.*work profile|cope/i.test(value))return 'Corporate-owned work profile (COPE)';
-  if(/fully managed|cobo/i.test(value))return 'Fully managed (COBO)';
-  if(/dedicated|cosu/i.test(value))return 'Dedicated (COSU)';
-  if(/personally.*work profile|byod/i.test(value))return 'Personally owned work profile (BYOD)';
-  if(/^aosp/i.test(value))return value.replace(/^AOSP\s*/i,'AOSP ');
-  return value==='Android'?'Android / Unknown':value;
-}
-,'i')]);
+  const patterns=name==='Total storage'?[/^Total storage$/i]:[/^Free storage$/i];
+  const value=rawValue(device,patterns);
   if(!value)return null;
   const parsed=Number(value.replace(/[^0-9.-]/g,''));
   return Number.isFinite(parsed)&&parsed>=0?parsed:null;
