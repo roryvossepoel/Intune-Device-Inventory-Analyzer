@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import Papa from 'papaparse';
 import { describeOsVersion } from './deviceIntelligence';
+import { resolveDeviceModel } from './deviceModelLookup';
 import type { Device, ImportResult, PlatformFamily } from './types';
 
 export type ImportProgressStage='read'|'extract'|'parse'|'process'|'build'|'error';
@@ -78,9 +79,11 @@ function normalizePlatform(os: string | null, model: string | null, productName:
 
 function normalizeRow(row: Record<string, string>, index: number, sourceFileName: string): Device {
   const sourceOS = value(row, 'OS', 'Operating system');
-  const model = value(row, 'Model');
+  const sourceModel = value(row, 'Model');
   const productName = value(row, 'ProductName', 'Product name');
-  const platform = normalizePlatform(sourceOS, model, productName);
+  const platform = normalizePlatform(sourceOS, sourceModel, productName);
+  const manufacturer = normalizeManufacturer(value(row, 'Manufacturer'));
+  const modelMatch = resolveDeviceModel({manufacturer,model:sourceModel,productName,platform});
   const rawOsVersion = value(row, 'OS version');
   return {
     id: value(row, 'Device ID', 'DeviceId') ?? `${sourceFileName}:row-${index}`,
@@ -90,8 +93,8 @@ function normalizeRow(row: Record<string, string>, index: number, sourceFileName
     platform,
     sourceOS,
     osVersion: describeOsVersion(platform, rawOsVersion),
-    manufacturer: normalizeManufacturer(value(row, 'Manufacturer')),
-    model,
+    manufacturer,
+    model: modelMatch.displayModel,
     userDisplayName: value(row, 'Primary user display name'),
     userUpn: value(row, 'Primary user UPN'),
     compliance: value(row, 'Compliance'),
