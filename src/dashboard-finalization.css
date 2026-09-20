@@ -25,11 +25,11 @@
   color:#70859c!important;
 }
 .inventoryDashboard .dashboardCategoryHead:after{
-  width:44px!important;
+  width:48px!important;
   height:2px!important;
   margin-top:10px!important;
-  background:#9bbbdc!important;
-  opacity:.72!important;
+  background:#9ebad6!important;
+  opacity:.55!important;
 }
 
 /* Remove legacy Fleet-specific presentation hacks so every category header is rendered from the same markup. */
@@ -57,8 +57,8 @@
 .platformCategory-windows .windowsSummaryGrid>.platformSpecificCard>.insightCardHead p{
   font-size:var(--dash-final-body)!important;
   line-height:1.45!important;
-  font-weight:500!important;
-  color:#7489a1!important;
+  font-weight:400!important;
+  color:#7a8da3!important;
 }
 
 /* KPI typography uses emphasis through scale, not extreme weight. */
@@ -154,17 +154,75 @@
   font-weight:600!important;
 }
 .osVersionSortGlobal{
-  font-size:12px!important;
-  font-weight:600!important;
+  gap:6px!important;
+  color:#8a9aac!important;
+  font-size:11px!important;
+  font-weight:400!important;
 }
 .dashboardCategoryHead .osVersionSortGlobal>span{
-  font-size:12px!important;
-  font-weight:500!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+  color:#93a1b0!important;
 }
 .osVersionSortGlobal select{
-  min-width:104px!important;
-  font-size:12.5px!important;
-  font-weight:600!important;
+  height:30px!important;
+  min-width:96px!important;
+  padding:0 24px 0 9px!important;
+  border-color:#e0e7ef!important;
+  border-radius:7px!important;
+  background:rgba(255,255,255,.72)!important;
+  color:#60758c!important;
+  font-size:11.5px!important;
+  font-weight:500!important;
+  box-shadow:none!important;
+}
+.osVersionSortGlobal select:hover{
+  border-color:#cbd7e3!important;
+  background:#fff!important;
+}
+.osVersionSortGlobal select:focus-visible{
+  border-color:#9cbddc!important;
+  box-shadow:0 0 0 2px rgba(37,99,235,.06)!important;
+}
+.osVersionSortGlobal button{
+  width:30px!important;
+  height:30px!important;
+  border-color:#e0e7ef!important;
+  border-radius:7px!important;
+  background:rgba(255,255,255,.72)!important;
+  color:#7c8da0!important;
+  box-shadow:none!important;
+}
+.osVersionSortGlobal button:hover{
+  border-color:#cbd7e3!important;
+  background:#fff!important;
+  color:#58728e!important;
+}
+.osVersionSortGlobal button:focus-visible{
+  border-color:#9cbddc!important;
+  box-shadow:0 0 0 2px rgba(37,99,235,.06)!important;
+}
+.osVersionSortGlobal button svg{
+  width:14px!important;
+  height:14px!important;
+  stroke-width:1.5!important;
+}
+
+/* Dashboard categories share one continuous background; separators define sections without visible bands. */
+.app:has(.dashboardWorkspace){
+  background:#f4f7fb!important;
+}
+.dashboardWorkspace,
+.inventoryDashboard,
+.inventoryDashboard .dashboardCategory,
+.inventoryDashboard .dashboardCategoryContent,
+.inventoryDashboard .platformCategory{
+  background:transparent!important;
+}
+.inventoryDashboard .dashboardCategory+.dashboardCategory{
+  border-top:1px solid rgba(124,151,181,.16)!important;
 }
 
 /* Windows lifecycle rows are data labels, not headings. */
