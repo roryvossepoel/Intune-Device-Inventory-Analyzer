@@ -42,6 +42,68 @@ function androidMode(device:Device){
 }
 function supervision(device:Device){const value=rawValue(device,[/^Supervised$/i]);if(/^true$/i.test(value))return 'Supervised';if(/^false$/i.test(value))return 'Not supervised';return 'Unknown'}
 
+function storageNumber(device:Device,name:'Total storage'|'Free storage'){
+  const value=rawValue(device,[new RegExp(`^${name}import DashboardSection from './DashboardSection';
+import WindowsLifecycle from './WindowsLifecycle';
+import EncryptionCard, { securityAttention } from './SecurityInsights';
+import { getWindowsIntelligence } from './deviceIntelligence';
+import { appleDeviceFamily, cellularCapability, hardwareType } from './hardwareClassification';
+import type { Device } from './types';
+
+type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability'|'primaryUser'|'userDensity'|'ownership';
+type Drill=(field:DrillField,label:string,value:string)=>void;
+type Row=[string,number];
+type SecurityTone='good'|'warn'|'bad';
+
+const fmt=(n:number)=>n.toLocaleString();
+const pct=(n:number,total:number)=>{const value=total?n/total*100:0;const rounded=Math.round(value*10)/10;return `${Number.isInteger(rounded)?rounded.toFixed(0):rounded.toFixed(1)}%`};
+const clean=(v:string|null|undefined)=>v?.trim()||'Unknown';
+const platformKey=(value:string)=>value==='ios'||value==='ipados'?'applemobile':value;
+
+function rawValue(device:Device,patterns:RegExp[]){for(const [name,value] of Object.entries(device.raw)){if(patterns.some(p=>p.test(name))&&value?.trim())return value.trim()}return ''}
+function countValues(values:string[]){return Object.entries(values.reduce<Record<string,number>>((a,v)=>{a[v]=(a[v]??0)+1;return a},{})).sort((a,b)=>b[1]-a[1]) as Row[]}
+function daysSince(value:string|null){if(!value)return null;const time=Date.parse(value);return Number.isFinite(time)?(Date.now()-time)/86400000:null}
+function daysOld(value:string){const time=Date.parse(value);return Number.isFinite(time)?(Date.now()-time)/86400000:null}
+function architecture(device:Device){return rawValue(device,[/^ProcessorArchitecture$/i,/^Architecture$/i])||'Unknown'}
+function macArchitecture(device:Device){const value=architecture(device).toLowerCase();if(/arm64|aarch64/.test(value))return 'Apple Silicon';if(/x64|x86_64|amd64/.test(value))return 'Intel';return 'Unknown'}
+function joinType(device:Device){return rawValue(device,[/^JoinType$/i,/^Join type$/i])||'Unknown'}
+function sku(device:Device){return rawValue(device,[/^SkuFamily$/i,/^OS SKU$/i,/^SKU$/i])||'Unknown'}
+function patchLevel(device:Device){return rawValue(device,[/^Security patch level$/i])}
+function managedBy(device:Device){return clean(device.managedBy)}
+function enrollmentDate(device:Device){return rawValue(device,[/^Enrollment date$/i,/^EnrollmentDateTime$/i,/^Enrolled date$/i])}
+
+function androidMode(device:Device){
+  const source=clean(device.sourceOS);
+  const raw=rawValue(device,[/^ManagementMode$/i,/^Management mode$/i,/^EnrollmentType$/i,/^Enrollment type$/i]);
+  const value=raw||source;
+  const match=value.match(/\((.+)\)/);
+  if(match)return match[1];
+  if(/corporate.*work profile|cope/i.test(value))return 'Corporate-owned work profile (COPE)';
+  if(/fully managed|cobo/i.test(value))return 'Fully managed (COBO)';
+  if(/dedicated|cosu/i.test(value))return 'Dedicated (COSU)';
+  if(/personally.*work profile|byod/i.test(value))return 'Personally owned work profile (BYOD)';
+  if(/^aosp/i.test(value))return value.replace(/^AOSP\s*/i,'AOSP ');
+  return value==='Android'?'Android / Unknown':value;
+}
+,'i')]);
+  if(!value)return null;
+  const parsed=Number(value.replace(/[^0-9.-]/g,''));
+  return Number.isFinite(parsed)&&parsed>=0?parsed:null;
+}
+function storageAvailabilityRows(devices:Device[]):Row[]{
+  const rows:Row[]=[['20%+ free',0],['10–20% free',0],['< 10% free',0],['Unknown',0]];
+  for(const device of devices){
+    const total=storageNumber(device,'Total storage');
+    const free=storageNumber(device,'Free storage');
+    if(total===null||free===null||total<=0||free>total){rows[3][1]++;continue}
+    const freePct=free/total*100;
+    if(freePct<10)rows[2][1]++;
+    else if(freePct<20)rows[1][1]++;
+    else rows[0][1]++;
+  }
+  return rows;
+}
+
 function platformDevices(allDevices:Device[],selectedPlatform:string|null,target:string,currentScope:Device[]){
   if(selectedPlatform)return selectedPlatform===target?currentScope:[];
   return allDevices.filter(d=>platformKey(d.platform)===target);
@@ -149,6 +211,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const windowsOwnership=countValues(windows.map(d=>clean(d.ownership)));
   const windowsJoin=countValues(windows.map(joinType));
   const windowsManaged=countValues(windows.map(managedBy));
+  const windowsStorage=storageAvailabilityRows(windows);
   const windowsBehind=windows.filter(d=>getWindowsIntelligence(d.osVersion)?.updateHealth==='behind').length;
   const windowsEditionReview=windows.filter(d=>getWindowsIntelligence(d.osVersion)?.updateHealth==='edition-review').length;
 
@@ -167,6 +230,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const appleFamilies=countValues(apple.map(appleDeviceFamily));
   const appleCellular=countValues(apple.map(cellularCapability));
   const appleSupervision=countValues(apple.map(supervision));
+  const appleStorage=storageAvailabilityRows(apple);
   const macArch=countValues(macos.map(macArchitecture));
   const linuxArch=countValues(linux.map(architecture));
   const linuxJoin=countValues(linux.map(joinType));
@@ -246,6 +310,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
         {hasKnownRows(windowsOwnership)&&<PlatformCard className="windowsCompositionCard windowsOwnershipCard" platform="windows" title="Ownership" subtitle="Company and Personal Windows devices"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsOwnership} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsOwnership} total={windows.length}/></div></PlatformCard>}
         {hasKnownRows(windowsJoin)&&<PlatformCard className="windowsCompositionCard windowsJoinTypeCard" platform="windows" title="Windows join type" subtitle="Microsoft Entra registration and join state"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsJoin} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsJoin} total={windows.length}/></div></PlatformCard>}
         {hasKnownRows(windowsManaged)&&<PlatformCard className="windowsCompositionCard windowsManagedByCard" platform="windows" title="Managed by" subtitle="Management agent reported for Windows devices"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsManaged} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsManaged} total={windows.length}/></div></PlatformCard>}
+        {hasKnownRows(windowsStorage)&&<PlatformCard className="windowsCompositionCard windowsStorageCard storageAvailabilityCard" platform="windows" title="Storage availability" subtitle="Free storage as a share of reported device capacity"><Distribution rows={windowsStorage} total={windows.length}/></PlatformCard>}
       </div>
     </DashboardSection>}
 
@@ -265,6 +330,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
         {hasKnownRows(appleFamilies)&&<PlatformCard platform="applemobile" title="Device family" subtitle="iPhone and iPad distribution"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleFamilies} center={fmt(apple.length)} label="devices"/><Distribution rows={appleFamilies} total={apple.length} onClick={label=>drill('appleDeviceFamily','Device family',label)}/></div></PlatformCard>}
         {hasKnownRows(appleCellular)&&<PlatformCard platform="applemobile" title="Cellular capability" subtitle="Cellular support reported for iPhone and iPad devices"><div className="hardwareDonutLayout"><Donut total={apple.length} items={appleCellular} center={fmt(apple.length)} label="devices"/><Distribution rows={appleCellular} total={apple.length}/></div></PlatformCard>}
         {hasKnownRows(appleSupervision)&&<PlatformCard platform="applemobile" title="Supervision" subtitle="Supervision state reported by Intune"><Distribution rows={appleSupervision} total={apple.length}/></PlatformCard>}
+        {hasKnownRows(appleStorage)&&<PlatformCard className="storageAvailabilityCard" platform="applemobile" title="Storage availability" subtitle="Free storage as a share of reported device capacity"><Distribution rows={appleStorage} total={apple.length}/></PlatformCard>}
       </div>
     </DashboardSection>}
 
