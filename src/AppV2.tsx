@@ -146,7 +146,7 @@ export default function AppV2(){
         <ShareMenu/>
         <a className="idaGithubButton" href="https://github.com/roryvossepoel/Intune-Device-Inventory-Analyzer" target="_blank" rel="noreferrer" aria-label="Open GitHub repository" title="GitHub"><GithubIcon/></a>
       </div>
-      <MobileNavigation activeView={view==='faq'?'faq':data?view:'home'} onNavigate={navigate}/>
+      <MobileNavigation activeView={view==='faq'?'faq':data?view:'home'} onNavigate={navigate} onOpenExport={data?()=>input.current?.click():undefined}/>
       {data&&<button className="primarySmall idaHeaderOpen" onClick={()=>input.current?.click()}>Open export</button>}
       <input ref={input} hidden type="file" accept=".zip,.csv" onChange={event=>open(event.target.files?.[0])}/>
     </div></header>
