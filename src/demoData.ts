@@ -48,7 +48,7 @@ export const demoSourceColumns=[
   'Device ID','Device name','Enrollment date','Last check-in','Azure AD Device ID','OS version','Azure AD registered','EAS activation ID','Serial number','Manufacturer','Model','EAS activated','IMEI','Last EAS sync time','EAS reason','EAS status','Compliance grace period expiration','Security patch level','Wi-Fi MAC','MEID','Subscriber carrier','Total storage','Free storage','Management name','Category','UserId','Primary user UPN','Primary user email address','Primary user display name','WiFiIPv4Address','WiFiSubnetID','Compliance','Managed by','Ownership','Device state','Intune registered','Supervised','Encrypted','OS','SkuFamily','JoinType','Phone number','Jailbroken','ICCID','EthernetMAC','CellularTechnology','ProcessorArchitecture','EID','SystemManagementBIOSVersion','TPMManufacturerId','TPMManufacturerVersion','ProductName','Management certificate expiration date'
 ] as const;
 
-const total=15000;
+const total=15462;
 const now=Date.now();
 const demoUserPoolSize=10500;
 const allocated:Template[]=[];
