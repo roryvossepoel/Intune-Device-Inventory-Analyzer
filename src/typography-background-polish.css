@@ -15,14 +15,32 @@ body{
 }
 .workspace.dashboardWorkspace{
   position:relative;
+  isolation:isolate;
+  background:transparent!important;
+}
+.workspace.dashboardWorkspace:after{
+  content:"";
+  position:absolute;
+  z-index:-2;
+  top:0;
+  bottom:0;
+  left:50%;
+  width:100vw;
+  transform:translateX(-50%);
+  pointer-events:none;
   background:
     radial-gradient(circle at 88% 2%,rgba(39,112,204,.055),transparent 23%),
-    linear-gradient(180deg,#f2f7fc 0,#f6f9fc 370px,#eef4f9 100%)!important;
+    linear-gradient(180deg,#f2f7fc 0,#f6f9fc 370px,#eef4f9 100%);
 }
 .workspace.dashboardWorkspace:before{
   content:"";
   position:absolute;
-  inset:0;
+  z-index:-1;
+  top:0;
+  bottom:0;
+  left:50%;
+  width:100vw;
+  transform:translateX(-50%);
   pointer-events:none;
   background-image:linear-gradient(rgba(57,92,130,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(57,92,130,.018) 1px,transparent 1px);
   background-size:36px 36px;
