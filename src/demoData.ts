@@ -48,16 +48,9 @@ export const demoSourceColumns=[
   'Device ID','Device name','Enrollment date','Last check-in','Azure AD Device ID','OS version','Azure AD registered','EAS activation ID','Serial number','Manufacturer','Model','EAS activated','IMEI','Last EAS sync time','EAS reason','EAS status','Compliance grace period expiration','Security patch level','Wi-Fi MAC','MEID','Subscriber carrier','Total storage','Free storage','Management name','Category','UserId','Primary user UPN','Primary user email address','Primary user display name','WiFiIPv4Address','WiFiSubnetID','Compliance','Managed by','Ownership','Device state','Intune registered','Supervised','Encrypted','OS','SkuFamily','JoinType','Phone number','Jailbroken','ICCID','EthernetMAC','CellularTechnology','ProcessorArchitecture','EID','SystemManagementBIOSVersion','TPMManufacturerId','TPMManufacturerVersion','ProductName','Management certificate expiration date'
 ] as const;
 
-const total=180;
+const total=15000;
 const now=Date.now();
-const people=[
-  'Michael Scott','Dwight Schrute','Jim Halpert','Pam Beesly','Ryan Howard','Andy Bernard','Robert California',
-  'Stanley Hudson','Kevin Malone','Angela Martin','Oscar Martinez','Phyllis Vance','Creed Bratton','Meredith Palmer',
-  'Kelly Kapoor','Toby Flenderson','Darryl Philbin','Erin Hannon','Gabe Lewis','Holly Flax','Jan Levinson',
-  'David Wallace','Roy Anderson','Karen Filippelli','Nellie Bertram','Clark Green','Pete Miller','Todd Packer',
-  'Jo Bennett','Charles Miner','Deangelo Vickers','Mose Schrute','Bob Vance','Carol Stills','Val Johnson',
-  'Senator Lipton','Cathy Simms','Helene Beesly','Isabel Poreba','Hank Tate'
-];
+const demoUserPoolSize=10500;
 const allocated:Template[]=[];
 for(const t of templates)for(let i=0;i<t.weight;i++)allocated.push(t);
 
@@ -67,7 +60,23 @@ function futureIntuneDate(days:number){return new Date(now+days*86400000).toISOS
 function compactHex(value:number,length:number){let s='';for(let i=0;i<length;i++)s+=((value*37+i*17)%16).toString(16).toUpperCase();return s}
 function fakeGuid(i:number,salt:number){const a=(0x10000000+((i+1)*(salt+17)*7919)%0xefffffff).toString(16).padStart(8,'0').slice(-8);const b=((i+salt)*97%0xffff).toString(16).padStart(4,'0');const c=((i+salt*3)*131%0xffff).toString(16).padStart(4,'0');const d=((i+salt*5)*173%0xffff).toString(16).padStart(4,'0');const e=((BigInt(i+1)*BigInt(salt+29)*BigInt(104729))%BigInt('0xffffffffffff')).toString(16).padStart(12,'0');return `${a}-${b}-${c}-${d}-${e}`}
 function rawManufacturer(name:string){return name==='Dell'?'Dell Inc.':name==='Microsoft'?'Microsoft Corporation':name==='Lenovo'?'LENOVO':name==='Samsung'?'samsung':name==='HP'?'HP':name}
-function enrollmentAgeDays(i:number){if(i<20)return 5+(i%26);if(i<55)return 31+(i%60);if(i<135)return 91+((i*7)%260);if(i<175)return 366+((i*11)%500);return null}
+function enrollmentAgeDays(i:number){
+  const bucket=i%100;
+  if(bucket<12)return 1+((i*7)%30);
+  if(bucket<30)return 31+((i*11)%60);
+  if(bucket<78)return 91+((i*13)%275);
+  if(bucket<97)return 366+((i*17)%700);
+  return null;
+}
+function demoUser(i:number){
+  const userIndex=i%demoUserPoolSize;
+  const number=String(userIndex+1).padStart(5,'0');
+  return {
+    index:userIndex,
+    displayName:`Demo User ${number}`,
+    upn:`demo.user${number}@example.invalid`
+  };
+}
 
 function device(i:number,t:Template):Device{
   const isWindows=t.platform==='windows';
@@ -81,15 +90,16 @@ function device(i:number,t:Template):Device{
   const encryptionReported=i%53!==0;
   const securityCompromised=(isAppleMobile||isAndroid)&&(i%43===0||i%61===0);
   const noUser=i%13===0;
-  const person=people[i%people.length];
-  const userUpn=noUser?'':`${person.toLowerCase().replace(/ /g,'.')}@dundermifflin.example`;
+  const user=demoUser(i);
+  const person=user.displayName;
+  const userUpn=noUser?'':user.upn;
   const age=i%19===0?112:i%11===0?68:i%7===0?36:i%5===0?14:i%3===0?6:2;
   const enrollmentAge=enrollmentAgeDays(i);
   const version=t.versions[i%t.versions.length];
-  const name=`DEMO-${t.platform.toUpperCase()}-${String(i+1).padStart(3,'0')}`;
+  const name=`DEMO-${t.platform.toUpperCase()}-${String(i+1).padStart(5,'0')}`;
   const deviceId=fakeGuid(i,11);
   const aadDeviceId=fakeGuid(i,23);
-  const userId=noUser?'':fakeGuid(i%people.length,41);
+  const userId=noUser?'':fakeGuid(user.index,41);
   const serial=`DM${String(100000+i)}`;
   const architecture=isWindows?(i%12===0?'ARM64':'X64'):isMac?(t.architecture||'ARM64'):isLinux?'X64':'Unknown';
   const join=isWindows?(i%16===0?'Hybrid Azure AD joined':'Azure AD joined'):(isMac||isLinux||isAppleMobile||isAndroid?'Azure AD registered':'Unknown');
@@ -182,13 +192,20 @@ export function createDemoInventory():ImportResult{
   const devices:Device[]=[];
   for(let i=0;i<total;i++)devices.push(device(i,allocated[i%allocated.length]));
 
-  // Small, intentional data-quality imperfections make the demo representative without dominating it.
-  for(const index of [2,3,4]){devices[index].serialNumber=null;devices[index].raw['Serial number']=''}
-  devices[10].serialNumber=devices[9].serialNumber;devices[10].raw['Serial number']=devices[9].raw['Serial number'];
-  devices[20].deviceName=devices[19].deviceName;devices[20].raw['Device name']=devices[19].raw['Device name'];
-  for(const index of [30,31]){devices[index].model=null;devices[index].raw['Model']=''}
-  for(const index of [40,41]){devices[index].manufacturer=null;devices[index].raw['Manufacturer']=''}
-  for(const index of [50,51]){devices[index].lastCheckIn=null;devices[index].raw['Last check-in']=''}
+  // Small, deterministic data-quality imperfections keep the large demo realistic
+  // without turning the dashboard into an error showcase.
+  for(let index=2;index<devices.length;index+=503){devices[index].serialNumber=null;devices[index].raw['Serial number']=''}
+  for(let index=211;index<devices.length;index+=997){
+    devices[index].serialNumber=devices[index-1].serialNumber;
+    devices[index].raw['Serial number']=devices[index-1].raw['Serial number'];
+  }
+  for(let index=337;index<devices.length;index+=1201){
+    devices[index].deviceName=devices[index-1].deviceName;
+    devices[index].raw['Device name']=devices[index-1].raw['Device name'];
+  }
+  for(let index=89;index<devices.length;index+=787){devices[index].model=null;devices[index].raw['Model']=''}
+  for(let index=133;index<devices.length;index+=911){devices[index].manufacturer=null;devices[index].raw['Manufacturer']=''}
+  for(let index=177;index<devices.length;index+=673){devices[index].lastCheckIn=null;devices[index].raw['Last check-in']=''}
 
   const columns=[...demoSourceColumns];
   return {sourceFileName:'Intune-Analyzer-Demo.csv',sourceFileNames:['Intune-Analyzer-Demo.csv'],csvFileName:'Intune-Analyzer-Demo.csv',csvFileNames:['Intune-Analyzer-Demo.csv'],devices,columns,duplicateCount:0};
