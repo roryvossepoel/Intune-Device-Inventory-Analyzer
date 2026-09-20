@@ -72,6 +72,7 @@ import './main-page-heading-unity.css';
 import './typography-softening.css';
 import './os-version-sort.css';
 import './windows-summary-bars.css';
+import './dashboard-finalization.css';
 import './os-version-sort';
 import './import-progress.css';
 import './import-progress-stability.css';
