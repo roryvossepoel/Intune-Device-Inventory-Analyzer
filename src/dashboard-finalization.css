@@ -206,6 +206,26 @@
   stroke-width:1.5!important;
 }
 
+/* Keep the platform selector dropdown above the KPI row.
+   The dashboard background layer gives direct workspace children z-index:1,
+   so the later KPI sibling otherwise paints over this menu. */
+.workspace.dashboardWorkspace>.dashboardHead{
+  position:relative;
+  z-index:20!important;
+}
+.workspace.dashboardWorkspace>.inventoryDashboard{
+  position:relative;
+  z-index:1!important;
+}
+.dashboardPlatformFilter,
+.dashboardPlatformFilter .multiFilterControl{
+  position:relative;
+  z-index:2;
+}
+.dashboardPlatformFilter .multiFilterMenu{
+  z-index:100!important;
+}
+
 /* Dashboard categories share one continuous background; separators define sections without visible bands. */
 .app:has(.dashboardWorkspace){
   background:#f4f7fb!important;
