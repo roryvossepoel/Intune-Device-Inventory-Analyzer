@@ -19,11 +19,10 @@ function rawValue(device:Device,patterns:RegExp[]){for(const [name,value] of Obj
 function countValues(values:string[]){return Object.entries(values.reduce<Record<string,number>>((a,v)=>{a[v]=(a[v]??0)+1;return a},{})).sort((a,b)=>b[1]-a[1]) as Row[]}
 function daysSince(value:string|null){if(!value)return null;const time=Date.parse(value);return Number.isFinite(time)?(Date.now()-time)/86400000:null}
 function daysOld(value:string){const time=Date.parse(value);return Number.isFinite(time)?(Date.now()-time)/86400000:null}
-function daysUntil(value:string){const time=Date.parse(value);return Number.isFinite(time)?(time-Date.now())/86400000:null}
 function architecture(device:Device){return rawValue(device,[/^ProcessorArchitecture$/i,/^Architecture$/i])||'Unknown'}
+function macArchitecture(device:Device){const value=architecture(device).toLowerCase();if(/arm64|aarch64/.test(value))return 'Apple Silicon';if(/x64|x86_64|amd64/.test(value))return 'Intel';return 'Unknown'}
 function joinType(device:Device){return rawValue(device,[/^JoinType$/i,/^Join type$/i])||'Unknown'}
 function sku(device:Device){return rawValue(device,[/^SkuFamily$/i,/^OS SKU$/i,/^SKU$/i])||'Unknown'}
-function certExpiry(device:Device){return rawValue(device,[/^Management certificate expiration date$/i])}
 function patchLevel(device:Device){return rawValue(device,[/^Security patch level$/i])}
 function managedBy(device:Device){return clean(device.managedBy)}
 function enrollmentDate(device:Device){return rawValue(device,[/^Enrollment date$/i,/^EnrollmentDateTime$/i,/^Enrolled date$/i])}
@@ -168,9 +167,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
   const appleFamilies=countValues(apple.map(appleDeviceFamily));
   const appleCellular=countValues(apple.map(cellularCapability));
   const appleSupervision=countValues(apple.map(supervision));
-  const macArch=countValues(macos.map(architecture));
-  const macJoin=countValues(macos.map(joinType));
-  const macCert=certificateBuckets(macos);
+  const macArch=countValues(macos.map(macArchitecture));
   const linuxArch=countValues(linux.map(architecture));
   const linuxJoin=countValues(linux.map(joinType));
 
@@ -271,12 +268,11 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
       </div>
     </DashboardSection>}
 
-    {macos.length>0&&<DashboardSection icon="lifecycle" title="macOS" subtitle={`${fmt(macos.length)} macOS devices · versions, architecture and management intelligence.`} className="platformCategory platformCategory-macos">
+    {macos.length>0&&<DashboardSection icon="lifecycle" title="macOS" subtitle={`${fmt(macos.length)} macOS devices · versions and architecture intelligence.`} className="platformCategory platformCategory-macos">
       <div className="extendedInsightGrid twoInsightGrid">
         <PlatformCard className="osVersionCard" platform="macos" title="macOS versions" subtitle={`${fmt(macos.length)} devices · ${macosVersions.length} reported version${macosVersions.length===1?'':'s'}`}><Distribution rows={macosVersions} total={macos.length} limit={macosVersions.length} onClick={label=>drill('osVersion','OS version',label)}/></PlatformCard>
         <PlatformCard platform="macos" title="Version position" subtitle="Relative to the newest version observed in this inventory"><Distribution rows={macPosition} total={macos.length}/></PlatformCard>
         {hasKnownRows(macArch)&&<PlatformCard platform="macos" title="Architecture" subtitle="Apple Silicon and Intel architecture reported by inventory"><Distribution rows={macArch} total={macos.length}/></PlatformCard>}
-        {(hasKnownRows(macJoin)||hasKnownRows(macCert))&&<PlatformCard platform="macos" title="Join & enrollment" subtitle="Identity and management-certificate state">{hasKnownRows(macJoin)&&<><span className="platformSubLabel">Join state</span><Distribution rows={macJoin} total={macos.length}/></>}{hasKnownRows(macCert)&&<><span className="platformSubLabel">Management certificate</span><Distribution rows={macCert} total={macos.length}/></>}</PlatformCard>}
       </div>
     </DashboardSection>}
 
@@ -288,12 +284,6 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
       </div>
     </DashboardSection>}
   </>;
-}
-
-function certificateBuckets(devices:Device[]):Row[]{
-  const rows:Row[]=[['Expired',0],['< 30 days',0],['30–90 days',0],['> 90 days',0],['Unknown',0]];
-  for(const device of devices){const value=certExpiry(device);const remaining=value?daysUntil(value):null;if(remaining===null){rows[4][1]++;continue}if(remaining<0)rows[0][1]++;else if(remaining<30)rows[1][1]++;else if(remaining<=90)rows[2][1]++;else rows[3][1]++}
-  return rows;
 }
 
 function Card({title,subtitle,children,tone,className=''}:{title:string;subtitle:string;children:React.ReactNode;tone?:SecurityTone;className?:string}){return <article className={`dashboardCard extendedInsightCard${tone?` tone-${tone}`:''}${className?` ${className}`:''}`}><header className="dashboardCardHead insightCardHead"><div><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</article>}
