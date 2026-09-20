@@ -4,114 +4,15 @@
   "description": "Local device model translation and classification data for Intune Device Inventory Analyzer. Matching is case-insensitive and may use either Model or ProductName.",
   "devices": [
     {
-      "manufacturer": "Samsung",
-      "models": [
-        "SM-A546B"
-      ],
-      "displayModel": "Galaxy A54 5G",
-      "family": "Galaxy A",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Samsung",
-      "models": [
-        "SM-A556B"
-      ],
-      "displayModel": "Galaxy A55 5G",
-      "family": "Galaxy A",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Samsung",
-      "models": [
-        "SM-A566B"
-      ],
-      "displayModel": "Galaxy A56 5G",
-      "family": "Galaxy A",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Samsung",
-      "models": [
-        "SM-S931B"
-      ],
-      "displayModel": "Galaxy S25",
-      "family": "Galaxy S",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Samsung",
-      "models": [
-        "SM-S936B"
-      ],
-      "displayModel": "Galaxy S25+",
-      "family": "Galaxy S",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Samsung",
-      "models": [
-        "SM-S938B"
-      ],
-      "displayModel": "Galaxy S25 Ultra",
-      "family": "Galaxy S",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Samsung",
-      "models": [
-        "SM-G556B"
-      ],
-      "displayModel": "Galaxy XCover7",
-      "family": "Galaxy XCover",
-      "deviceType": "Smartphone"
-    },
-    {
       "manufacturer": "Apple",
       "productNames": [
-        "iPhone17,5"
-      ],
-      "models": [
-        "iPhone"
-      ],
-      "displayModel": "iPhone 16e",
-      "family": "iPhone",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Apple",
-      "productNames": [
-        "iPhone17,3"
-      ],
-      "models": [
-        "iPhone"
-      ],
-      "displayModel": "iPhone 16",
-      "family": "iPhone",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Apple",
-      "productNames": [
-        "iPhone14,6"
-      ],
-      "models": [
-        "iPhone"
-      ],
-      "displayModel": "iPhone SE (3rd generation)",
-      "family": "iPhone",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Apple",
-      "productNames": [
-        "iPad16,3"
+        "iPad13,18"
       ],
       "models": [
         "iPad"
       ],
-      "displayModel": "iPad Pro 11-inch (M4)",
-      "family": "iPad Pro",
+      "displayModel": "iPad (10th generation)",
+      "family": "iPad",
       "deviceType": "Tablet"
     },
     {
@@ -129,14 +30,50 @@
     {
       "manufacturer": "Apple",
       "productNames": [
-        "iPad13,18"
+        "iPad16,3"
       ],
       "models": [
         "iPad"
       ],
-      "displayModel": "iPad (10th generation)",
-      "family": "iPad",
+      "displayModel": "iPad Pro 11-inch (M4)",
+      "family": "iPad Pro",
       "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Apple",
+      "productNames": [
+        "iPhone17,3"
+      ],
+      "models": [
+        "iPhone"
+      ],
+      "displayModel": "iPhone 16",
+      "family": "iPhone",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Apple",
+      "productNames": [
+        "iPhone17,5"
+      ],
+      "models": [
+        "iPhone"
+      ],
+      "displayModel": "iPhone 16e",
+      "family": "iPhone",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Apple",
+      "productNames": [
+        "iPhone14,6"
+      ],
+      "models": [
+        "iPhone"
+      ],
+      "displayModel": "iPhone SE (3rd generation)",
+      "family": "iPhone",
+      "deviceType": "Smartphone"
     },
     {
       "manufacturer": "Apple",
@@ -159,15 +96,6 @@
     {
       "manufacturer": "Apple",
       "models": [
-        "MacBook Pro 14-inch (M4)"
-      ],
-      "displayModel": "MacBook Pro 14-inch (M4)",
-      "family": "MacBook Pro",
-      "deviceType": "Laptop"
-    },
-    {
-      "manufacturer": "Apple",
-      "models": [
         "MacBook Pro 13-inch (2020, Intel)"
       ],
       "displayModel": "MacBook Pro 13-inch (2020, Intel)",
@@ -175,31 +103,13 @@
       "deviceType": "Laptop"
     },
     {
-      "manufacturer": "Google",
+      "manufacturer": "Apple",
       "models": [
-        "Pixel 9"
+        "MacBook Pro 14-inch (M4)"
       ],
-      "displayModel": "Pixel 9",
-      "family": "Pixel",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Google",
-      "models": [
-        "Pixel 9a"
-      ],
-      "displayModel": "Pixel 9a",
-      "family": "Pixel",
-      "deviceType": "Smartphone"
-    },
-    {
-      "manufacturer": "Google",
-      "models": [
-        "Pixel Tablet"
-      ],
-      "displayModel": "Pixel Tablet",
-      "family": "Pixel",
-      "deviceType": "Tablet"
+      "displayModel": "MacBook Pro 14-inch (M4)",
+      "family": "MacBook Pro",
+      "deviceType": "Laptop"
     },
     {
       "manufacturer": "Dell",
@@ -242,30 +152,163 @@
       "deviceType": "Desktop"
     },
     {
-      "manufacturer": "Lenovo",
+      "manufacturer": "Google",
       "models": [
-        "ThinkPad T14 Gen 5"
+        "Pixel 6",
+        "GB7N6"
       ],
-      "displayModel": "ThinkPad T14 Gen 5",
-      "family": "ThinkPad",
-      "deviceType": "Laptop"
+      "displayModel": "Pixel 6",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
     },
     {
-      "manufacturer": "Lenovo",
+      "manufacturer": "Google",
       "models": [
-        "ThinkBook 16 G7"
+        "Pixel 6 Pro",
+        "GLU0G"
       ],
-      "displayModel": "ThinkBook 16 G7",
-      "family": "ThinkBook",
-      "deviceType": "Laptop"
+      "displayModel": "Pixel 6 Pro",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
     },
     {
-      "manufacturer": "Lenovo",
+      "manufacturer": "Google",
       "models": [
-        "ThinkCentre M75q Gen 5"
+        "Pixel 6a",
+        "G1AZG"
       ],
-      "displayModel": "ThinkCentre M75q Gen 5",
-      "family": "ThinkCentre",
+      "displayModel": "Pixel 6a",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 7",
+        "GVU6C"
+      ],
+      "displayModel": "Pixel 7",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 7 Pro",
+        "GP4BC"
+      ],
+      "displayModel": "Pixel 7 Pro",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 7a",
+        "GHL1X"
+      ],
+      "displayModel": "Pixel 7a",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 8",
+        "GPJ41"
+      ],
+      "displayModel": "Pixel 8",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 8 Pro",
+        "GC3VE"
+      ],
+      "displayModel": "Pixel 8 Pro",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 8a",
+        "G6GPR"
+      ],
+      "displayModel": "Pixel 8a",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 9",
+        "GUR25"
+      ],
+      "displayModel": "Pixel 9",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 9 Pro",
+        "GEC77"
+      ],
+      "displayModel": "Pixel 9 Pro",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 9 Pro Fold",
+        "GGH2X",
+        "GC15S"
+      ],
+      "displayModel": "Pixel 9 Pro Fold",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 9 Pro XL",
+        "GZC4K"
+      ],
+      "displayModel": "Pixel 9 Pro XL",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 9a",
+        "GTF7P"
+      ],
+      "displayModel": "Pixel 9a",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel Tablet"
+      ],
+      "displayModel": "Pixel Tablet",
+      "family": "Pixel",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "HP",
+      "models": [
+        "Elite Mini 800 G9",
+        "HP Elite Mini 800 G9"
+      ],
+      "displayModel": "Elite Mini 800 G9",
+      "family": "Elite Mini",
       "deviceType": "Desktop"
     },
     {
@@ -289,33 +332,40 @@
       "deviceType": "Laptop"
     },
     {
-      "manufacturer": "HP",
+      "manufacturer": "Lenovo",
       "models": [
-        "Elite Mini 800 G9",
-        "HP Elite Mini 800 G9"
+        "ThinkBook 16 G7"
       ],
-      "displayModel": "Elite Mini 800 G9",
-      "family": "Elite Mini",
+      "displayModel": "ThinkBook 16 G7",
+      "family": "ThinkBook",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Lenovo",
+      "models": [
+        "ThinkCentre M75q Gen 5"
+      ],
+      "displayModel": "ThinkCentre M75q Gen 5",
+      "family": "ThinkCentre",
       "deviceType": "Desktop"
     },
     {
-      "manufacturer": "Microsoft",
+      "manufacturer": "Lenovo",
       "models": [
-        "Surface Laptop 7",
-        "Surface Laptop 7th Edition"
+        "ThinkPad T14 Gen 5"
       ],
-      "displayModel": "Surface Laptop 7",
-      "family": "Surface Laptop",
+      "displayModel": "ThinkPad T14 Gen 5",
+      "family": "ThinkPad",
       "deviceType": "Laptop"
     },
     {
       "manufacturer": "Microsoft",
       "models": [
-        "Surface Pro 11",
-        "Surface Pro 11th Edition"
+        "Surface Go 3 LTE",
+        "2022"
       ],
-      "displayModel": "Surface Pro 11",
-      "family": "Surface Pro",
+      "displayModel": "Surface Go 3 LTE",
+      "family": "Surface Go",
       "deviceType": "Tablet"
     },
     {
@@ -326,6 +376,94 @@
       "displayModel": "Surface Laptop 5",
       "family": "Surface Laptop",
       "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Laptop 6 for Business",
+        "2033",
+        "2035"
+      ],
+      "displayModel": "Surface Laptop 6 for Business",
+      "family": "Surface Laptop",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Laptop 7",
+        "Surface Laptop 7th Edition",
+        "Surface Laptop, 7th Edition",
+        "2036",
+        "2037"
+      ],
+      "displayModel": "Surface Laptop 7",
+      "family": "Surface Laptop",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Laptop for Business, 7th Edition",
+        "2107",
+        "2108"
+      ],
+      "displayModel": "Surface Laptop for Business, 7th Edition",
+      "family": "Surface Laptop",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Laptop Studio 2",
+        "2029"
+      ],
+      "displayModel": "Surface Laptop Studio 2",
+      "family": "Surface Laptop Studio",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Pro 10 for Business",
+        "2079"
+      ],
+      "displayModel": "Surface Pro 10 for Business",
+      "family": "Surface Pro",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Pro 11",
+        "Surface Pro 11th Edition",
+        "Surface Pro, 11th Edition",
+        "2076",
+        "2085"
+      ],
+      "displayModel": "Surface Pro 11",
+      "family": "Surface Pro",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Pro 9",
+        "2038"
+      ],
+      "displayModel": "Surface Pro 9",
+      "family": "Surface Pro",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Pro for Business, 11th Edition",
+        "2103"
+      ],
+      "displayModel": "Surface Pro for Business, 11th Edition",
+      "family": "Surface Pro",
+      "deviceType": "Tablet"
     },
     {
       "manufacturer": "Motorola",
@@ -348,12 +486,215 @@
       "deviceType": "Smartphone"
     },
     {
-      "manufacturer": "Xiaomi",
+      "manufacturer": "Samsung",
       "models": [
-        "Xiaomi 15"
+        "SM-A146P",
+        "SM-A146P/DS"
       ],
-      "displayModel": "Xiaomi 15",
-      "family": "Xiaomi",
+      "displayModel": "Galaxy A14 5G",
+      "family": "Galaxy A",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-A346B",
+        "SM-A346B/DS"
+      ],
+      "displayModel": "Galaxy A34 5G",
+      "family": "Galaxy A",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-A356B",
+        "SM-A356B/DS"
+      ],
+      "displayModel": "Galaxy A35 5G",
+      "family": "Galaxy A",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-A366B",
+        "SM-A366B/DS"
+      ],
+      "displayModel": "Galaxy A36 5G",
+      "family": "Galaxy A",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-A546B"
+      ],
+      "displayModel": "Galaxy A54 5G",
+      "family": "Galaxy A",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-A556B"
+      ],
+      "displayModel": "Galaxy A55 5G",
+      "family": "Galaxy A",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-A566B"
+      ],
+      "displayModel": "Galaxy A56 5G",
+      "family": "Galaxy A",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S911B",
+        "SM-S911B/DS"
+      ],
+      "displayModel": "Galaxy S23",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S918B",
+        "SM-S918B/DS"
+      ],
+      "displayModel": "Galaxy S23 Ultra",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S916B",
+        "SM-S916B/DS"
+      ],
+      "displayModel": "Galaxy S23+",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S921B",
+        "SM-S921B/DS"
+      ],
+      "displayModel": "Galaxy S24",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S928B",
+        "SM-S928B/DS"
+      ],
+      "displayModel": "Galaxy S24 Ultra",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S926B",
+        "SM-S926B/DS"
+      ],
+      "displayModel": "Galaxy S24+",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S931B"
+      ],
+      "displayModel": "Galaxy S25",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S938B"
+      ],
+      "displayModel": "Galaxy S25 Ultra",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S936B"
+      ],
+      "displayModel": "Galaxy S25+",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-X306B"
+      ],
+      "displayModel": "Galaxy Tab Active5 5G",
+      "family": "Galaxy Tab Active",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-X700N",
+        "SM-X706B"
+      ],
+      "displayModel": "Galaxy Tab S8",
+      "family": "Galaxy Tab S",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-X710",
+        "SM-X716B"
+      ],
+      "displayModel": "Galaxy Tab S9",
+      "family": "Galaxy Tab S",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-X910",
+        "SM-X916B"
+      ],
+      "displayModel": "Galaxy Tab S9 Ultra",
+      "family": "Galaxy Tab S",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-X810",
+        "SM-X816B"
+      ],
+      "displayModel": "Galaxy Tab S9+",
+      "family": "Galaxy Tab S",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-G556B"
+      ],
+      "displayModel": "Galaxy XCover7",
+      "family": "Galaxy XCover",
       "deviceType": "Smartphone"
     },
     {
@@ -363,6 +704,15 @@
       ],
       "displayModel": "Redmi Note 14 Pro 5G",
       "family": "Redmi Note",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Xiaomi",
+      "models": [
+        "Xiaomi 15"
+      ],
+      "displayModel": "Xiaomi 15",
+      "family": "Xiaomi",
       "deviceType": "Smartphone"
     }
   ]
