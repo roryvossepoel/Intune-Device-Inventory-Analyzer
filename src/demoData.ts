@@ -95,8 +95,9 @@ function device(i:number,t:Template):Device{
   const ownership=isWindows?(i%10===0?'Personal':'Company'):(i%37===0?'Personal':'Corporate');
   const managementAuthority=isWindows&&i%4===0?'Co-managed':'Intune';
   const cellular=(isAppleMobile||isAndroid)&&i%4!==0;
-  const totalStorage=isWindows?'487119':isMac||isLinux?'485869':isAppleMobile?'131072':'242931';
-  const freeStorage=String(Math.max(1200,Number(totalStorage)-((i*3571)%Math.floor(Number(totalStorage)*.72))));
+  const totalStorage=isWindows?(i%5===0?'976562':'487119'):isMac?'485869':isAppleMobile?(i%3===0?'262144':'131072'):'';
+  const storageFreeRatio=i%11===0?.06:i%7===0?.15:i%3===0?.34:.58;
+  const freeStorage=(isWindows||isAppleMobile)&&totalStorage?String(Math.round(Number(totalStorage)*storageFreeRatio)):'';
   const certificateExpiry=(isWindows||isMac||isAppleMobile||i%10===0)?futureIntuneDate(40+(i%250)):'';
   const managementName=`${deviceId}_${isAppleMobile?'IPhone':isAndroid?'Android':isWindows?'Windows':t.os}_${new Date(now-(120+i%500)*86400000).toLocaleDateString('en-US')}`;
   const raw:Record<string,string>={
