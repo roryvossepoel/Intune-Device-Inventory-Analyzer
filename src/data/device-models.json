@@ -1,0 +1,369 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-09-20",
+  "description": "Local device model translation and classification data for Intune Device Inventory Analyzer. Matching is case-insensitive and may use either Model or ProductName.",
+  "devices": [
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-A546B"
+      ],
+      "displayModel": "Galaxy A54 5G",
+      "family": "Galaxy A",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-A556B"
+      ],
+      "displayModel": "Galaxy A55 5G",
+      "family": "Galaxy A",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-A566B"
+      ],
+      "displayModel": "Galaxy A56 5G",
+      "family": "Galaxy A",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S931B"
+      ],
+      "displayModel": "Galaxy S25",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S936B"
+      ],
+      "displayModel": "Galaxy S25+",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-S938B"
+      ],
+      "displayModel": "Galaxy S25 Ultra",
+      "family": "Galaxy S",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Samsung",
+      "models": [
+        "SM-G556B"
+      ],
+      "displayModel": "Galaxy XCover7",
+      "family": "Galaxy XCover",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Apple",
+      "productNames": [
+        "iPhone17,5"
+      ],
+      "models": [
+        "iPhone"
+      ],
+      "displayModel": "iPhone 16e",
+      "family": "iPhone",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Apple",
+      "productNames": [
+        "iPhone17,3"
+      ],
+      "models": [
+        "iPhone"
+      ],
+      "displayModel": "iPhone 16",
+      "family": "iPhone",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Apple",
+      "productNames": [
+        "iPhone14,6"
+      ],
+      "models": [
+        "iPhone"
+      ],
+      "displayModel": "iPhone SE (3rd generation)",
+      "family": "iPhone",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Apple",
+      "productNames": [
+        "iPad16,3"
+      ],
+      "models": [
+        "iPad"
+      ],
+      "displayModel": "iPad Pro 11-inch (M4)",
+      "family": "iPad Pro",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Apple",
+      "productNames": [
+        "iPad15,3"
+      ],
+      "models": [
+        "iPad"
+      ],
+      "displayModel": "iPad Air 11-inch (M3)",
+      "family": "iPad Air",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Apple",
+      "productNames": [
+        "iPad13,18"
+      ],
+      "models": [
+        "iPad"
+      ],
+      "displayModel": "iPad (10th generation)",
+      "family": "iPad",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Apple",
+      "models": [
+        "MacBook Air 13-inch (M3)"
+      ],
+      "displayModel": "MacBook Air 13-inch (M3)",
+      "family": "MacBook Air",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Apple",
+      "models": [
+        "MacBook Air 15-inch (M4)"
+      ],
+      "displayModel": "MacBook Air 15-inch (M4)",
+      "family": "MacBook Air",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Apple",
+      "models": [
+        "MacBook Pro 14-inch (M4)"
+      ],
+      "displayModel": "MacBook Pro 14-inch (M4)",
+      "family": "MacBook Pro",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Apple",
+      "models": [
+        "MacBook Pro 13-inch (2020, Intel)"
+      ],
+      "displayModel": "MacBook Pro 13-inch (2020, Intel)",
+      "family": "MacBook Pro",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 9"
+      ],
+      "displayModel": "Pixel 9",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel 9a"
+      ],
+      "displayModel": "Pixel 9a",
+      "family": "Pixel",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Google",
+      "models": [
+        "Pixel Tablet"
+      ],
+      "displayModel": "Pixel Tablet",
+      "family": "Pixel",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Dell",
+      "models": [
+        "Dell Pro 16 PC16250",
+        "Dell Pro PC16250"
+      ],
+      "displayModel": "Dell Pro 16 PC16250",
+      "family": "Dell Pro",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Dell",
+      "models": [
+        "Latitude 3550",
+        "Dell Latitude 3550"
+      ],
+      "displayModel": "Latitude 3550",
+      "family": "Latitude",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Dell",
+      "models": [
+        "Latitude 7450",
+        "Dell Latitude 7450"
+      ],
+      "displayModel": "Latitude 7450",
+      "family": "Latitude",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Dell",
+      "models": [
+        "OptiPlex 7020 Micro Plus",
+        "Dell OptiPlex 7020 Micro Plus"
+      ],
+      "displayModel": "OptiPlex 7020 Micro Plus",
+      "family": "OptiPlex",
+      "deviceType": "Desktop"
+    },
+    {
+      "manufacturer": "Lenovo",
+      "models": [
+        "ThinkPad T14 Gen 5"
+      ],
+      "displayModel": "ThinkPad T14 Gen 5",
+      "family": "ThinkPad",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Lenovo",
+      "models": [
+        "ThinkBook 16 G7"
+      ],
+      "displayModel": "ThinkBook 16 G7",
+      "family": "ThinkBook",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Lenovo",
+      "models": [
+        "ThinkCentre M75q Gen 5"
+      ],
+      "displayModel": "ThinkCentre M75q Gen 5",
+      "family": "ThinkCentre",
+      "deviceType": "Desktop"
+    },
+    {
+      "manufacturer": "HP",
+      "models": [
+        "EliteBook 840 G11",
+        "HP EliteBook 840 G11"
+      ],
+      "displayModel": "EliteBook 840 G11",
+      "family": "EliteBook",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "HP",
+      "models": [
+        "ProBook 440 G11",
+        "HP ProBook 440 G11"
+      ],
+      "displayModel": "ProBook 440 G11",
+      "family": "ProBook",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "HP",
+      "models": [
+        "Elite Mini 800 G9",
+        "HP Elite Mini 800 G9"
+      ],
+      "displayModel": "Elite Mini 800 G9",
+      "family": "Elite Mini",
+      "deviceType": "Desktop"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Laptop 7",
+        "Surface Laptop 7th Edition"
+      ],
+      "displayModel": "Surface Laptop 7",
+      "family": "Surface Laptop",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Pro 11",
+        "Surface Pro 11th Edition"
+      ],
+      "displayModel": "Surface Pro 11",
+      "family": "Surface Pro",
+      "deviceType": "Tablet"
+    },
+    {
+      "manufacturer": "Microsoft",
+      "models": [
+        "Surface Laptop 5"
+      ],
+      "displayModel": "Surface Laptop 5",
+      "family": "Surface Laptop",
+      "deviceType": "Laptop"
+    },
+    {
+      "manufacturer": "Motorola",
+      "models": [
+        "Edge 60",
+        "motorola edge 60"
+      ],
+      "displayModel": "Edge 60",
+      "family": "Edge",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Motorola",
+      "models": [
+        "Moto G75 5G",
+        "moto g75 5G"
+      ],
+      "displayModel": "Moto G75 5G",
+      "family": "Moto G",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Xiaomi",
+      "models": [
+        "Xiaomi 15"
+      ],
+      "displayModel": "Xiaomi 15",
+      "family": "Xiaomi",
+      "deviceType": "Smartphone"
+    },
+    {
+      "manufacturer": "Xiaomi",
+      "models": [
+        "Redmi Note 14 Pro 5G"
+      ],
+      "displayModel": "Redmi Note 14 Pro 5G",
+      "family": "Redmi Note",
+      "deviceType": "Smartphone"
+    }
+  ]
+}
