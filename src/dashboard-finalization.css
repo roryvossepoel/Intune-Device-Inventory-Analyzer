@@ -18,11 +18,11 @@
   color:#173a63!important;
 }
 .inventoryDashboard .dashboardCategoryHead p{
-  margin-top:5px!important;
-  font-size:15px!important;
+  margin-top:4px!important;
+  font-size:14px!important;
   line-height:1.5!important;
-  font-weight:500!important;
-  color:#667f99!important;
+  font-weight:400!important;
+  color:#70859c!important;
 }
 .inventoryDashboard .dashboardCategoryHead:after{
   width:34px!important;
