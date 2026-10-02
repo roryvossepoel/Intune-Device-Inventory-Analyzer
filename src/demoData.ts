@@ -148,7 +148,7 @@ export const demoPreviewStats:DemoPreviewStats=(()=>{
         'SkuFamily':demoSkuFamily(i,isWindows),
         'Security patch level':demoSecurityPatch(i,isAndroid)
       }
-    } as Device;
+    } as unknown as Device;
     if(lifecycleRiskSignal(minimal,now,sixMonthCutoff).risk)lifecycleRisk++;
   }
 
