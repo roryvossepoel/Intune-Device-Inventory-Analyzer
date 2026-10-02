@@ -20,3 +20,11 @@
 .windowsLifecycleRow.warning td strong{color:#765d19}
 .windowsLifecycleRow.expired td strong{color:#9d3838}
 @media(max-width:760px){.windowsLifecycleHead{align-items:flex-start}.windowsLifecycleTableWrap{padding:0 12px 10px}.windowsLifecycleLogo{width:28px;height:28px;flex-basis:28px}.windowsLifecycleLogo svg{width:17px;height:17px}}
+
+.windowsLifecycleRow.clickable{cursor:pointer;transition:filter .14s ease}
+.windowsLifecycleRow.clickable:hover td{filter:brightness(.975)}
+.windowsLifecycleRow.clickable:hover td:first-child strong{text-decoration:underline;text-underline-offset:2px}
+.windowsLifecycleRow.clickable:focus{outline:none}
+.windowsLifecycleRow.clickable:focus-visible td{box-shadow:inset 0 2px #4c8de8,inset 0 -2px #4c8de8}
+.windowsLifecycleRow.clickable:focus-visible td:first-child{box-shadow:inset 2px 0 #4c8de8,inset 0 2px #4c8de8,inset 0 -2px #4c8de8}
+.windowsLifecycleRow.clickable:focus-visible td:last-child{box-shadow:inset -2px 0 #4c8de8,inset 0 2px #4c8de8,inset 0 -2px #4c8de8}
