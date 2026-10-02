@@ -7,7 +7,7 @@ export default function LandingContent({onOpenExport=()=>document.querySelector<
         <span className="idaEyebrow"><i/> LOCAL-FIRST INTUNE INVENTORY ANALYSIS</span>
         <h1>Turn Intune inventory into <em>answers you can act on.</em></h1>
         <p>Open a native Microsoft Intune device inventory export and move from raw rows to a clear dashboard, device-level exploration and reusable management stories. Everything runs locally in your browser.</p>
-        <div className="idaHeroActions"><button className="idaPrimary" onClick={onOpenExport}><UploadIcon/>Open Intune export</button><button className="idaSecondary" onClick={onOpenDemo}>Explore demo inventory <span>→</span></button></div>
+        <div className="idaHeroActions"><button className="idaPrimary" onClick={onOpenExport}><UploadIcon/><span>Open Intune export</span></button><button className="idaSecondary idaDemoAction" onClick={onOpenDemo}><DemoInventoryIcon/><span>Explore demo inventory</span><b aria-hidden="true">→</b></button></div>
         <div className="idaHeroMeta"><span><ShieldIcon/>No upload or backend</span><span><FileIcon/>CSV or ZIP</span><span><CodeIcon/>Open source</span></div>
       </div>
       <HeroProductPreview/>
@@ -83,6 +83,7 @@ function ReportPoint({title,text}:{title:string;text:string}){return <article><i
 function ReportDocumentPreview(){return <div className="idaReportDoc"><header><span>INTUNE INVENTORY REPORT</span><b>01</b></header><h3>Security posture</h3><p>The current inventory has a strong encryption baseline, while compliance and stale-device signals identify a smaller set that needs attention.</p><div className="idaDocMetrics"><span><b>82.1%</b><small>Compliant</small></span><span><b>95.0%</b><small>Encrypted</small></span><span><b>923</b><small>30+ days</small></span></div><div className="idaDocChart"><PreviewBar label="Compliant" value="5,371" width="82.1%"/><PreviewBar label="Encrypted" value="6,214" width="95%"/><PreviewBar label="Active ≤30 days" value="5,618" width="85.9%"/></div><footer><span>Generated locally from the current inventory</span><b>intuneinventory.com</b></footer></div>}
 function TrustFact({title,text}:{title:string;text:string}){return <article><strong>{title}</strong><span>{text}</span></article>}
 function UploadIcon(){return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15v5h14v-5"/></svg>}
+function DemoInventoryIcon(){return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>}
 function ShieldIcon(){return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.9 7.3 7 9 4.1-1.7 7-4.5 7-9V6l-7-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>}
 function FileIcon(){return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v4h4M9 12h6m-6 4h6"/></svg>}
 function CodeIcon(){return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 8-4 4 4 4m6-8 4 4-4 4m-2-10-2 12"/></svg>}
