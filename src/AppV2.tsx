@@ -29,7 +29,7 @@ const displayOsVersion=(device:Device)=>describeOsVersion(intelligencePlatform(d
 const countBy=(devices:Device[],selector:(device:Device)=>string)=>Object.entries(devices.reduce<Record<string,number>>((acc,device)=>{const value=selector(device);acc[value]=(acc[value]??0)+1;return acc},{})).sort((a,b)=>b[1]-a[1]) as [string,number][];
 
 type View='overview'|'devices'|'reports'|'faq';
-type Filter={field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability'|'primaryUser'|'userDensity'|'ownership';label:string;value:string}|null;
+type Filter={field:'compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability'|'windowsRelease'|'primaryUser'|'userDensity'|'ownership';label:string;value:string}|null;
 
 export default function AppV2(){
   const [data,setData]=useState<ImportResult|null>(null);
@@ -69,12 +69,13 @@ export default function AppV2(){
   }
 
   function drill(field:NonNullable<Filter>['field'],label:string,value:string){
-    if(field==='deviceType'||field==='appleDeviceFamily'||field==='cellularCapability'){
+    if(field==='deviceType'||field==='appleDeviceFamily'||field==='cellularCapability'||field==='windowsRelease'){
       setFilter(null);
       setHardwareFilters({
         deviceTypes:field==='deviceType'?[value]:[],
         appleFamilies:field==='appleDeviceFamily'?[value]:[],
-        cellularCapabilities:field==='cellularCapability'?[value]:[]
+        cellularCapabilities:field==='cellularCapability'?[value]:[],
+        windowsReleases:field==='windowsRelease'?[value]:[]
       });
     }else{
       setHardwareFilters(emptyHardwareExplorerFilters());
