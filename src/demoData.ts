@@ -1,5 +1,6 @@
 import { describeOsVersion } from './deviceIntelligence';
 import { resolveDeviceModel } from './deviceModelLookup';
+import { lifecycleRiskSignal } from './lifecycleRisk';
 import type { Device, ImportResult, PlatformFamily } from './types';
 
 type Template={platform:PlatformFamily;manufacturer:string;model:string;os:string;versions:string[];weight:number;productName?:string;architecture?:string};
@@ -77,6 +78,95 @@ function demoUser(i:number){
     upn:`demo.user${number}@example.invalid`
   };
 }
+function demoComplianceState(i:number){
+  const compliant=i%9!==0&&i%17!==0;
+  const grace=!compliant&&i%2===0;
+  return {compliant,grace,value:compliant?'Compliant':grace?'InGracePeriod':'Noncompliant'};
+}
+function demoEncryptionState(i:number){
+  const reported=i%53!==0;
+  const encrypted=i%31!==0;
+  return {reported,encrypted,value:reported?String(encrypted):''};
+}
+function demoCheckInAge(i:number){
+  return i%19===0?112:i%11===0?68:i%7===0?36:i%5===0?14:i%3===0?6:2;
+}
+function demoSecurityPatch(i:number,isAndroid:boolean){
+  return isAndroid?(i%5===0?'2026-05-01':i%3===0?'2026-08-01':'2026-08-05'):'';
+}
+function demoSkuFamily(i:number,isWindows:boolean){
+  return isWindows?(i%8===0?'Pro':'Enterprise'):'';
+}
+
+export type DemoPreviewStats={
+  total:number;
+  compliant:number;
+  compliancePct:number;
+  lifecycleRisk:number;
+  stale30:number;
+  stale30Pct:number;
+  encrypted:number;
+  notEncrypted:number;
+  encryptionUnknown:number;
+  encryptionPct:number;
+  windowsTotal:number;
+  windowsVersions:{label:string;count:number;percentage:number}[];
+};
+
+export const demoPreviewStats:DemoPreviewStats=(()=>{
+  let compliant=0,stale30=0,encrypted=0,notEncrypted=0,encryptionUnknown=0,lifecycleRisk=0,windowsTotal=0;
+  const windowsVersions=new Map<string,number>();
+  const now=Date.now();
+  const sixMonths=new Date(now);sixMonths.setMonth(sixMonths.getMonth()+6);
+  const sixMonthCutoff=sixMonths.getTime();
+
+  for(let i=0;i<total;i++){
+    const t=allocated[i%allocated.length];
+    const isWindows=t.platform==='windows';
+    const isAndroid=t.platform==='android';
+    const compliance=demoComplianceState(i);
+    if(compliance.compliant)compliant++;
+    const encryption=demoEncryptionState(i);
+    if(!encryption.reported)encryptionUnknown++;
+    else if(encryption.encrypted)encrypted++;
+    else notEncrypted++;
+    if(demoCheckInAge(i)>30)stale30++;
+
+    const version=t.versions[i%t.versions.length];
+    if(isWindows){
+      windowsTotal++;
+      const build=version.includes('26300')?'Windows 11 26H2':version.includes('26200')?'Windows 11 25H2':version.includes('26100')?'Windows 11 24H2':version.includes('22631')?'Windows 11 23H2':version;
+      windowsVersions.set(build,(windowsVersions.get(build)??0)+1);
+    }
+
+    const minimal={
+      platform:t.platform,
+      osVersion:describeOsVersion(t.platform,version),
+      sourceOS:t.os,
+      raw:{
+        'OS version':version,
+        'SkuFamily':demoSkuFamily(i,isWindows),
+        'Security patch level':demoSecurityPatch(i,isAndroid)
+      }
+    } as Device;
+    if(lifecycleRiskSignal(minimal,now,sixMonthCutoff).risk)lifecycleRisk++;
+  }
+
+  return {
+    total,
+    compliant,
+    compliancePct:total?compliant/total*100:0,
+    lifecycleRisk,
+    stale30,
+    stale30Pct:total?stale30/total*100:0,
+    encrypted,
+    notEncrypted,
+    encryptionUnknown,
+    encryptionPct:total?encrypted/total*100:0,
+    windowsTotal,
+    windowsVersions:[...windowsVersions.entries()].map(([label,count])=>({label,count,percentage:windowsTotal?count/windowsTotal*100:0})).sort((a,b)=>b.label.localeCompare(a.label,undefined,{numeric:true}))
+  };
+})();
 
 function device(i:number,t:Template):Device{
   const isWindows=t.platform==='windows';
@@ -84,16 +174,18 @@ function device(i:number,t:Template):Device{
   const isMac=t.platform==='macos';
   const isAppleMobile=t.platform==='ios'||t.platform==='ipados';
   const isLinux=t.platform==='linux';
-  const compliant=i%9!==0&&i%17!==0;
-  const grace=!compliant&&i%2===0;
-  const encrypted=i%31!==0;
-  const encryptionReported=i%53!==0;
+  const complianceState=demoComplianceState(i);
+  const compliant=complianceState.compliant;
+  const grace=complianceState.grace;
+  const encryptionState=demoEncryptionState(i);
+  const encrypted=encryptionState.encrypted;
+  const encryptionReported=encryptionState.reported;
   const securityCompromised=(isAppleMobile||isAndroid)&&(i%43===0||i%61===0);
   const noUser=i%13===0;
   const user=demoUser(i);
   const person=user.displayName;
   const userUpn=noUser?'':user.upn;
-  const age=i%19===0?112:i%11===0?68:i%7===0?36:i%5===0?14:i%3===0?6:2;
+  const age=demoCheckInAge(i);
   const enrollmentAge=enrollmentAgeDays(i);
   const version=t.versions[i%t.versions.length];
   const name=`DEMO-${t.platform.toUpperCase()}-${String(i+1).padStart(5,'0')}`;
@@ -131,7 +223,7 @@ function device(i:number,t:Template):Device{
     'EAS reason':'',
     'EAS status':'',
     'Compliance grace period expiration':grace?futureIntuneDate(3+(i%10)):'9999-12-31 23:59:59.9999999',
-    'Security patch level':isAndroid?(i%5===0?'2026-05-01':i%3===0?'2026-08-01':'2026-08-05'):'',
+    'Security patch level':demoSecurityPatch(i,isAndroid),
     'Wi-Fi MAC':compactHex(i+17,12),
     'MEID':cellular&&i%17===0?String(35000000000000+i*37):'',
     'Subscriber carrier':cellular?(i%5===0?'KPN NL':'Odido NL'):'',
@@ -145,15 +237,15 @@ function device(i:number,t:Template):Device{
     'Primary user display name':noUser?'':person,
     'WiFiIPv4Address':`192.168.${2+(i%8)}.${4+(i%180)}`,
     'WiFiSubnetID':i%3===0?'192.168.178.0':i%3===1?'192.168.2.0':'10.18.8.0',
-    'Compliance':compliant?'Compliant':grace?'InGracePeriod':'Noncompliant',
+    'Compliance':complianceState.value,
     'Managed by':managementAuthority,
     'Ownership':ownership,
     'Device state':i===44?'WipePending':'Managed',
     'Intune registered':i===57?'ApprovalPending':'Registered',
     'Supervised':String(isAppleMobile ? i%5!==0 : false),
-    'Encrypted':encryptionReported?String(encrypted):'',
+    'Encrypted':encryptionState.value,
     'OS':t.os,
-    'SkuFamily':isWindows?(i%8===0?'Pro':'Enterprise'):'',
+    'SkuFamily':demoSkuFamily(i,isWindows),
     'JoinType':join,
     'Phone number':cellular?`+316${String(10000000+(i*7919)%89999999).padStart(8,'0')}`:'',
     'Jailbroken':(isAppleMobile||isAndroid)?String(securityCompromised):'Unknown',
