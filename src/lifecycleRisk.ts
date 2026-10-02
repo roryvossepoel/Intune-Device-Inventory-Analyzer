@@ -75,49 +75,67 @@ function ubuntuEndDate(device:Device){
   return Number.isFinite(time)?time:null;
 }
 
+export type LifecycleRiskSignal={
+  assessed:boolean;
+  risk:boolean;
+  expired:boolean;
+  nearEnd:boolean;
+  staleAndroidPatch:boolean;
+};
+
+export function lifecycleRiskSignal(device:Device,now=Date.now(),sixMonthCutoff?:number):LifecycleRiskSignal{
+  const cutoff=sixMonthCutoff??(()=>{const sixMonths=new Date(now);sixMonths.setMonth(sixMonths.getMonth()+6);return sixMonths.getTime()})();
+  const platform=platformKey(device.platform);
+
+  if(platform==='windows'){
+    const end=windowsEndDate(device);
+    if(end===null)return {assessed:false,risk:false,expired:false,nearEnd:false,staleAndroidPatch:false};
+    if(end<now)return {assessed:true,risk:true,expired:true,nearEnd:false,staleAndroidPatch:false};
+    if(end<=cutoff)return {assessed:true,risk:true,expired:false,nearEnd:true,staleAndroidPatch:false};
+    return {assessed:true,risk:false,expired:false,nearEnd:false,staleAndroidPatch:false};
+  }
+
+  if(platform==='android'){
+    const patch=rawValue(device,/^Security patch level$/i);
+    const patchTime=patch?Date.parse(patch):Number.NaN;
+    if(!Number.isFinite(patchTime))return {assessed:false,risk:false,expired:false,nearEnd:false,staleAndroidPatch:false};
+    const stale=now-patchTime>90*DAY;
+    return {assessed:true,risk:stale,expired:false,nearEnd:false,staleAndroidPatch:stale};
+  }
+
+  if(platform==='applemobile'||platform==='macos'){
+    const state=appleSupportState(device,platform);
+    if(state==='unknown')return {assessed:false,risk:false,expired:false,nearEnd:false,staleAndroidPatch:false};
+    const unsupported=state==='unsupported';
+    return {assessed:true,risk:unsupported,expired:unsupported,nearEnd:false,staleAndroidPatch:false};
+  }
+
+  if(platform==='linux'){
+    const end=ubuntuEndDate(device);
+    if(end===null)return {assessed:false,risk:false,expired:false,nearEnd:false,staleAndroidPatch:false};
+    if(end<now)return {assessed:true,risk:true,expired:true,nearEnd:false,staleAndroidPatch:false};
+    if(end<=cutoff)return {assessed:true,risk:true,expired:false,nearEnd:true,staleAndroidPatch:false};
+    return {assessed:true,risk:false,expired:false,nearEnd:false,staleAndroidPatch:false};
+  }
+
+  return {assessed:false,risk:false,expired:false,nearEnd:false,staleAndroidPatch:false};
+}
+
 export function lifecycleRiskSummary(devices:Device[]):LifecycleRiskSummary{
   const now=Date.now();
-  const sixMonths=new Date();
+  const sixMonths=new Date(now);
   sixMonths.setMonth(sixMonths.getMonth()+6);
   const sixMonthCutoff=sixMonths.getTime();
   let risk=0,assessed=0,expired=0,nearEnd=0,staleAndroidPatch=0;
 
   for(const device of devices){
-    const platform=platformKey(device.platform);
-
-    if(platform==='windows'){
-      const end=windowsEndDate(device);
-      if(end===null)continue;
-      assessed++;
-      if(end<now){risk++;expired++;continue}
-      if(end<=sixMonthCutoff){risk++;nearEnd++}
-      continue;
-    }
-
-    if(platform==='android'){
-      const patch=rawValue(device,/^Security patch level$/i);
-      const patchTime=patch?Date.parse(patch):Number.NaN;
-      if(!Number.isFinite(patchTime))continue;
-      assessed++;
-      if(now-patchTime>90*DAY){risk++;staleAndroidPatch++}
-      continue;
-    }
-
-    if(platform==='applemobile'||platform==='macos'){
-      const state=appleSupportState(device,platform);
-      if(state==='unknown')continue;
-      assessed++;
-      if(state==='unsupported'){risk++;expired++}
-      continue;
-    }
-
-    if(platform==='linux'){
-      const end=ubuntuEndDate(device);
-      if(end===null)continue;
-      assessed++;
-      if(end<now){risk++;expired++;continue}
-      if(end<=sixMonthCutoff){risk++;nearEnd++}
-    }
+    const signal=lifecycleRiskSignal(device,now,sixMonthCutoff);
+    if(!signal.assessed)continue;
+    assessed++;
+    if(signal.risk)risk++;
+    if(signal.expired)expired++;
+    if(signal.nearEnd)nearEnd++;
+    if(signal.staleAndroidPatch)staleAndroidPatch++;
   }
 
   return {risk,assessed,expired,nearEnd,staleAndroidPatch};
