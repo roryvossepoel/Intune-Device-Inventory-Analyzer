@@ -13,9 +13,9 @@ const DAY=86400000;
 
 // Apple does not publish fixed end-of-support dates for iOS/iPadOS or macOS.
 // These sets represent OS branches for which Apple is still publishing security updates.
-// Source reviewed 2026-09-05: Apple security releases.
-const SUPPORTED_IOS_IPADOS_MAJORS=new Set([26,18,17,16,15]);
-const KNOWN_IOS_IPADOS_MAJORS=new Set([26,18,17,16,15,14,13,12,11,10,9]);
+// Source reviewed 2026-10-02: Apple security releases.
+const SUPPORTED_IOS_IPADOS_MAJORS=new Set([27,26,18,17,16,15]);
+const KNOWN_IOS_IPADOS_MAJORS=new Set([27,26,18,17,16,15,14,13,12,11,10,9]);
 const SUPPORTED_MACOS_MAJORS=new Set([26,15,14]);
 const KNOWN_MACOS_MAJORS=new Set([26,15,14,13,12,11,10]);
 
