@@ -5,7 +5,7 @@ import { getWindowsIntelligence } from './deviceIntelligence';
 import { appleDeviceFamily, cellularCapability, hardwareType } from './hardwareClassification';
 import type { Device } from './types';
 
-type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability'|'primaryUser'|'userDensity'|'ownership';
+type DrillField='compliance'|'osVersion'|'manufacturer'|'model'|'user'|'encryption'|'checkInAge'|'enrollmentAge'|'inventoryQuality'|'deviceType'|'appleDeviceFamily'|'cellularCapability'|'windowsRelease'|'primaryUser'|'userDensity'|'ownership';
 type Drill=(field:DrillField,label:string,value:string)=>void;
 type Row=[string,number];
 type SecurityTone='good'|'warn'|'bad';
@@ -262,7 +262,7 @@ export default function DashboardSections({devices,allDevices,total,compliance,c
     </DashboardSection>
 
     {windows.length>0&&<DashboardSection icon="lifecycle" title="Windows" subtitle={`${fmt(windows.length)} Windows devices · lifecycle, edition, architecture, ownership and management intelligence.`} className="platformCategory platformCategory-windows">
-      <div className="extendedInsightGrid windowsLifecycleGrid" style={{gridTemplateColumns:'1fr'}}><WindowsLifecycle devices={windows} title="Windows lifecycle"/></div>
+      <div className="extendedInsightGrid windowsLifecycleGrid" style={{gridTemplateColumns:'1fr'}}><WindowsLifecycle devices={windows} title="Windows lifecycle" onReleaseClick={releaseName=>drill('windowsRelease','Windows release',releaseName)}/></div>
       <div className="extendedInsightGrid twoInsightGrid windowsSummaryGrid">
         {hasKnownRows(windowsSkus)&&<PlatformCard className="windowsCompositionCard windowsEditionCard" platform="windows" title="Windows edition" subtitle="Reported Windows edition mix"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsSkus} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsSkus} total={windows.length}/></div></PlatformCard>}
         {hasKnownRows(windowsArch)&&<PlatformCard className="windowsCompositionCard windowsArchitectureCard" platform="windows" title="Windows architecture" subtitle="Processor architecture across Windows devices"><div className="hardwareDonutLayout"><Donut total={windows.length} items={windowsArch} center={fmt(windows.length)} label="devices"/><Distribution rows={windowsArch} total={windows.length}/></div></PlatformCard>}
