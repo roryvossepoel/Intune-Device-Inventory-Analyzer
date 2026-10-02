@@ -1,4 +1,9 @@
+import { demoPreviewStats } from './demoData';
+
 type Props={onOpenExport?:()=>void;onOpenDemo?:()=>void;onOpenReports?:()=>void;busy?:boolean;error?:string|null};
+const demoFmt=(value:number)=>value.toLocaleString();
+const demoPct=(value:number)=>`${value.toFixed(1)}%`;
+
 
 export default function LandingContent({onOpenExport=()=>document.querySelector<HTMLInputElement>('input[type="file"]')?.click(),onOpenDemo=()=>document.querySelector<HTMLButtonElement>('.mainNav button')?.click(),onOpenReports=()=>document.querySelectorAll<HTMLButtonElement>('.mainNav button')[2]?.click(),busy=false,error=null}:Props={}){
   return <div className="idaHome">
@@ -29,7 +34,7 @@ export default function LandingContent({onOpenExport=()=>document.querySelector<
 
     <section className="idaRealExamples">
       <div className="idaRealExamplesCopy"><span>REAL ANALYZER BUILDING BLOCKS</span><h2>Examples come straight from the workspace.</h2><p>The homepage now reflects the same concepts you see after importing an inventory. No generic product mockups.</p><button onClick={onOpenDemo}>Open the complete demo <span>→</span></button></div>
-      <div className="idaExampleStack"><ExampleRow icon="shield" title="Encryption status" text="Encrypted, not encrypted and unknown states with direct drill-through." stat="94.9%"/><ExampleRow icon="devices" title="Primary user coverage" text="See which devices have an identified primary user and which do not." stat="92.3%"/><ExampleRow icon="os" title="OS versions by platform" text="Windows, Android, iOS/iPadOS, macOS and Linux version distributions." stat="5 platforms"/><ExampleRow icon="activity" title="Check-in age" text="Find active devices and stale inventory without manually calculating dates." stat="30+ days"/></div>
+      <div className="idaExampleStack"><ExampleRow icon="shield" title="Encryption status" text="Encrypted, not encrypted and unknown states with direct drill-through." stat={demoPct(demoPreviewStats.encryptionPct)}/><ExampleRow icon="devices" title="Primary user coverage" text="See which devices have an identified primary user and which do not." stat="92.3%"/><ExampleRow icon="os" title="OS versions by platform" text="Windows, Android, iOS/iPadOS, macOS and Linux version distributions." stat="5 platforms"/><ExampleRow icon="activity" title="Check-in age" text="Find active devices and stale inventory without manually calculating dates." stat="30+ days"/></div>
     </section>
 
     <section className="idaWorkflow">
@@ -68,19 +73,51 @@ function VariantBlock({label,name,className,onOpenDemo,onOpenReports}:{label:str
   </section>;
 }
 
-function HeroProductPreview(){return <div className="idaHeroProduct"><div className="idaProductWindow"><header><span><i/><i/><i/></span><strong>Inventory dashboard</strong><small>Demo inventory</small></header><div className="idaPreviewNav"><b>Dashboard</b><span>Device Explorer</span><span>Reports</span><em>All platforms⌄</em></div><div className="idaPreviewKpis"><MiniKpi label="Managed devices" value="15,462"/><MiniKpi label="Compliant" value="83.7%"/><MiniKpi label="Lifecycle risk" value="1,329"/><MiniKpi label="No check-in 30+ days" value="4,043"/></div><div className="idaPreviewMain"><div className="idaPreviewCard"><span>Encryption status</span><small>Reported device encryption state</small><div className="idaPreviewDonut"><div><strong>94.9%</strong><small>encrypted</small></div></div><p><i className="good"/>Encrypted <b>14,681</b><em>94.9%</em></p><p><i className="bad"/>Not encrypted <b>489</b><em>3.2%</em></p><p><i/>Unknown <b>292</b><em>1.9%</em></p></div><div className="idaPreviewCard versions"><span>Windows versions</span><small>6,745 Windows devices · 4 reported versions</small><PreviewBar label="Windows 11 26H2" value="2,153" width="31.9%"/><PreviewBar label="Windows 11 25H2" value="2,154" width="31.9%"/><PreviewBar label="Windows 11 24H2" value="2,153" width="31.9%"/></div></div></div><div className="idaExplorerFloat"><header><strong>Device Explorer</strong><span>15,462 devices</span></header><div className="idaFloatFilters"><span>Platform · Windows⌄</span><span>OS · Windows 11 26H2⌄</span></div><p><b>DEMO-WINDOWS-00001</b><span>Windows 11 26H2</span><em>Compliant</em></p><p><b>DEMO-WINDOWS-00164</b><span>Windows 11 25H2</span><em>Compliant</em></p></div></div>}
+function HeroProductPreview(){
+  const preview=demoPreviewStats;
+  const windows=preview.windowsVersions.slice(0,3);
+  return <div className="idaHeroProduct"><div className="idaProductWindow">
+    <header><span><i/><i/><i/></span><strong>Inventory dashboard</strong><small>Demo inventory</small></header>
+    <div className="idaPreviewNav"><b>Dashboard</b><span>Device Explorer</span><span>Reports</span><em>All platforms⌄</em></div>
+    <div className="idaPreviewKpis">
+      <MiniKpi label="Managed devices" value={demoFmt(preview.total)}/>
+      <MiniKpi label="Compliant" value={demoPct(preview.compliancePct)}/>
+      <MiniKpi label="Lifecycle risk" value={demoFmt(preview.lifecycleRisk)}/>
+      <MiniKpi label="No check-in 30+ days" value={demoFmt(preview.stale30)}/>
+    </div>
+    <div className="idaPreviewMain">
+      <div className="idaPreviewCard">
+        <span>Encryption status</span><small>Reported device encryption state</small>
+        <div className="idaPreviewDonut" style={{background:`conic-gradient(#19aa76 0 ${preview.encryptionPct}%,#e45d61 ${preview.encryptionPct}% ${preview.encryptionPct+(preview.total?preview.notEncrypted/preview.total*100:0)}%,#a6b4c4 ${preview.encryptionPct+(preview.total?preview.notEncrypted/preview.total*100:0)}% 100%)`}}><div><strong>{demoPct(preview.encryptionPct)}</strong><small>encrypted</small></div></div>
+        <p><i className="good"/>Encrypted <b>{demoFmt(preview.encrypted)}</b><em>{demoPct(preview.encryptionPct)}</em></p>
+        <p><i className="bad"/>Not encrypted <b>{demoFmt(preview.notEncrypted)}</b><em>{demoPct(preview.total?preview.notEncrypted/preview.total*100:0)}</em></p>
+        <p><i/>Unknown <b>{demoFmt(preview.encryptionUnknown)}</b><em>{demoPct(preview.total?preview.encryptionUnknown/preview.total*100:0)}</em></p>
+      </div>
+      <div className="idaPreviewCard versions">
+        <span>Windows versions</span><small>{demoFmt(preview.windowsTotal)} Windows devices · {preview.windowsVersions.length} reported versions</small>
+        {windows.map(item=><PreviewBar key={item.label} label={item.label} value={demoFmt(item.count)} width={`${item.percentage}%`}/>)}
+      </div>
+    </div>
+  </div>
+  <div className="idaExplorerFloat">
+    <header><strong>Device Explorer</strong><span>{demoFmt(preview.total)} devices</span></header>
+    <div className="idaFloatFilters"><span>Platform · Windows⌄</span><span>OS · {windows[0]?.label??'Windows'}⌄</span></div>
+    <p><b>DEMO-WINDOWS-00001</b><span>{windows[0]?.label??'Windows'}</span><em>Compliant</em></p>
+    <p><b>DEMO-WINDOWS-00164</b><span>{windows[1]?.label??'Windows'}</span><em>Compliant</em></p>
+  </div></div>
+}
 function MiniKpi({label,value}:{label:string;value:string}){return <div><span>{label}</span><strong>{value}</strong></div>}
 function PreviewBar({label,value,width}:{label:string;value:string;width:string}){return <div className="idaPreviewBar"><div><span>{label}</span><strong>{value}</strong></div><i><b style={{width}}/></i></div>}
 function CapabilityCard({className,eyebrow,title,text,action,onClick,children}:{className:string;eyebrow:string;title:string;text:string;action:string;onClick:()=>void;children:React.ReactNode}){return <article className={`idaCapability ${className}`}><div className="idaCapabilityCopy"><span>{eyebrow}</span><h3>{title}</h3><p>{text}</p><button onClick={onClick}>{action} <b>→</b></button></div>{children}</article>}
 function DashboardMini(){return <div className="idaDashboardMini"><div><strong>Compliance status</strong><span className="idaMiniRing">84%</span><p><i/>Compliant <b>12,936</b></p><p><i/>Noncompliant <b>1,263</b></p></div><div><strong>Devices per user</strong><PreviewBar label="1 device" value="5,876" width="58.3%"/><PreviewBar label="2 devices" value="4,198" width="41.7%"/></div></div>}
 function ExplorerMini(){return <div className="idaExplorerMini"><div className="idaExplorerMiniFilters"><span>Device type⌄</span><span>Platform⌄</span><span>Manufacturer⌄</span></div><div className="idaExplorerMiniHead"><span>DEVICE</span><span>PLATFORM</span><span>MODEL</span><span>COMPLIANCE</span></div><ExplorerMiniRow device="ADMIN-014" platform="Windows" model="Surface Laptop 7"/><ExplorerMiniRow device="IOS-0042" platform="iOS/iPadOS" model="iPhone 16"/><ExplorerMiniRow device="AND-0081" platform="Android" model="Galaxy A56"/></div>}
 function ExplorerMiniRow({device,platform,model}:{device:string;platform:string;model:string}){return <div className="idaExplorerMiniRow"><strong>{device}</strong><span>{platform}</span><span>{model}</span><em>Compliant</em></div>}
-function ReportMini(){return <div className="idaReportMini"><header><span>01</span><div><small>COMPLIANCE & PROTECTION</small><strong>Security posture</strong></div></header><p><b>83.7%</b> of devices are compliant. Reported encryption coverage is <b>94.9%</b>, while 4,043 devices have not checked in for more than 30 days.</p><div><span><b>83.7%</b><small>Compliance</small></span><span><b>94.9%</b><small>Encryption</small></span><span><b>4,043</b><small>Stale</small></span></div></div>}
+function ReportMini(){const p=demoPreviewStats;return <div className="idaReportMini"><header><span>01</span><div><small>COMPLIANCE & PROTECTION</small><strong>Security posture</strong></div></header><p><b>{demoPct(p.compliancePct)}</b> of devices are compliant. Reported encryption coverage is <b>{demoPct(p.encryptionPct)}</b>, while {demoFmt(p.stale30)} devices have not checked in for more than 30 days.</p><div><span><b>{demoPct(p.compliancePct)}</b><small>Compliance</small></span><span><b>{demoPct(p.encryptionPct)}</b><small>Encryption</small></span><span><b>{demoFmt(p.stale30)}</b><small>Stale</small></span></div></div>}
 function ExampleRow({icon,title,text,stat}:{icon:string;title:string;text:string;stat:string}){return <article><span className={`idaExampleIcon ${icon}`}><ExampleIcon name={icon}/></span><div><strong>{title}</strong><p>{text}</p></div><b>{stat}</b></article>}
 function WorkflowStep({n,title,text}:{n:string;title:string;text:string}){return <article><span>{n}</span><strong>{title}</strong><p>{text}</p></article>}
 function WorkflowArrow(){return <i className="idaWorkflowArrow">→</i>}
 function ReportPoint({title,text}:{title:string;text:string}){return <article><i>✓</i><div><strong>{title}</strong><span>{text}</span></div></article>}
-function ReportDocumentPreview(){return <div className="idaReportDoc"><header><span>INTUNE INVENTORY REPORT</span><b>01</b></header><h3>Security posture</h3><p>The current inventory has a strong encryption baseline, while compliance and stale-device signals identify a smaller set that needs attention.</p><div className="idaDocMetrics"><span><b>83.7%</b><small>Compliant</small></span><span><b>94.9%</b><small>Encrypted</small></span><span><b>4,043</b><small>30+ days</small></span></div><div className="idaDocChart"><PreviewBar label="Compliant" value="12,936" width="83.7%"/><PreviewBar label="Encrypted" value="14,681" width="94.9%"/><PreviewBar label="Active ≤30 days" value="11,419" width="73.9%"/></div><footer><span>Generated locally from the current inventory</span><b>intuneinventory.com</b></footer></div>}
+function ReportDocumentPreview(){const p=demoPreviewStats;const active=Math.max(0,p.total-p.stale30);return <div className="idaReportDoc"><header><span>INTUNE INVENTORY REPORT</span><b>01</b></header><h3>Security posture</h3><p>The current inventory has a strong encryption baseline, while compliance and stale-device signals identify a smaller set that needs attention.</p><div className="idaDocMetrics"><span><b>{demoPct(p.compliancePct)}</b><small>Compliant</small></span><span><b>{demoPct(p.encryptionPct)}</b><small>Encrypted</small></span><span><b>{demoFmt(p.stale30)}</b><small>30+ days</small></span></div><div className="idaDocChart"><PreviewBar label="Compliant" value={demoFmt(p.compliant)} width={demoPct(p.compliancePct)}/><PreviewBar label="Encrypted" value={demoFmt(p.encrypted)} width={demoPct(p.encryptionPct)}/><PreviewBar label="Active ≤30 days" value={demoFmt(active)} width={demoPct(p.total?active/p.total*100:0)}/></div><footer><span>Generated locally from the current inventory</span><b>intuneinventory.com</b></footer></div>}
 function TrustFact({title,text}:{title:string;text:string}){return <article><strong>{title}</strong><span>{text}</span></article>}
 function UploadIcon(){return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15v5h14v-5"/></svg>}
 function DemoInventoryIcon(){return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>}
