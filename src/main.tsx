@@ -67,7 +67,6 @@ import './homepage-scroll-reveal.css';
 import './homepage-scroll-reveal';
 import './mobile-navigation.css';
 import './homepage-hero-preview-polish.css';
-import './homepage-hero-preview-data';
 import './main-page-heading-unity.css';
 import './typography-softening.css';
 import './os-version-sort.css';
